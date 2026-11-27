@@ -52,6 +52,10 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
   double? _menuWidth;
   double? _menuHeight;
   bool _minimized = false;
+  Offset? _moveStartPosition;
+  Offset? _moveStartOffset;
+  Offset? _resizeStartPosition;
+  Size? _resizeStartSize;
 
   Size? get _measuredSurfaceSize {
     final renderObject = _surfaceKey.currentContext?.findRenderObject();
@@ -74,12 +78,23 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
     });
   }
 
+  void _startMoving(DragStartDetails details) {
+    _moveStartPosition = details.globalPosition;
+    _moveStartOffset = Offset(_left, _bottom);
+  }
+
   void _moveBy(
-    Offset delta, {
+    DragUpdateDetails details, {
     required Size expandedSize,
     required double viewportWidth,
     required double viewportHeight,
   }) {
+    final startPosition = _moveStartPosition;
+    final startOffset = _moveStartOffset;
+    if (startPosition == null || startOffset == null) return;
+    // Use the full pointer displacement from pan start. DragUpdateDetails.delta
+    // omits Flutter's initial touch-slop distance and made the menu lag behind.
+    final delta = details.globalPosition - startPosition;
     final maxLeft = math
         .max(
           _edgeInset,
@@ -94,18 +109,35 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
         .toDouble();
 
     setState(() {
-      _left = (_left + delta.dx).clamp(_edgeInset, maxLeft).toDouble();
+      _left = (startOffset.dx + delta.dx)
+          .clamp(_edgeInset, maxLeft)
+          .toDouble();
       // Screen Y grows downward; a positive bottom offset moves the menu up.
-      _bottom = (_bottom - delta.dy).clamp(_edgeInset, maxBottom).toDouble();
+      _bottom = (startOffset.dy - delta.dy)
+          .clamp(_edgeInset, maxBottom)
+          .toDouble();
     });
   }
 
+  void _startResizing(DragStartDetails details, Size expandedSize) {
+    _resizeStartPosition = details.globalPosition;
+    _resizeStartSize = Size(
+      _menuWidth ?? expandedSize.width,
+      _menuHeight ?? expandedSize.height,
+    );
+  }
+
   void _resizeBy(
-    Offset delta, {
-    required Size expandedSize,
+    DragUpdateDetails details, {
     required double viewportWidth,
     required double viewportHeight,
   }) {
+    final startPosition = _resizeStartPosition;
+    final startSize = _resizeStartSize;
+    if (startPosition == null || startSize == null) return;
+    final pointerDelta = details.globalPosition - startPosition;
+    // Full pointer displacement keeps resizing one-to-one after touch slop.
+    final delta = Offset(pointerDelta.dx, -pointerDelta.dy);
     final maxWidth = math
         .max(
           0.0,
@@ -118,11 +150,11 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
         .toDouble();
     final minHeight = math.min(_minMenuHeight, maxHeight).toDouble();
 
-    final nextWidth = (expandedSize.width + delta.dx)
+    final nextWidth = (startSize.width + delta.dx)
         .clamp(minWidth, maxWidth)
         .toDouble();
     // Dragging the top-right grip upward increases the window height.
-    final nextHeight = (expandedSize.height - delta.dy)
+    final nextHeight = (startSize.height + delta.dy)
         .clamp(minHeight, maxHeight)
         .toDouble();
 
@@ -253,32 +285,14 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                         SizedBox(
                           width: menuWidth,
                           height: _headerHeight,
-                          child: Row(
+                          child: Stack(
                             children: [
-                              // Minimize/restore stays fixed at the top-left.
-                              IconButton(
-                                key: const ValueKey(
-                                  'focus-mode-menu-toggle',
-                                ),
-                                tooltip: _minimized
-                                    ? widget.expandTooltip
-                                    : widget.collapseTooltip,
-                                visualDensity: VisualDensity.compact,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: _headerHeight,
-                                  height: _headerHeight,
-                                ),
-                                padding: EdgeInsets.zero,
-                                icon: Icon(
-                                  _minimized
-                                      ? Icons.expand_more
-                                      : Icons.expand_less,
-                                  size: 20,
-                                ),
-                                onPressed: _toggleMinimized,
-                              ),
                               // Only the centred grip moves the window.
-                              Expanded(
+                              Positioned(
+                                left: _headerHeight,
+                                right: _headerHeight,
+                                top: 0,
+                                bottom: 0,
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.grab,
                                   child: GestureDetector(
@@ -286,12 +300,21 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                       'focus-mode-menu-drag-handle',
                                     ),
                                     behavior: HitTestBehavior.opaque,
+                                    onPanStart: _startMoving,
                                     onPanUpdate: (details) => _moveBy(
-                                      details.delta,
+                                      details,
                                       expandedSize: expandedSize,
                                       viewportWidth: viewportWidth,
                                       viewportHeight: viewportHeight,
                                     ),
+                                    onPanEnd: (_) {
+                                      _moveStartPosition = null;
+                                      _moveStartOffset = null;
+                                    },
+                                    onPanCancel: () {
+                                      _moveStartPosition = null;
+                                      _moveStartOffset = null;
+                                    },
                                     child: Center(
                                       child: Container(
                                         width: 38,
@@ -308,24 +331,63 @@ class _FocusModeMenuState extends State<FocusModeMenu> {
                                   ),
                                 ),
                               ),
-                              // Drag right/down to widen/shorten; drag left/up
-                              // to narrow/tall. The bottom-left corner anchors.
-                              MouseRegion(
-                                cursor: SystemMouseCursors.resizeUpRight,
-                                child: GestureDetector(
+                              // Minimize/restore stays fixed at the top-left.
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: _headerHeight,
+                                child: IconButton(
                                   key: const ValueKey(
-                                    'focus-mode-menu-resize-handle',
+                                    'focus-mode-menu-toggle',
                                   ),
-                                  behavior: HitTestBehavior.opaque,
-                                  onPanUpdate: (details) => _resizeBy(
-                                    details.delta,
-                                    expandedSize: expandedSize,
-                                    viewportWidth: viewportWidth,
-                                    viewportHeight: viewportHeight,
-                                  ),
-                                  child: SizedBox(
+                                  tooltip: _minimized
+                                      ? widget.expandTooltip
+                                      : widget.collapseTooltip,
+                                  visualDensity: VisualDensity.compact,
+                                  constraints: const BoxConstraints.tightFor(
                                     width: _headerHeight,
                                     height: _headerHeight,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  icon: Icon(
+                                    _minimized
+                                        ? Icons.expand_more
+                                        : Icons.expand_less,
+                                    size: 20,
+                                  ),
+                                  onPressed: _toggleMinimized,
+                                ),
+                              ),
+                              // Drag right/down to widen/shorten; drag left/up
+                              // to narrow/tall. The bottom-left corner anchors.
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: _headerHeight,
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.resizeUpRight,
+                                  child: GestureDetector(
+                                    key: const ValueKey(
+                                      'focus-mode-menu-resize-handle',
+                                    ),
+                                    behavior: HitTestBehavior.opaque,
+                                    onPanStart: (details) =>
+                                        _startResizing(details, expandedSize),
+                                    onPanUpdate: (details) => _resizeBy(
+                                      details,
+                                      viewportWidth: viewportWidth,
+                                      viewportHeight: viewportHeight,
+                                    ),
+                                    onPanEnd: (_) {
+                                      _resizeStartPosition = null;
+                                      _resizeStartSize = null;
+                                    },
+                                    onPanCancel: () {
+                                      _resizeStartPosition = null;
+                                      _resizeStartSize = null;
+                                    },
                                     child: Center(
                                       child: Transform.rotate(
                                         angle: -math.pi / 4,
