@@ -13,7 +13,7 @@ import '../../../config/signal_colors.dart';
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/layer_keyframe_engine.dart';
-import '../../../engine/tile_manager.dart' show frameLayerKey;
+import '../../../engine/tile_manager.dart' show TileManager, frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/fit_or_hide_title.dart';
@@ -3187,26 +3187,44 @@ class _LayerThumbnail extends StatefulWidget {
 
 class _LayerThumbnailState extends State<_LayerThumbnail> {
   ui.Image? _image;
+  TileManager? _tiles;
+  String? _key;
+  bool _generating = false;
+  bool _generateAgain = false;
 
   @override
   void initState() {
     super.initState();
-    _generate();
-  }
-
-  Future<void> _generate() async {
     final ps = context.read<ProjectService>();
-    final tileManager = ps.tileManagerOf(widget.projectId);
-    final key = ps.tileKeyFor(
+    _tiles = ps.tileManagerOf(widget.projectId);
+    _key = ps.tileKeyFor(
       widget.projectId,
       widget.sceneId,
       widget.frameIndex,
       widget.layerId,
     );
+    // 結合・フィルター・取り消しなどでこのレイヤーの画素が置き換わったら
+    // 描き直す（取り消しの数だけで見ると、選んでいないレイヤーの絵が変わった
+    // とき〔下と結合した結合先〕に古いまま残った）。
+    _tiles!.addLayerContentListener(_onLayerContentChanged);
+    _generate();
+  }
+
+  void _onLayerContentChanged(String key) {
+    if (key == _key && mounted) _generate();
+  }
+
+  Future<void> _generate() async {
+    if (_generating) {
+      _generateAgain = true;
+      return;
+    }
+    _generating = true;
+    final tileManager = _tiles!;
     // Render this layer's actual raster tiles over the PROJECT'S paper
     // colour. A transparent layer alone would otherwise look like the
     // palette's grey placeholder and fail to show the intended result.
-    final full = await tileManager.compositeLayerToImage(key);
+    final full = await tileManager.compositeLayerToImage(_key!);
     ui.Image thumb;
     try {
       thumb = await renderLayerThumbnail(
@@ -3217,6 +3235,7 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
       );
     } finally {
       full.dispose();
+      _generating = false;
     }
     if (!mounted) {
       thumb.dispose();
@@ -3225,10 +3244,15 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
     final old = _image;
     setState(() => _image = thumb);
     old?.dispose();
+    if (_generateAgain) {
+      _generateAgain = false;
+      _generate();
+    }
   }
 
   @override
   void dispose() {
+    _tiles?.removeLayerContentListener(_onLayerContentChanged);
     _image?.dispose();
     super.dispose();
   }

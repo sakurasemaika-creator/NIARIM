@@ -771,6 +771,11 @@ class CanvasAreaState extends State<CanvasArea> {
   bool _isCompositing = false;
   bool _isComposingSurroundings = false;
   bool _forceSurroundingsAfterCurrent = false;
+  // 今のレイヤーにクリッピングした上のレイヤーがあるか（あれば、今の
+  // レイヤーが変わるたびに上の絵を描き直す）。
+  bool _aboveClipsToCurrent = false;
+  bool _refreshingAbove = false;
+  bool _refreshAboveAgain = false;
   int _layerTargetRevision = 0;
 
   // 現在フレームのレイヤー一覧（レイヤーパネル順・先頭が最前面）。
@@ -4660,6 +4665,8 @@ class CanvasAreaState extends State<CanvasArea> {
         _isCompositing = false;
       });
       _scheduleExactBlend();
+      // 上のレイヤーが今のレイヤーにクリッピングしていれば、新しい形で切り抜く。
+      _refreshAboveClippedToCurrent();
       // 現在レイヤーが選択レイヤー自体の場合、たった今描いたストロークを
       // オーバーレイへも反映する（存在しない・別レイヤーの場合はキャッシュ
       // 済みの合成結果を返すだけなので軽量）。
@@ -4807,15 +4814,13 @@ class CanvasAreaState extends State<CanvasArea> {
     _isComposingSurroundings = true;
 
     final idx = layers.indexWhere((l) => l.id == _layerId);
+    _aboveClipsToCurrent = _clipsToLayer(layers, idx);
     final w = manager.canvasWidth;
     final h = manager.canvasHeight;
     String keyOf(Layer layer) =>
         ps.tileKeyFor(project.id, sceneId, frame, layer.id);
-    LayerKeyframe? groupKf(Layer layer) {
-      final group = ps.groupContainingLayer(project.id, sceneId, layer.id);
-      if (group == null || group.keyframes.isEmpty) return null;
-      return _layerKeyframeEngine.valueAt(group.keyframes, frame);
-    }
+    LayerKeyframe? groupKf(Layer layer) =>
+        _groupKeyframeOf(ps, project.id, sceneId, frame, layer);
 
     final checkMode = widget.autofillCheckMode;
     final belowImg = checkMode == AutofillCheckMode.normal
@@ -4880,6 +4885,82 @@ class CanvasAreaState extends State<CanvasArea> {
     _refreshSelectionLayerOverlay();
     // 合成中にさらに変更があった場合に備えて再チェック
     _recomposeSurroundings(force: pending);
+  }
+
+  LayerKeyframe? _groupKeyframeOf(
+    ProjectService ps,
+    String projectId,
+    String sceneId,
+    int frame,
+    Layer layer,
+  ) {
+    final group = ps.groupContainingLayer(projectId, sceneId, layer.id);
+    if (group == null || group.keyframes.isEmpty) return null;
+    return _layerKeyframeEngine.valueAt(group.keyframes, frame);
+  }
+
+  /// [index]のレイヤーより上に、そのレイヤーへクリッピングしたレイヤーが
+  /// あるか。
+  static bool _clipsToLayer(List<Layer> layers, int index) {
+    if (index < 0) return false;
+    final id = layers[index].id;
+    for (var i = index - 1; i >= 0; i--) {
+      if (!layers[i].hasClipping) continue;
+      if (findClipSourceLayerId(layers, i) == id) return true;
+    }
+    return false;
+  }
+
+  /// 今のレイヤーにクリッピングした上のレイヤーを、今のレイヤーの新しい形で
+  /// 描き直す（描く・変形する・外から書き換えたとき。上の絵だけを作り直す）。
+  Future<void> _refreshAboveClippedToCurrent() async {
+    final project = widget.project;
+    if (project == null || !_aboveClipsToCurrent) return;
+    if (_isComposingSurroundings) {
+      // 作り直している最中の絵は、前の形を読んだかもしれない。
+      _forceSurroundingsAfterCurrent = true;
+      return;
+    }
+    if (_refreshingAbove) {
+      _refreshAboveAgain = true;
+      return;
+    }
+    _refreshingAbove = true;
+    final ps = context.read<ProjectService>();
+    final layers = _layers;
+    final idx = layers.indexWhere((l) => l.id == _layerId);
+    final sceneId = widget.sceneId;
+    final frame = widget.currentFrame;
+    final manager = _tileManager;
+    final targetRevision = _layerTargetRevision;
+    final picture = await LayerCompositor.compositeToPicture(
+      manager,
+      layers,
+      (layer) => ps.tileKeyFor(project.id, sceneId, frame, layer.id),
+      manager.canvasWidth,
+      manager.canvasHeight,
+      shouldRender: (_, i) => i < idx,
+      keyframeOf: (l) => _keyframeOf(l, frame),
+      groupKeyframeOf: (l) =>
+          _groupKeyframeOf(ps, project.id, sceneId, frame, l),
+    );
+    _refreshingAbove = false;
+    if (!mounted ||
+        targetRevision != _layerTargetRevision ||
+        !identical(layers, _layers)) {
+      // レイヤー・コマが替わった：上の絵は_recomposeSurroundingsが作る。
+      picture.dispose();
+      _refreshAboveAgain = false;
+      return;
+    }
+    setState(() {
+      _abovePicture?.dispose();
+      _abovePicture = picture;
+    });
+    if (_refreshAboveAgain) {
+      _refreshAboveAgain = false;
+      _refreshAboveClippedToCurrent();
+    }
   }
 
   /// The paper colour when the canvas shows the project's background (not

@@ -301,4 +301,148 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets('a layer clipped to the current layer follows its new shape', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(640, 480);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundary = GlobalKey();
+    late ProjectService ps;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers!,
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) {
+              ps = context.read<ProjectService>();
+              return const SizedBox();
+            },
+          ),
+        ),
+      ),
+    );
+    final project = (await tester.runAsync(
+      () => ps.createProject(
+        name: 'clip-display',
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: _w,
+        exportHeight: _h,
+      ),
+    ))!;
+    final sceneId = ps.scenesOf(project.id).first.id;
+    final base = ps.layersOf(project.id, sceneId, 0).first;
+    final tm = ps.tileManagerOf(project.id);
+    // The current layer: a black square in the middle third.
+    final square = Uint8List(_w * _h * 4);
+    for (var y = _h ~/ 3; y < _h * 2 ~/ 3; y++) {
+      for (var x = _w ~/ 3; x < _w * 2 ~/ 3; x++) {
+        square.setAll((y * _w + x) * 4, [0, 0, 0, 255]);
+      }
+    }
+    tm.replaceLayerPixels(
+      ps.tileKeyFor(project.id, sceneId, 0, base.id),
+      square,
+    );
+    // Above it, clipped to it: solid red everywhere.
+    final red = ps.addLayer(
+      projectId: project.id,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.normal,
+      name: 'red',
+    );
+    final redPixels = Uint8List(_w * _h * 4);
+    for (var i = 0; i < redPixels.length; i += 4) {
+      redPixels.setAll(i, [220, 30, 30, 255]);
+    }
+    tm.replaceLayerPixels(
+      ps.tileKeyFor(project.id, sceneId, 0, red.id),
+      redPixels,
+    );
+    ps.updateLayer(
+      projectId: project.id,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: ps
+          .layersOf(project.id, sceneId, 0)
+          .firstWhere((l) => l.id == red.id)
+          .copyWith(hasClipping: true),
+    );
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          home: Scaffold(
+            body: RepaintBoundary(
+              key: boundary,
+              child: Consumer<ProjectService>(
+                builder: (_, projects, _) => CanvasArea(
+                  project: projects.projects.firstWhere(
+                    (p) => p.id == project.id,
+                  ),
+                  currentLayerId: base.id,
+                  currentTool: DrawingTool.pen,
+                  currentFrame: 0,
+                  sceneId: sceneId,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    Future<List<int>> sample(double fx, double fy) async {
+      final rect = tester.getRect(find.byType(CanvasArea));
+      final drawing = canvasDrawingRectFor(rect.size, project);
+      final x = (rect.left + drawing.left + drawing.width * fx).round();
+      final y = (rect.top + drawing.top + drawing.height * fy).round();
+      final bytes = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage(pixelRatio: 1);
+        try {
+          final pixels = (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!;
+          final offset = (y * image.width + x) * 4;
+          return [for (var i = 0; i < 3; i++) pixels.getUint8(offset + i)];
+        } finally {
+          image.dispose();
+        }
+      });
+      return bytes!;
+    }
+
+    final center = await sample(.5, .5);
+    expect(center[0], greaterThan(180), reason: 'red inside the square');
+    expect(center[1], lessThan(60));
+    expect(await sample(.1, .1), [255, 255, 255], reason: 'paper outside it');
+
+    // The current layer (the clipping base) changes shape: it now covers
+    // the top-left corner too. The red clipped to it follows at once.
+    final grown = Uint8List.fromList(square);
+    for (var y = 0; y < _h ~/ 5; y++) {
+      for (var x = 0; x < _w ~/ 5; x++) {
+        grown.setAll((y * _w + x) * 4, [0, 0, 0, 255]);
+      }
+    }
+    tm.replaceLayerPixels(
+      ps.tileKeyFor(project.id, sceneId, 0, base.id),
+      grown,
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    final corner = await sample(.1, .1);
+    expect(corner[0], greaterThan(180), reason: 'red over the grown base');
+    expect(corner[1], lessThan(60));
+    await tester.pumpWidget(const SizedBox());
+  });
 }
