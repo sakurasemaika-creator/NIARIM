@@ -138,7 +138,7 @@ Locale _localeOf(String code) => code == 'zh_Hant'
 /// （区切りの後ろの「000」だけを拾うと0として比べてしまう）。
 final _coinPhrase = RegExp(
   r'(?<![\d,.  ])(\d{1,3}(?:[,.  ]\d{3})+|\d+)\s*'
-  r'(opals?|ópalos?|opales?|오팔|オパール|欧泊|歐泊)(?![\p{L}])',
+  r'([Oo]pals?|ópalos?|opales?|오팔|オパール|欧泊|歐泊)(?![\p{L}])',
   unicode: true,
 );
 

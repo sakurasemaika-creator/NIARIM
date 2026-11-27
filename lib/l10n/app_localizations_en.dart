@@ -1501,11 +1501,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Ordinary layers are independent per frame, but a common layer shares the same content across multiple frames and scenes. Elements that don’t move between frames, like backgrounds, can be drawn once instead of redrawn for every frame. It’s shown as a dedicated track on the timeline. Converts a normal layer into a common layer (one that keeps showing the same content across multiple frames). You can also merge the currently visible layers into one before converting. Saves you redrawing something like a background that stays the same every frame.';
 
   @override
-  String get helpAutoFillTitle => 'Auto Fill';
+  String get helpAutoFillTitle => 'Autofill';
 
   @override
   String get helpAutoFillDesc =>
-      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made “autofill setting” (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing “Run autofill” from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from. Raising “Close the gap between lines and fill” fills further under the soft edge of the lines, narrowing the gap between line art and fill that shows with an outline or a line color matching the fill.';
+      'Creates an autofill layer beneath the autofill line art layer and automatically colors it based on a pre-made “autofill setting” (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark appears on the timeline and layer panel to let you know the autofill needs to be reapplied. Choosing “Run autofill” from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from. Raising “Close the gap between lines and fill” fills further under the soft edge of the lines, narrowing the gap between line art and fill that shows with an outline or a line color matching the fill.';
 
   @override
   String get helpOnionSkinTitle => 'Onion Skin';
@@ -1719,7 +1719,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpGestureSettingsDesc =>
-      'Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy for triggering frequent actions with one touch instead of switching tools.';
+      'Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy when you want to trigger frequently used actions right away, without opening a menu.';
 
   @override
   String get helpBucketDetailSettingsTitle => 'Bucket fill detail settings';
@@ -2012,7 +2012,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'Use this workflow when you want to separate parts with bright temporary colors first, then replace them with their final colors. Draw all real lineart on one normal layer and keep it above the fill layers.\nFor each part, add an “Auto-fill lineart layer” and use its three-dot menu > “Assign part” to link the part. These are helper layers for this workflow, so leave them empty—do not draw the real lineart on them. From the same menu, choose “Run auto-fill” once to create the paired “Auto-fill layer”.\nOn each “Auto-fill layer”, manually paint a solid area for the matching part using an easy-to-see temporary color. Paint the area to be recolored, not just its outline.\nWhen the shapes are right, open “Run auto-fill” from the corresponding “Auto-fill lineart layer” menu and select “Update color while keeping shape”. This keeps your hand-painted shapes and applies the final colors from “Autofill Settings”. If you want the app to detect the parts from the lineart and color them automatically in one pass, use a different workflow: draw the actual lineart on the “Auto-fill lineart layers”.';
+      'Use this workflow when you want to separate parts with bright temporary colors first, then replace them with their final colors. Draw all real lineart on one normal layer and keep it above the fill layers.\nFor each part, add an “Autofill lineart layer” and use its three-dot menu > “Assign part” to link the part. These are helper layers for this workflow, so leave them empty—do not draw the real lineart on them. From the same menu, choose “Run autofill” once to create the paired “Autofill layer”.\nOn each “Autofill layer”, manually paint a solid area for the matching part using an easy-to-see temporary color. Paint the area to be recolored, not just its outline.\nWhen the shapes are right, open “Run autofill” from the corresponding “Autofill lineart layer” menu and select “Update color while keeping shape”. This keeps your hand-painted shapes and applies the final colors from “Autofill Settings”. If you want the app to detect the parts from the lineart and color them automatically in one pass, use a different workflow: draw the actual lineart on the “Autofill lineart layers”.';
 
   @override
   String get tipsBrushFavoriteTitle =>
@@ -2211,7 +2211,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsVerticalPixelFontDesc =>
-      'A trick that works because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.';
+      'Since this app is both an illustration app and a video editor, you can also try something like this. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.';
 
   @override
   String get tipsTimelineMarkerTitle =>
@@ -2227,7 +2227,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsCommunityYoutubeDesc =>
-      'When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer’s servers. If you set the video to “Unlisted” on the YouTube side, it won’t appear in YouTube’s public listings and will only be posted within the Work Plaza.';
+      'When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer’s servers. If you set the video to “Unlisted” on the YouTube side, it won’t appear in YouTube search results or in your channel’s video list, but it can still be viewed from the Work Plaza. Note, however, that anyone with the link can watch an unlisted video.';
 
   @override
   String get tipsToolbarCustomizeTitle =>
@@ -3190,11 +3190,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Finishing the final step — cancellation will apply once it’s done';
 
   @override
-  String get exportOutdatedAutofillTitle => 'Auto-fill is not up to date';
+  String get exportOutdatedAutofillTitle => 'Autofill is not up to date';
 
   @override
   String get exportOutdatedAutofillBody =>
-      'Some auto-fill layers haven’t been updated. Export anyway?';
+      'Some autofill layers haven’t been updated. Export anyway?';
 
   @override
   String get exportContinueButton => 'Continue';
@@ -5011,7 +5011,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String layerPanelDefaultAutofillName(int n) {
-    return 'AutoFill$n';
+    return 'Autofill$n';
   }
 
   @override
@@ -5032,7 +5032,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillMarkTooltip =>
-      'The lineart was updated. Tap to bring the auto-fill up to date.';
+      'The lineart was updated. Tap to bring the autofill up to date.';
 
   @override
   String get layerPanelRangeAllFrames => 'All frames';
@@ -5058,7 +5058,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelMenuPartAssign => 'Assign part';
 
   @override
-  String get layerPanelMenuRunAutofill => 'Run auto-fill';
+  String get layerPanelMenuRunAutofill => 'Run autofill';
 
   @override
   String get layerPanelMenuOrphanFill => 'Fill with the latest color';
@@ -5136,10 +5136,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelMenuCommonLayer => 'Common layer';
 
   @override
-  String get layerPanelMenuLineartLayer => 'Auto-fill lineart layer';
+  String get layerPanelMenuLineartLayer => 'Autofill lineart layer';
 
   @override
-  String get layerPanelMenuAutofillLayer => 'Auto-fill layer';
+  String get layerPanelMenuAutofillLayer => 'Autofill layer';
 
   @override
   String get layerPanelMenuSelectionLayer => 'Selection layer';
@@ -5219,19 +5219,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'A layer whose content is shared across multiple frames. You can set which frame range it appears in.';
 
   @override
-  String get layerPanelAutofillMethodTitle => 'Auto-fill method';
+  String get layerPanelAutofillMethodTitle => 'Autofill method';
 
   @override
   String get layerPanelAutofillNoLineartSnackbar =>
-      'No matching auto-fill lineart layer was found.';
+      'No matching autofill lineart layer was found.';
 
   @override
   String get layerPanelAutofillNote1 =>
-      'Note: On the first auto-fill, every method creates a new fill from the lineart.';
+      'Note: On the first autofill, every method creates a new fill from the lineart.';
 
   @override
   String get layerPanelAutofillNote2 =>
-      'Note: If no auto-fill layer exists yet, the area will be judged from scratch either way.';
+      'Note: If no autofill layer exists yet, the area will be judged from scratch either way.';
 
   @override
   String get layerPanelAutofillSmartUpdateTitle => 'Update changed shape only';
@@ -5250,11 +5250,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillRepaintHint =>
-      'Use when the fill should follow the current auto-fill lineart';
+      'Use when the fill should follow the current autofill lineart';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      'Note: Re-detects the region from the auto-fill lineart. The current auto-fill shape will be replaced.';
+      'Note: Re-detects the region from the autofill lineart. The current autofill shape will be replaced.';
 
   @override
   String get layerPanelAutofillColorUpdateTitle =>
@@ -5262,7 +5262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillColorUpdateHint =>
-      'Use when you want to keep a manually adjusted auto-fill shape';
+      'Use when you want to keep a manually adjusted autofill shape';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
@@ -5288,11 +5288,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t process this: no part is assigned, or there’s no fill shape.';
 
   @override
-  String get layerPanelAutofillUpdateHelpTitle => 'Auto-fill update mark';
+  String get layerPanelAutofillUpdateHelpTitle => 'Autofill update mark';
 
   @override
   String get layerPanelAutofillUpdateHelpBody =>
-      'The current auto-fill is out of date. Tap it to update.';
+      'The current autofill is out of date. Tap it to update.';
 
   @override
   String layerPanelReplaceMaterialSuccessSnackbar(String name) {
@@ -5767,7 +5767,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAutofillUpdateHelpBody =>
-      'This scene/frame contains an auto-fill layer that isn’t up to date. Tap the layer in the layer panel to update it.';
+      'This scene/frame contains an autofill layer that isn’t up to date. Tap the layer in the layer panel to update it.';
 
   @override
   String get timelineFrameTrackLabel => 'Frame';
@@ -5824,7 +5824,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAutofillNote2 =>
-      'Note: If only an auto-fill layer exists, the area will be judged from scratch either way.';
+      'Note: If no autofill layer exists yet, the area will be judged from scratch either way.';
 
   @override
   String get timelineAutofillTargetLabel => 'Target';
@@ -5840,7 +5840,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAutofillScopeAllScenes => 'All frames (entire project)';
 
   @override
-  String get timelineAutofillProgressTitle => 'Running auto-fill';
+  String get timelineAutofillProgressTitle => 'Running autofill';
 
   @override
   String timelineAutofillProgressSubtitle(int count) {
@@ -5849,7 +5849,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String timelineAutofillCompleteSnackbar(int count) {
-    return 'Auto-fill complete ($count processed)';
+    return 'Autofill complete ($count processed)';
   }
 
   @override
@@ -6163,7 +6163,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt1Body =>
-      'These Terms of Service (the “Terms”) set forth the conditions of use for the app “NIARIM” (the “App”). By using the App, you agree to these Terms. Use of the App constitutes agreement to these Terms. Before you purchase premium features, sign in with a Google account, or post to the Work Plaza, the App asks you to agree to these Terms and the Privacy Policy and records the version you agreed to and the date and time on your device.';
+      'These Terms of Service (the “Terms”) set forth the conditions of use for the app “NIARIM” (the “App”). You must agree to these Terms before using the App. Use of the App constitutes agreement to these Terms. Before you purchase premium features, sign in with a Google account, or post to the Work Plaza, the App asks you to agree to these Terms and the Privacy Policy and records the version you agreed to and the date and time on your device.';
 
   @override
   String get licenseTermsArt2Title =>
@@ -6244,7 +6244,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer’s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer’s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user’s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App’s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited. Works that receive several reports or that may involve a serious violation may be hidden temporarily until they are reviewed. The developer may suspend posting to the Work Plaza for users who repeatedly post content that violates these Terms. Objections to these measures can be sent through the contact form or by email (support@miranima-studio.com).\n6. If a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video may be deleted. If a video is made private or deleted on YouTube’s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube’s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users’ works. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). Muting changes only what you see. Blocking hides each account’s posts from the other while signed in to Work Plaza. Neither action sends a notification.';
+      '1. The App optionally provides a feature that lets users post animation works they have created, via their own Google account, to YouTube, and publish and browse them on “the Work Plaza” (the “Community Feature”). Browsing and creating works is possible without using the Community Feature.\n2. The video files themselves are stored on YouTube, not on the developer’s servers. However, the information needed to identify and display posted works (YouTube video ID, title, statistics, report information, etc.) and the NIARIM User ID issued for use of the posting, reporting, and blocking features (an identifier issued within the App, separate from the Google account) are managed on the developer’s servers.\n3. Posting works, reporting, and blocking other users under the Community Feature require the user to be signed in with a Google account.\n4. There is a daily limit on the number of works that can be posted (the limit differs between free members and Premium members). This limit may be changed for operational reasons.\n5. If a user believes another user’s posted work violates the law or public order and morals, or may fall under any item of Article 3, the user may report it to the developer through the App’s reporting feature. After reviewing a report, the developer may take necessary measures, such as hiding the work from listings, for reasonable cause. False reports and abuse of the reporting feature are prohibited. Works that receive several reports or that may involve a serious violation may be hidden temporarily until they are reviewed. The developer may suspend posting to the Work Plaza for users who repeatedly post content that violates these Terms. Objections to these measures can be sent through the contact form or by email (support@miranima-studio.com).\n6. Even if a user deletes a post, or disconnects their Google account from the App, the corresponding YouTube video will not be deleted. Deleting the video, or taking any similar action, shall be done by the user on YouTube. If a video is made private or deleted on YouTube’s side, the work will also stop being displayed on the Work Plaza.\n7. Use of the Community Feature is subject to YouTube’s Terms of Service and Community Guidelines, in addition to these Terms.\n8. Users may follow other users and may bookmark or repost other users’ works. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n9. Tags attached to a work may be added or removed by users other than the poster. A poster may lock the tags on their own work to prohibit editing by other users. Users must not attach tags that defame others, tags unrelated to the content of the work, or otherwise inappropriate tags. The developer may remove inappropriate tags.\n10. The developer displays notices about your own work submissions, publications, mission achievements, and similar events in the App’s notification list. If your device allows notifications, the App may send push notifications. Push notifications can be disabled in the App or device settings.\n11. Users must not use the Community Feature to harass other users, for advertising or solicitation, or for any other purpose outside its intended purpose (publishing and viewing works). Muting changes only what you see. Blocking hides each account’s posts from the other while they are signed in to the Work Plaza. Neither action sends a notification to the other user.';
 
   @override
   String get licenseTermsArt13Title =>
@@ -6267,7 +6267,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt2Body =>
-      'The App does not provide any function to transmit, collect, or store on the developer’s servers the illustrations, animations, and other content created by users (including project data, exported images, videos, etc.; the same applies hereinafter). This data is, in principle, stored only on the user’s device (the App does not include a cloud sync feature). Because the developer has no function to store this content on its own, there is no concept of a retention period on the developer’s side. Data stored on your device can be deleted at any time using the App’s deletion features, and if you uninstall the App, data stored on your device — including projects, settings, and added fonts — will also be deleted (for the handling of information when a user chooses to sign in with a Google account and use the Work Plaza, opals or the verification of premium purchases, see Article 7).';
+      'The App does not provide any function to transmit, collect, or store on the developer’s servers the illustrations, animations, and other content created by users (including project data, exported images, videos, etc.; the same applies hereinafter). This data is, in principle, stored only on the user’s device (the App does not include a cloud sync feature). Because the developer has no function to store this content on its own, there is no concept of a retention period on the developer’s side. Data stored on your device can be deleted at any time using the App’s deletion features, and if you uninstall the App, data stored on your device — including projects, settings, and added fonts — will also be deleted (for the handling of information when a user chooses to sign in with a Google account and use the Work Plaza, Opals or the verification of premium purchases, see Article 7).';
 
   @override
   String get privacyPolicyArt2AiTrainingClause =>
@@ -6279,7 +6279,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt3Body =>
-      'The App incorporates the following third-party services, and each service provider may collect information to the extent necessary to provide its respective service. The developer of the App has not implemented any function to independently acquire or store this information (the handling of information collected by each service is governed by that service provider’s own privacy policy).\n\n[Advertising Delivery (Google AdMob)]\nIn the free version, advertisements are delivered through Google AdMob. For purposes such as ad delivery, effectiveness measurement, and fraud prevention, the Advertising ID and other device information may be collected and used by Google or its affiliated companies. For details on the collection and use of this information, please refer to Google’s Privacy Policy (https://policies.google.com/privacy). You can reset your Advertising ID or disable personalized ads from your device settings (e.g., “Privacy” in the Android Settings app). If you are located in the European Economic Area (EEA), the United Kingdom, or Switzerland, you can choose your ad personalization consent settings via a consent form shown at launch, and change this choice at any time using the “Manage ad consent settings” button at the bottom of this screen.\n\n[In-App Purchases (Google Play Billing)]\nPurchases of premium features are made through Google Play’s payment system. The developer does not directly acquire or hold payment information such as credit card numbers. The handling of payment-related information is governed by Google Play’s rules.\n\n[Sign-In with a Google Account (Google Sign-In)]\nThe App signs in with a Google account only when you use the Work Plaza, opals or the verification of premium purchases. When you sign in, Google passes the App identity information that includes your account identifier, email address and display name. The developer’s servers use this information only to confirm your identity and to issue and match your NIARIM User ID (Article 7), and do not store your email address or display name.\n\n[YouTube (YouTube API Services)]\nThe Work Plaza uses YouTube API Services. When you post a work, the App uses the permission you grant on your Google account to upload the video to your own YouTube channel and to obtain the channel name and icon. Posted videos are handled in accordance with the YouTube Terms of Service (https://www.youtube.com/t/terms) and the Google Privacy Policy (https://policies.google.com/privacy). You can revoke the App’s access at any time on the Google security settings page (https://security.google.com/settings/security/permissions).\n\n[Push Notifications (Firebase Cloud Messaging)]\nOnly if you turn on Work Plaza notifications, Google (Firebase Cloud Messaging) issues a notification identifier for your device (device token) so that notifications can be delivered.\n\n[The Developer’s Servers (Amazon Web Services)]\nThe developer’s servers used for the Work Plaza, opals and the verification of premium purchases run on the cloud provided by Amazon Web Services, Inc. (Tokyo region, Japan).\n\n[Downloading Additional Fonts (GitHub)]\nCommunication with GitHub (GitHub, Inc.), the distributor of the font files, occurs only when you choose to download an additional font from “Font Management” in the settings screen. It does not occur when the app starts or during normal use. Only information required for the request (such as your IP address and which font file is requested) is sent; no artwork data or information identifying you is sent. Handling of the information obtained is governed by the GitHub Privacy Statement (https://docs.github.com/site-policy/privacy-policies/github-privacy-statement).\n\n[Crash Analytics / Usage Analytics]\nThe App does not currently incorporate any SDK for crash analytics or usage analytics. If such services are introduced in the future, this Policy will be updated and announced within the App.';
+      'The App incorporates the following third-party services, and each service provider may collect information to the extent necessary to provide its respective service. The developer of the App has not implemented any function to independently acquire or store this information (the handling of information collected by each service is governed by that service provider’s own privacy policy).\n\n[Advertising Delivery (Google AdMob)]\nIn the free version, advertisements are delivered through Google AdMob. For purposes such as ad delivery, effectiveness measurement, and fraud prevention, the Advertising ID and other device information may be collected and used by Google or its affiliated companies. For details on the collection and use of this information, please refer to Google’s Privacy Policy (https://policies.google.com/privacy). You can reset your Advertising ID or disable personalized ads from your device settings (e.g., “Privacy” in the Android Settings app). If you live in the European Economic Area (EEA), the United Kingdom, or Switzerland, you can choose your ad personalization consent settings via a consent form shown when the App starts or at other times, and change this choice at any time using the “Manage ad consent settings” button at the bottom of this screen.\n\n[In-App Purchases (Google Play Billing)]\nPurchases of premium features are made through Google Play’s payment system. The developer does not directly acquire or hold payment information such as credit card numbers. The handling of payment-related information is governed by Google Play’s rules.\n\n[Sign-In with a Google Account (Google Sign-In)]\nYou sign in with a Google account only when you use the Work Plaza, Opals or the verification of premium purchases. When you sign in, Google passes the App identity information that includes your account identifier, email address and display name. The developer’s servers use this information only to confirm your identity and to issue and match your NIARIM User ID (Article 7), and do not store your email address or display name.\n\n[YouTube (YouTube API Services)]\nThe Work Plaza uses YouTube API Services. When you post a work, the App uses the permission you grant on your Google account to upload the video to your own YouTube channel and to obtain the channel name and icon. Posted videos are handled in accordance with the YouTube Terms of Service (https://www.youtube.com/t/terms) and the Google Privacy Policy (https://policies.google.com/privacy). You can revoke the App’s access at any time on the Google security settings page (https://security.google.com/settings/security/permissions).\n\n[Push Notifications (Firebase Cloud Messaging)]\nOnly if you turn on Work Plaza notifications, Google (Firebase Cloud Messaging) issues a notification identifier for your device (device token) so that notifications can be delivered.\n\n[The Developer’s Servers (Amazon Web Services)]\nThe developer’s servers used for the Work Plaza, Opals and the verification of premium purchases run on the cloud provided by Amazon Web Services, Inc. (Tokyo region, Japan).\n\n[Downloading Additional Fonts (GitHub)]\nCommunication with GitHub (GitHub, Inc.), the distributor of the font files, occurs only when you choose to download an additional font from “Font Management” in the settings screen. It does not occur when the app starts or during normal use. Only information required for the request (such as your IP address and which font file is requested) is sent; no artwork data or information identifying you is sent. Handling of the information obtained is governed by the GitHub Privacy Statement (https://docs.github.com/site-policy/privacy-policies/github-privacy-statement).\n\n[Crash Analytics / Usage Analytics]\nThe App does not currently incorporate any SDK for crash analytics or usage analytics. If such services are introduced in the future, this Policy will be updated and announced within the App.';
 
   @override
   String get privacyPolicyArt4Title =>
@@ -6295,7 +6295,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt5Body =>
-      'The App is not intentionally designed to collect information primarily targeting children under the age of 13. Parents and guardians should consider disabling personalized ads from their device settings as needed when their children use the App.';
+      'The App is not intentionally designed to collect information primarily targeting children under the age of 13 (or, if the laws of your country or region set a higher age, under that age; for example, under 14 in South Korea). Parents and guardians should consider disabling personalized ads from their device settings as needed when their children use the App.';
 
   @override
   String get privacyPolicyArt6Title =>
@@ -6311,7 +6311,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt7Body =>
-      '1. Only when a user chooses, of their own accord, to sign in with a Google account and use the “Work Plaza” feature (Article 12 of the Terms of Service), opals (login bonuses, missions and exchanges for rewards) or the verification of premium purchases, the developer manages the following information on its servers:\n・Information needed to identify and display a posted work (YouTube video ID, title, statistics, posting date and time, tags, etc.)\n・The NIARIM User ID issued to a signed-in user (an identifier issued within the App, separate from the Google account)\n・Public information about the linked YouTube channel (channel name and channel icon image URL). This is copied to and retained on the developer’s servers in order to display the poster’s name and icon\n・The content of any report submitted using the reporting feature, and the reporting user’s NIARIM User ID\n・Records of actions taken against posts that violate the Terms (the number of works hidden and whether posting is suspended)\n・The NIARIM User ID of any user you block\n・The NIARIM User ID of any user you follow, and your following and follower counts\n・The IDs of works you bookmark and the date and time of each bookmark\n・The IDs of works you repost and the date and time of each repost\n・Tags attached to a work (see paragraph 4)\n・If you enable push notifications, your device token (an identifier issued by your device to identify the destination of a notification; used solely to send notifications)\n・Information for verifying premium purchases (the ID of the purchased product, the purchase token issued by Google Play, and the verification result and expiry date)\n・Opal balances and the history of increases and decreases, records of login bonuses and missions achieved and claimed, and records of exchanges for rewards\n・Records confirming that a rewarded ad was watched to the end (the transaction ID, reward amount, and date and time of the reward confirmation sent by Google AdMob)\n2. The video file itself is stored on YouTube, not on the developer’s servers.\n3. The information described in the preceding two paragraphs is used only for the purposes of providing the features in this Article (displaying listings, rankings and search results, responding to reports, managing posting limits, reflecting follows, bookmarks and reposts, sending notifications, verifying premium purchases, granting and exchanging opals and preventing improper grants, etc.). The developer does not provide this information to third parties for advertising purposes.\n4. Tags may be added or removed by users other than the poster (a poster may lock the tags on their own work to prohibit editing). Tags are public on the Work Plaza, and the identity of the user who added a tag is not displayed.\n5. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n6. If you make a posted work private or delete it, that work will no longer appear in the Work Plaza listings or rankings. You can delete your NIARIM account (NIARIM User ID) yourself on the deletion page, which opens from the app’s settings or from the privacy policy on the official website, after confirming your identity with your Google account. Deleting the account erases, in turn, the Work Plaza posts, follows, bookmarks, reposts, blocks, and reports linked to it, your opal balance, history, and benefits, and your notifications and device tokens, among other data; this cannot be undone. After the deletion, we keep only the following: a hash of your Google account identifier to reject old sign-ins (2 hours), a code that does not identify you to confirm that the request is complete (24 hours), ad reward receipt records with identifying information removed to prevent duplicate rewards (until their existing expiry), and records containing only the IDs of deleted works so that they do not reappear. Data saved aside during outages is deleted automatically within 7 days, and server logs within 1 month. Works on your device, videos on YouTube, and Google Play subscriptions are not covered by this deletion; please manage or cancel them where they are. To request deletion of any other records, please contact us using the channel described in Article 9.\n7. To protect the information in the preceding paragraphs, the developer encrypts communication with its servers and limits who can handle the information on its servers, and with what permissions, to what is necessary.\n8. If a user does not use the features in this Article, no handling of information under this Article occurs. (In line with the principle in Article 2, nothing is transmitted to the developer’s servers.)';
+      '1. Only when a user chooses, of their own accord, to sign in with a Google account and use the “Work Plaza” feature (Article 12 of the Terms of Service), Opals (login bonuses, missions and exchanges for rewards) or the verification of premium purchases, the developer manages the following information on its servers:\n・Information needed to identify and display a posted work (YouTube video ID, title, statistics, posting date and time, tags, etc.)\n・The NIARIM User ID issued to a signed-in user (an identifier issued within the App, separate from the Google account)\n・Public information about the linked YouTube channel (channel name and channel icon image URL). This is copied to and retained on the developer’s servers in order to display the poster’s name and icon\n・The content of any report submitted using the reporting feature, and the reporting user’s NIARIM User ID\n・Records of actions taken against posts that violate the Terms (the number of works hidden and whether posting is suspended)\n・The NIARIM User ID of any user you block\n・The NIARIM User ID of any user you follow, and your following and follower counts\n・The IDs of works you bookmark and the date and time of each bookmark\n・The IDs of works you repost and the date and time of each repost\n・Tags attached to a work (see paragraph 4)\n・If you enable push notifications, your device token (an identifier issued by your device to identify the destination of a notification; used solely to send notifications)\n・Information for verifying premium purchases (the ID of the purchased product, the purchase token issued by Google Play, and the verification result and expiry date)\n・Opal balances and the history of increases and decreases, records of login bonuses and missions achieved and claimed, and records of exchanges for rewards\n・Records confirming that a rewarded ad was watched to the end (the transaction ID, reward amount, and date and time of the reward confirmation sent by Google AdMob)\n2. The video file itself is stored on YouTube, not on the developer’s servers.\n3. The information described in the preceding two paragraphs is used only for the purposes of providing the features in this Article (displaying listings, rankings and search results, responding to reports, managing posting limits, reflecting follows, bookmarks and reposts, sending notifications, verifying premium purchases, granting and exchanging Opals and preventing improper grants, etc.). The developer does not provide this information to third parties for advertising purposes.\n4. Tags may be added or removed by users other than the poster (a poster may lock the tags on their own work to prohibit editing). Tags are public on the Work Plaza, and the identity of the user who added a tag is not displayed.\n5. Only you can view the lists of users you follow, your followers, and works you have bookmarked. Other users see only your following and follower counts. Following, bookmarking, or reposting does not send the other user an individual notification about that action.\n6. If you make a posted work private or delete it, that work will no longer appear in the Work Plaza listings or rankings. You can delete your NIARIM account (NIARIM User ID) yourself on the deletion page, which opens from the app’s settings or from the privacy policy on the official website, after confirming your identity with your Google account. Deleting the account erases, in turn, the Work Plaza posts, follows, bookmarks, reposts, blocks, and reports linked to it, your Opal balance, history, and benefits, and your notifications and device tokens, among other data; this cannot be undone. After the deletion, the developer keeps only the following: a hash of your Google account identifier to reject old sign-ins (2 hours), a code that does not identify you to confirm that the request is complete (24 hours), ad reward receipt records with identifying information removed to prevent duplicate rewards (until their existing expiry), and records containing only the IDs of deleted works so that they do not reappear. Data saved aside during outages is deleted automatically within 7 days, and server logs within 1 month. Works on your device, videos on YouTube, and Google Play subscriptions are not covered by this deletion; please manage or cancel them where they are. To request deletion of any other records, please contact us using the channel described in Article 9.\n7. To protect the information in the preceding paragraphs, the developer encrypts communication with its servers and limits who can handle the information on its servers, and with what permissions, to what is necessary.\n8. If a user does not use the features in this Article, no handling of information under this Article occurs. (In line with the principle in Article 2, nothing is transmitted to the developer’s servers.)';
 
   @override
   String get privacyPolicyArt8Title => 'Article 8 (Changes to This Policy)';
@@ -6432,7 +6432,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpMeshTransformDesc =>
-      'A transform tool for the whole layer, opened from the edit/settings menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel’s density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale.';
+      'A transform tool for the whole layer, opened from the Settings/Edit menu in the top-right of the canvas. Unlike transforming a selection, no selection is needed — drag corners or individual grid points with your finger for a freeform result. The control panel’s density slider can subdivide the mesh up to 10×10, and pinching two different points with two fingers at once gives an intuitive way to rotate or scale.';
 
   @override
   String get layerPanelBrightnessToAlphaLabel => 'Transparency from Brightness';
@@ -6803,7 +6803,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'To keep a part’s outline clear without making the line stand out, set “Line color” to “Color trace / blend with lines”. For parts used for shadows or highlights, choose “Same as fill”: the line follows the fill color instead of standing out as a darker line. Choose “Specified color” when you intentionally want a different line color.';
 
   @override
-  String get tipsBlushAutofillTitle => 'Even soft blush can be auto-filled';
+  String get tipsBlushAutofillTitle => 'Even soft blush can be autofilled';
 
   @override
   String get tipsBlushAutofillDesc =>
@@ -9620,7 +9620,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionSubtitle =>
-      'Earn opals through creating and Work Plaza milestones';
+      'Earn Opals through creating and Work Plaza milestones';
 
   @override
   String get creatorMissionPerWork => 'Once per work';
@@ -9658,7 +9658,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'Editing time is for display only and doesn’t earn opals.';
+      'Editing time is for display only and doesn’t earn Opals.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -9715,13 +9715,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardNavigationHub => 'Opals & rewards';
 
   @override
-  String get rewardNavigationEarnTab => 'Watch ads for opals';
+  String get rewardNavigationEarnTab => 'Watch ads for Opals';
 
   @override
   String get rewardNavigationMissions => 'Missions';
 
   @override
-  String get rewardNavigationEarn => 'Earn free opals';
+  String get rewardNavigationEarn => 'Earn free Opals';
 
   @override
   String get rewardNavigationMembership => 'Membership status';
@@ -9742,7 +9742,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Premium member';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Unlocked with opals';
+  String get rewardNavigationMembershipCoin => 'Unlocked with Opals';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Active benefits';
@@ -9772,7 +9772,7 @@ class AppLocalizationsEn extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Unlocked with opals · Expires: $expiryString';
+    return 'Unlocked with Opals · Expires: $expiryString';
   }
 
   @override
@@ -9792,7 +9792,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnDescription =>
-      'Watch optional ads to earn opals';
+      'Watch optional ads to earn Opals';
 
   @override
   String get rewardNavigationEarnUnavailable =>
@@ -9806,7 +9806,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockMissionSubtitle =>
-      'Earn opals from work and bookmark milestones';
+      'Earn Opals from work and bookmark milestones';
 
   @override
   String get rewardUnlockLoading => 'Loading balance…';
@@ -9819,7 +9819,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      'Earn opals for free by watching optional ads, or save time with Premium monthly / yearly.';
+      'Earn Opals for free by watching optional ads, or save time with Premium monthly / yearly.';
 
   @override
   String get rewardUnlockActive => 'Currently active benefits';
@@ -9841,27 +9841,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockNotReady => 'Not available for redemption';
 
   @override
-  String get rewardUnlockTotal => 'Total opals required';
+  String get rewardUnlockTotal => 'Total Opals required';
 
   @override
   String get rewardUnlockUnavailable =>
-      'Choose benefits to see the total opals required';
+      'Choose benefits to see the total Opals required';
 
   @override
   String get rewardUnlockBalanceSignIn =>
-      'Sign in with Google to see your opal balance';
+      'Sign in with Google to see your Opal balance';
 
   @override
-  String get rewardUnlockEarnSignIn => 'Sign in with Google to earn opals';
+  String get rewardUnlockEarnSignIn => 'Sign in with Google to earn Opals';
 
   @override
-  String get rewardUnlockBalanceLoadFailed => 'Couldn’t load your opal balance';
+  String get rewardUnlockBalanceLoadFailed => 'Couldn’t load your Opal balance';
 
   @override
-  String get rewardUnlockRedeem => 'Redeem opals';
+  String get rewardUnlockRedeem => 'Redeem Opals';
 
   @override
-  String get rewardUnlockWatchRewardedAd => 'Watch a rewarded ad to earn opals';
+  String get rewardUnlockWatchRewardedAd => 'Watch a rewarded ad to earn Opals';
 
   @override
   String get rewardUnlockRewardPending =>
@@ -9878,7 +9878,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockCoinHistory => 'Opal history';
 
   @override
-  String get rewardUnlockHistoryEmpty => 'No opal transactions yet';
+  String get rewardUnlockHistoryEmpty => 'No Opal transactions yet';
 
   @override
   String get rewardUnlockHistoryError => 'Could not load history';
@@ -9917,7 +9917,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not confirm redemption. Retrying checks the same transaction.';
 
   @override
-  String get rewardUnlockFreeOnly => 'Earn opals by watching optional ads';
+  String get rewardUnlockFreeOnly => 'Earn Opals by watching optional ads';
 
   @override
   String get rewardUnlockSubscribe => 'View Premium monthly / yearly';
@@ -9927,10 +9927,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockBestExplain =>
-      'Use the same eligible features as Premium membership in one discounted bundle';
+      'Use the same eligible features as Premium membership in one bundle that costs fewer Opals than redeeming them one by one';
 
   @override
-  String get rewardUnlockEarning => 'Premium members can also earn opals';
+  String get rewardUnlockEarning => 'Premium members can also earn Opals';
 
   @override
   String get rewardUnlockHour => 'hours';
@@ -10011,8 +10011,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString opals',
-      one: '$countString opal',
+      other: '$countString Opals',
+      one: '$countString Opal',
     );
     return '$_temp0';
   }
@@ -10280,7 +10280,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'EDITING TIME: Editing time is measured on your device, so it doesn’t earn opals. The editing time shown is a guide.';
+      'EDITING TIME: Editing time is measured on your device, so it doesn’t earn Opals. The editing time shown is a guide.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -10351,7 +10351,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Editing time is measured on your device, so it doesn’t earn opals. The time shown is a guide.';
+      'Editing time is measured on your device, so it doesn’t earn Opals. The time shown is a guide.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -10406,8 +10406,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins opals',
-      one: '$coins opal',
+      other: '$coins Opals',
+      one: '$coins Opal',
     );
     return '$_temp0 each day';
   }
@@ -10589,8 +10589,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins opals',
-      one: '$coins opal',
+      other: '$coins Opals',
+      one: '$coins Opal',
     );
     return 'CLAIM: Earn $_temp0 for this milestone. Each milestone can be claimed once per period. You may earn it again in a new period, but cannot claim an expired period.';
   }
@@ -10655,8 +10655,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins opals',
-      one: '$coins opal',
+      other: '$coins Opals',
+      one: '$coins Opal',
     );
     return 'CLAIM: Completing the goal grants $_temp0. Each milestone can be claimed only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
   }
@@ -11561,15 +11561,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not refresh YouTube channel information. Please try again.';
 
   @override
-  String get timelineAutofillBatchCancelled => 'Auto-fill cancelled.';
+  String get timelineAutofillBatchCancelled => 'Autofill cancelled.';
 
   @override
   String timelineAutofillFailedFrames(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Auto-fill could not complete $count frames.',
-      one: 'Auto-fill could not complete 1 frame.',
+      other: 'Autofill could not complete $count frames.',
+      one: 'Autofill could not complete 1 frame.',
     );
     return '$_temp0';
   }
@@ -11584,7 +11584,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAutofillBatchFailed =>
-      'Auto-fill stopped because of an error.';
+      'Autofill stopped because of an error.';
 
   @override
   String get pcBinEmpty => 'No materials yet';
@@ -12006,14 +12006,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get opalCouponIntro =>
-      'Enter a coupon code shared on social media or elsewhere to receive opals.';
+      'Enter a coupon code shared on social media or elsewhere to receive Opals.';
 
   @override
   String get opalCouponOfferTitle => 'Have a coupon code?';
 
   @override
   String get opalCouponOfferBody =>
-      'Enter your coupon code to receive opals. You can also enter it later on the Opals & rewards screen.';
+      'Enter your coupon code to receive Opals. You can also enter it later on the Opals & rewards screen.';
 
   @override
   String get opalCouponField => 'Coupon code';

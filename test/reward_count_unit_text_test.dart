@@ -238,7 +238,7 @@ List<String> _shownTexts(WidgetTester tester) => [
 /// 単位の語を1つの数に付けたときの誤り（「1 coins」等）と、数と単位の間の
 /// 空白の抜け（「2coins」等）を探す。
 final _unitWords =
-    'hours|days|opals|followers|bookmarks|minutes|works|'
+    'hours|days|opals|Opals|followers|bookmarks|minutes|works|'
     'horas|días|ópalos|seguidores|marcadores|minutos|obras|'
     'heures|jours|opales|abonnés|favoris|œuvres';
 final _pluralAfterOne = RegExp(
@@ -278,13 +278,13 @@ List<String> _missionScreenTexts(String locale, int n) {
     'en' => [
       'Claim all',
       'Total ${c('day', 'days')}',
-      '${c('opal', 'opals')} each day',
+      '${c('Opal', 'Opals')} each day',
       'Logged in ${c('day', 'days')}',
-      c('opal', 'opals'),
+      c('Opal', 'Opals'),
       'Sign in on ${c('day', 'days')} this week',
-      '$n / ${c('day', 'days')} · ${c('opal', 'opals')}',
+      '$n / ${c('day', 'days')} · ${c('Opal', 'Opals')}',
       'Keep Work Plaza open for $hoursOrMinutes in total',
-      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('opal', 'opals')}',
+      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('Opal', 'Opals')}',
       'Not achieved',
       'Daily',
       'Weekly',
@@ -436,7 +436,7 @@ List<String> _completionTexts(String locale, int n) {
 }
 
 Map<String, String> _coinWords(int n) => {
-  'en': '$n ${_one('en', n) ? 'opal' : 'opals'}',
+  'en': '$n ${_one('en', n) ? 'Opal' : 'Opals'}',
   'es': '$n ${_one('es', n) ? 'ópalo' : 'ópalos'}',
   'fr': '$n ${_one('fr', n) ? 'opale' : 'opales'}',
 };

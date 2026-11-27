@@ -86,7 +86,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 hour',
     },
     redeemConfirmation:
-        'Complete Benefits Pack (same as Premium membership) · 1 month · 55,000 opals',
+        'Complete Benefits Pack (same as Premium membership) · 1 month · 55,000 Opals',
   ),
   RewardDurationLanguage(
     code: 'es',
@@ -172,7 +172,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '全功能组合包（与Premium会员内容相同） · 1个月 · 55,000欧泊',
+    redeemConfirmation: '全功能组合包（与 Premium 会员内容相同） · 1个月 · 55,000欧泊',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',

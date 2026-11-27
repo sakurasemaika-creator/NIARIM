@@ -339,7 +339,7 @@ const _englishOnly = [
 /// ここでは1と2だけを出す。
 final _pluralAfterOne = RegExp(
   r'(^|[^0-9.,])1 (?:[\p{L}-]+ )?'
-  r'(hours|days|coins|opals|followers|bookmarks|minutes|works|places|'
+  r'(hours|days|coins|opals|Opals|followers|bookmarks|minutes|works|places|'
   r'horas|días|monedas|ópalos|seguidores|marcadores|minutos|obras|puestos|'
   r'heures|jours|pièces|opales|abonnés|favoris|œuvres|minutes)(?![\p{L}])',
   unicode: true,

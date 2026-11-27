@@ -273,10 +273,10 @@ void main() {
     await tester.pumpAndSettle();
     final price = find.descendant(
       of: full,
-      matching: find.textContaining('550,000 opals'),
+      matching: find.textContaining('550,000 Opals'),
     );
     expect(price, findsOneWidget);
-    expect(find.textContaining('528,000 opals'), findsNothing);
+    expect(find.textContaining('528,000 Opals'), findsNothing);
     final total = find.byKey(const Key('rewardTotalCoins'));
     // The summary card is lazily built below the benefit list.
     await tester.scrollUntilVisible(
@@ -285,7 +285,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(total).data, contains('550,000 opals'));
+    expect(tester.widget<Text>(total).data, contains('550,000 Opals'));
     expect(
       tester
           .widget<OutlinedButton>(find.byKey(const Key('rewardRedeemButton')))
@@ -460,7 +460,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('110 opals'), findsNothing);
+      expect(find.textContaining('110 Opals'), findsNothing);
       await tester.tap(find.byKey(const Key('rewardDurationButton')));
       await tester.pumpAndSettle();
       // Categories start collapsed so days remains reachable on small screens.
@@ -480,7 +480,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('940 opals'), findsNothing);
+      expect(find.textContaining('940 Opals'), findsNothing);
 
       // No wallet/SSV/price quote is connected: redeeming cannot spend opals,
       // and there is no inert "set as goal" button next to it.
