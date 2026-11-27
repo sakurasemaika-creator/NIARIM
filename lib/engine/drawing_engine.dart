@@ -439,6 +439,11 @@ class DrawingEngine {
     );
   }
 
+  /// 手ぶれ補正で、次の点を入力の方へ寄せる割合（強さ0で1＝そのまま、100で
+  /// 0.15）。設定の試し書き欄も同じ式でならす。
+  static double stabilizationFactor(int strength) =>
+      (1.0 - strength.clamp(0, 100) / 100.0 * 0.85).clamp(0.05, 1.0);
+
   /// 手ぶれ補正の強さ（0〜100、0で補正しない）。アプリの設定の値で、どの
   /// ブラシにも同じ強さで効く（ブラシの`stabilization`は使わない）。
   int stabilizationStrength = 0;
@@ -451,8 +456,7 @@ class DrawingEngine {
       return raw;
     }
     final prev = _smoothed ?? raw;
-    final strength = stabilizationStrength.clamp(0, 100) / 100.0;
-    final factor = (1.0 - strength * 0.85).clamp(0.05, 1.0);
+    final factor = stabilizationFactor(stabilizationStrength);
     final smoothedPoint = StrokePoint(
       x: prev.x + (raw.x - prev.x) * factor,
       y: prev.y + (raw.y - prev.y) * factor,

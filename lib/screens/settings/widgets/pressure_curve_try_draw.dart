@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../engine/drawing_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/action_beside_or_below.dart';
@@ -22,9 +23,20 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
   final List<Offset?> _points = [];
   final List<double> _pressures = [];
 
+  /// 手ぶれ補正でならした、今の線の直前の点（キャンバスと同じ式）。
+  Offset? _smoothed;
+
   void _addPoint(PointerEvent event) {
+    final factor = DrawingEngine.stabilizationFactor(
+      context.read<SettingsService>().strokeStabilization,
+    );
+    final prev = _smoothed;
+    final point = prev == null
+        ? event.localPosition
+        : prev + (event.localPosition - prev) * factor;
+    _smoothed = point;
     setState(() {
-      _points.add(event.localPosition);
+      _points.add(point);
       _pressures.add(
         event.kind == PointerDeviceKind.stylus
             ? event.pressure.clamp(0.0, 1.0)
@@ -34,6 +46,7 @@ class _PressureCurveTryDrawState extends State<PressureCurveTryDraw> {
   }
 
   void _endStroke() {
+    _smoothed = null;
     setState(() {
       _points.add(null);
       _pressures.add(0);
