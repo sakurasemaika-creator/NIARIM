@@ -2287,7 +2287,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsQuickToolPenSubTitle =>
-      'Herramienta rápida + subherramientas de la pluma para trabajar sin pausas';
+      'Herramienta rápida + herramientas de la pluma para trabajar sin pausas';
 
   @override
   String get tipsQuickToolPenSubDesc =>

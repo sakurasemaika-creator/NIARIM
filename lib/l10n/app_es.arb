@@ -688,7 +688,7 @@
   "tipsAutofillBlendModeDesc": "Cada parte de un ajuste de relleno automático puede tener su propio modo de fusión. Pon una parte de sombra en «superponer» o «luz suave» en lugar de «multiplicar» para un sombreado más suave, como si la luz lo atravesara. Una libertad oculta que permite cambiar la textura del sombreado sin cambiar el color.",
   "tipsStampBlendModeTitle": "Sellos + modo de fusión para un efecto de luz",
   "tipsStampBlendModeDesc": "Ajustar el modo de fusión de una capa de sello colocada a «Pantalla» o «Suma (brillo)» hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.",
-  "tipsQuickToolPenSubTitle": "Herramienta rápida + subherramientas de la pluma para trabajar sin pausas",
+  "tipsQuickToolPenSubTitle": "Herramienta rápida + herramientas de la pluma para trabajar sin pausas",
   "tipsQuickToolPenSubDesc": "Registra tus herramientas más usadas en la herramienta rápida, y aprovecha también las subherramientas de la pluma (mantén pulsada la pluma para cambiar a relleno con tramas o colocación de sellos): reducirás cuánto saltas entre paneles y mantendrás el ritmo.",
   "tipsAutofillToneReuseTitle": "Reutiliza un relleno con tramas solo con redibujar la línea, gracias al ajuste de tramas del relleno automático",
   "tipsAutofillToneReuseDesc": "Configurar cada parte de un ajuste de relleno automático como «usar trama» reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.",
