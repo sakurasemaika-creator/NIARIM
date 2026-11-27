@@ -1484,6 +1484,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (wasWide == true && !wide) {
       _panelsBeforePhoneLayout = _openDockPanels();
       _setDockPanels(const {});
+      // The view was placed for the canvas between the PC docks; on the
+      // phone it starts from the whole picture again (the owner's choice,
+      // 2026-11-27).
+      _navigatorViewRequest = CanvasViewRequest(
+        (_navigatorViewRequest?.serial ?? 0) + 1,
+        CanvasViewAction.fit,
+      );
     } else if (wasWide == false && wide && _panelsBeforePhoneLayout != null) {
       _setDockPanels(_panelsBeforePhoneLayout!);
       _panelsBeforePhoneLayout = null;
@@ -3392,6 +3399,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     preserveCurrentFilterOnMount: bottomBar,
     onCanvasPreviewChanged: _setFilterCanvasPreview,
     selectionMask: _canvasSelectionMask,
+    onInvertSelection: () => setState(() => _invertSelectionToken++),
     lensMask: _filterLensMask,
     onClose: _closeFilterFocusMenu,
   );

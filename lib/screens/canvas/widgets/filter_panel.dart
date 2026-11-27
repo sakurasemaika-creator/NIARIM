@@ -111,6 +111,10 @@ class FilterPanel extends StatefulWidget {
   /// null: when set, the filter changes only what is inside it.
   final Uint8List? selectionMask;
 
+  /// Inverts the canvas selection (shown with [selectionMask]): the filter
+  /// then changes what was outside it.
+  final VoidCallback? onInvertSelection;
+
   /// The glasses filter's lens area, painted on the canvas with the tools
   /// the panel offers while that filter is adjusted.
   final FilterLensMask? lensMask;
@@ -129,6 +133,7 @@ class FilterPanel extends StatefulWidget {
     this.preserveCurrentFilterOnMount = false,
     this.onCanvasPreviewChanged,
     this.selectionMask,
+    this.onInvertSelection,
     this.lensMask,
   });
 
@@ -597,6 +602,12 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_applying || (!reload && service.currentFilter?.id == filter.id)) {
       return;
     }
+    // A locked layer is told when the filter is opened, not after the
+    // settings are adjusted (the owner's choice, 2026-11-27).
+    if (_targetLayerLocked()) {
+      _showLockedFilterNotice();
+      return;
+    }
     _clearPendingPreview();
     // Leaving the open filter without applying puts its values back first,
     // so that the tile's own fix below is not taken for an edit to undo.
@@ -845,7 +856,7 @@ class _FilterPanelState extends State<FilterPanel> {
         height: current == null
             ? 520
             : instantInvert
-            ? 196
+            ? (widget.selectionMask == null ? 196 : 268)
             : collapsed
             ? 244
             : 578,
@@ -877,6 +888,12 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                   if (!collapsed && !instantInvert)
                     Expanded(child: _editControls(l10n, service, current)),
+                  if (instantInvert && widget.selectionMask != null)
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: _selectionScope(l10n),
+                      ),
+                    ),
                   const SizedBox(height: 6),
                   _settingsPresetButtons(l10n, service, current),
                   _actionRow(l10n, service, current),
@@ -931,6 +948,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     constraints: BoxConstraints(maxHeight: maxControls),
                     child: _editControls(l10n, service, current),
                   ),
+                if (_isInstantColorInvert(current) &&
+                    widget.selectionMask != null)
+                  _selectionScope(l10n),
                 const SizedBox(height: 4),
                 _settingsPresetButtons(l10n, service, current),
                 _actionRow(l10n, service, current),
@@ -1233,7 +1253,7 @@ class _FilterPanelState extends State<FilterPanel> {
           itemCount: filters.length,
           itemBuilder: (context, index) {
             final filter = filters[index];
-            final premium = _premiumFeatureFor(filter.kind);
+            final premium = _premiumFeatureFor(filter);
             final locked =
                 premium != null &&
                 !context.watch<PremiumService>().isFeatureAvailable(premium);
@@ -1448,6 +1468,44 @@ class _FilterPanelState extends State<FilterPanel> {
   /// The edited filter's controls, scrolling when they don't fit. When the
   /// canvas shows the preview there is no preview box here, except auto
   /// line art's control-point editor.
+  /// Shown while the canvas has a selection: the filter keeps inside it,
+  /// and the selection can be inverted here to change what was outside it.
+  Widget _selectionScope(AppLocalizations l10n) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
+          children: [
+            Icon(
+              Icons.highlight_alt,
+              size: 14,
+              color: AccentTextTheme.of(context),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                l10n.filterSelectionOnlyHint,
+                style: const TextStyle(fontSize: 10),
+              ),
+            ),
+          ],
+        ),
+      ),
+      if (widget.onInvertSelection case final invert?)
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const ValueKey('filterInvertSelection'),
+            onPressed: _applying ? null : invert,
+            icon: const Icon(Icons.flip_outlined, size: 18),
+            label: Text(l10n.canvasInvertSelectionTooltip),
+          ),
+        ),
+    ],
+  );
+
   Widget _editControls(
     AppLocalizations l10n,
     FilterService service,
@@ -1526,26 +1584,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
               const SizedBox(height: 6),
             ],
-            if (widget.selectionMask != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.highlight_alt,
-                      size: 14,
-                      color: AccentTextTheme.of(context),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        l10n.filterSelectionOnlyHint,
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            if (widget.selectionMask != null) _selectionScope(l10n),
             _buildControls(l10n, service, current),
           ],
         ),
@@ -3480,8 +3519,12 @@ class _FilterPanelState extends State<FilterPanel> {
       l10n.filterAuroraHologramPresetDarkRainbow,
   };
 
-  PremiumFeature? _premiumFeatureFor(FilterKind kind) {
-    return switch (kind) {
+  /// The premium feature a filter needs. The Invert tile is free (the
+  /// owner's choice, 2026-11-27): it only inverts, and the tone curve it is
+  /// made with stays premium.
+  PremiumFeature? _premiumFeatureFor(FilterDef filter) {
+    if (_isInstantColorInvert(filter)) return null;
+    return switch (filter.kind) {
       FilterKind.toneCurve => PremiumFeature.toneCurve,
       FilterKind.levels => PremiumFeature.levelAdjustment,
       _ => null,
@@ -3494,6 +3537,19 @@ class _FilterPanelState extends State<FilterPanel> {
           .where((layer) => layer.id == id)
           .firstOrNull;
 
+  /// Whether the layer the filter changes is locked, in this frame or in
+  /// any of the chosen frames.
+  bool _targetLayerLocked() {
+    final layerId = widget.layerId;
+    if (layerId == null) return false;
+    final ps = context.read<ProjectService>();
+    final bulk = widget.bulkFrameIndices;
+    final frames = bulk != null && bulk.length > 1 ? bulk : {widget.frameIndex};
+    return frames.any(
+      (frame) => _filterLayer(ps, frame, layerId)?.isLocked == true,
+    );
+  }
+
   void _showLockedFilterNotice() {
     if (!mounted) return;
     showLayerLockedNotice(context);
@@ -3503,7 +3559,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final layerId = widget.layerId;
     final filter = context.read<FilterService>().currentFilter;
     if (layerId == null || filter == null || _applying) return;
-    final feature = _premiumFeatureFor(filter.kind);
+    final feature = _premiumFeatureFor(filter);
     if (feature != null &&
         !context.read<PremiumService>().isFeatureAvailable(feature)) {
       showPremiumBanner(context, feature: feature);
@@ -3511,10 +3567,7 @@ class _FilterPanelState extends State<FilterPanel> {
     }
     final ps = context.read<ProjectService>();
     final bulk = widget.bulkFrameIndices;
-    final frames = bulk != null && bulk.length > 1 ? bulk : {widget.frameIndex};
-    if (frames.any(
-      (frame) => _filterLayer(ps, frame, layerId)?.isLocked == true,
-    )) {
+    if (_targetLayerLocked()) {
       _showLockedFilterNotice();
       return;
     }
