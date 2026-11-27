@@ -14,6 +14,7 @@ import 'package:flutter/painting.dart';
 import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/archive_security.dart' show ArchiveLimits;
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/niapro_serializer.dart';
@@ -878,6 +879,7 @@ class ProjectService extends ChangeNotifier {
           final loaded = await NiaproSerializer.load(
             niaproFile.path,
             withTiles: false,
+            limits: ArchiveLimits.ownWork,
           );
           if (loaded.project.id != projectId || !loaded.hasEditableFrames) {
             throw const FormatException(
@@ -4764,7 +4766,10 @@ class ProjectService extends ChangeNotifier {
       final file = File('$basePath/$id/$id.niapro');
       late final NiaproData data;
       try {
-        data = await NiaproSerializer.load(file.path);
+        data = await NiaproSerializer.load(
+          file.path,
+          limits: ArchiveLimits.ownWork,
+        );
         if (data.project.id != id) {
           throw const FormatException('Restored project ID does not match');
         }

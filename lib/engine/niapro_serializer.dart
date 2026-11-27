@@ -204,8 +204,10 @@ class NiaproSerializer {
     final dir = await _projectDir(projectId);
     final path = '${dir.path}/$projectId.niapro';
     final source = File(path);
-    ArchiveSecurity.validateFileSize(await source.length());
-    final archive = ArchiveSecurity.decodeZip(await source.readAsBytes());
+    final archive = ArchiveSecurity.decodeZip(
+      await source.readAsBytes(),
+      limits: ArchiveLimits.ownWork,
+    );
     final manifest = archive.findFile(_manifestFile);
     if (manifest == null) {
       throw const FormatException('Missing project manifest');
@@ -333,8 +335,10 @@ class NiaproSerializer {
   /// 旧共有の作品データ・同梱素材を保ち、フォント領域は名前だけで作り直す。
   /// 既に名前だけなら元のファイルをそのまま共有できる。
   static Future<Uint8List?> withoutBundledFontFiles(File source) async {
-    ArchiveSecurity.validateFileSize(await source.length());
-    final archive = ArchiveSecurity.decodeZip(await source.readAsBytes());
+    final archive = ArchiveSecurity.decodeZip(
+      await source.readAsBytes(),
+      limits: ArchiveLimits.ownWork,
+    );
     const manifestPath = '$_fontsArchiveDir/fonts.json';
     final originalManifest = archive.findFile(manifestPath);
     final names = fontNames(
@@ -528,7 +532,10 @@ class NiaproSerializer {
     int slotIndex,
   ) async {
     final base = await projectsBasePath();
-    return load('$base/$projectId/autosave/slot_$slotIndex.niapro');
+    return load(
+      '$base/$projectId/autosave/slot_$slotIndex.niapro',
+      limits: ArchiveLimits.ownWork,
+    );
   }
 
   // ─── セーブツリー／スロット（手動保存） ───────────────────────────────
@@ -556,7 +563,7 @@ class NiaproSerializer {
     String nodeId,
   ) async {
     final dir = await _saveTreeDir(projectId);
-    return load('$dir/$nodeId.niapro');
+    return load('$dir/$nodeId.niapro', limits: ArchiveLimits.ownWork);
   }
 
   /// セーブノードのサムネイル画像（PNG）を保存し、保存先パスを返す。
@@ -997,15 +1004,20 @@ class NiaproSerializer {
   /// [withTiles] false leaves the picture tiles in the file (the returned
   /// data has no tiles and [NiaproData.tilesLeftIn] is [filePath]); read them
   /// with [loadTilesSync] when the work is opened.
+  /// [limits] is [ArchiveLimits.received] for a file from outside the app
+  /// (a .niashare) and [ArchiveLimits.ownWork] for the app's own work files,
+  /// autosaves and saves.
   static Future<NiaproData> load(
     String filePath, {
     bool withTiles = true,
+    ArchiveLimits limits = ArchiveLimits.received,
   }) async {
     final source = File(filePath);
-    ArchiveSecurity.validateFileSize(await source.length());
+    ArchiveSecurity.validateFileSize(await source.length(), limits: limits);
     final data = loadFromBytes(
       await source.readAsBytes(),
       withTiles: withTiles,
+      limits: limits,
     );
     return withTiles ? data : data.withTilesLeftIn(filePath);
   }
@@ -1018,17 +1030,21 @@ class NiaproSerializer {
     String filePath, {
     Map<String, int>? crcs,
   }) {
-    final source = File(filePath);
-    ArchiveSecurity.validateFileSize(source.lengthSync());
-    return loadFromBytes(source.readAsBytesSync(), tileCrcs: crcs).tileData;
+    // Only ever the app's own work file.
+    return loadFromBytes(
+      File(filePath).readAsBytesSync(),
+      tileCrcs: crcs,
+      limits: ArchiveLimits.ownWork,
+    ).tileData;
   }
 
   static NiaproData loadFromBytes(
     List<int> bytes, {
     bool withTiles = true,
     Map<String, int>? tileCrcs,
+    ArchiveLimits limits = ArchiveLimits.received,
   }) {
-    final archive = ArchiveSecurity.decodeZip(bytes);
+    final archive = ArchiveSecurity.decodeZip(bytes, limits: limits);
 
     final manifestFile = archive.findFile(_manifestFile);
     if (manifestFile == null) {

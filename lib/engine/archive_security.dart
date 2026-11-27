@@ -3,7 +3,53 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:flutter/foundation.dart';
 
-/// 外部から受け取る .niashare/.niatra ZIP の共通防御。
+/// How large a ZIP may be. Every compressed entry is still inflated once
+/// (counted, not kept) to check that it expands to the size it declares, so
+/// a forged size cannot get a ZIP bomb or a damaged entry past the check.
+class ArchiveLimits {
+  const ArchiveLimits._({
+    required this.compressedBytes,
+    required this.expandedBytes,
+    required this.singleEntryBytes,
+    required this.metadataEntryBytes,
+    required this.entries,
+  });
+
+  final int compressedBytes;
+  final int expandedBytes;
+  final int singleEntryBytes;
+  final int metadataEntryBytes;
+  final int entries;
+
+  /// An archive received from outside the app (.niashare, .niatra, cards).
+  static const received = ArchiveLimits._(
+    compressedBytes: 128 * 1024 * 1024,
+    expandedBytes: 256 * 1024 * 1024,
+    singleEntryBytes: 128 * 1024 * 1024,
+    metadataEntryBytes: 16 * 1024 * 1024,
+    entries: 20000,
+  );
+
+  /// A work file, autosave or save the app itself wrote into its own
+  /// storage. Whatever the app can write it must read back: a long or large
+  /// work (a 1080×1080 canvas fills 6.25 MiB a layer per frame) passed the
+  /// limits for received archives, saved fine and then could not be opened
+  /// again, and disappeared from the list. Everything else is checked as
+  /// for a received archive (each entry expands to its declared size, so a
+  /// damaged work file is still found when the works are listed).
+  static const ownWork = ArchiveLimits._(
+    compressedBytes: _unbounded,
+    expandedBytes: _unbounded,
+    singleEntryBytes: _unbounded,
+    metadataEntryBytes: _unbounded,
+    entries: _unbounded,
+  );
+
+  static const int _unbounded = 1 << 62;
+}
+
+/// 外部から受け取る .niashare/.niatra ZIP の共通防御（アプリ自身が書いた作品の
+/// ファイルは[ArchiveLimits.ownWork]で、大きさの上限なしに同じ検査をする）。
 ///
 /// archive 3.x はエントリを遅延展開するため、展開前に中央ディレクトリを
 /// 検査すれば、圧縮爆弾・暗号化ZIP・シンボリックリンク・パストラバーサルを
@@ -21,8 +67,11 @@ class ArchiveSecurity {
   @visibleForTesting
   static bool debugDartInflateOnly = false;
 
-  static Archive decodeZip(List<int> bytes) {
-    if (bytes.length > maxCompressedBytes) {
+  static Archive decodeZip(
+    List<int> bytes, {
+    ArchiveLimits limits = ArchiveLimits.received,
+  }) {
+    if (bytes.length > limits.compressedBytes) {
       throw const FormatException('アーカイブのファイルサイズが上限を超えています');
     }
 
@@ -30,7 +79,7 @@ class ArchiveSecurity {
     try {
       final inputBytes = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
       directory = ZipDirectory.read(InputStream(inputBytes));
-      _validateDirectory(directory);
+      _validateDirectory(directory, limits);
     } on FormatException {
       rethrow;
     } catch (_) {
@@ -44,8 +93,11 @@ class ArchiveSecurity {
     }
   }
 
-  static void validateFileSize(int bytes) {
-    if (bytes > maxCompressedBytes) {
+  static void validateFileSize(
+    int bytes, {
+    ArchiveLimits limits = ArchiveLimits.received,
+  }) {
+    if (bytes > limits.compressedBytes) {
       throw const FormatException('アーカイブのファイルサイズが上限を超えています');
     }
   }
@@ -61,7 +113,7 @@ class ArchiveSecurity {
     for (final file in archive.files) {
       final name = file.name.replaceAll('\\', '/');
       _validateEntryName(name);
-      _validateEntrySize(name, file.size);
+      _validateEntrySize(name, file.size, ArchiveLimits.received);
       expandedBytes += file.size;
       if (expandedBytes > maxExpandedBytes) {
         throw const FormatException('アーカイブの展開後サイズが上限を超えています');
@@ -69,16 +121,16 @@ class ArchiveSecurity {
     }
   }
 
-  static void _validateEntrySize(String name, int size) {
-    if (size < 0 || size > maxSingleEntryBytes) {
+  static void _validateEntrySize(String name, int size, ArchiveLimits limits) {
+    if (size < 0 || size > limits.singleEntryBytes) {
       throw const FormatException('アーカイブ内のファイルサイズが上限を超えています');
     }
-    if (_isMetadata(name) && size > maxMetadataEntryBytes) {
+    if (_isMetadata(name) && size > limits.metadataEntryBytes) {
       throw const FormatException('アーカイブ内のメタデータが大きすぎます');
     }
   }
 
-  static void _validateDirectory(ZipDirectory directory) {
+  static void _validateDirectory(ZipDirectory directory, ArchiveLimits limits) {
     if (directory.numberOfThisDisk != 0 ||
         directory.diskWithTheStartOfTheCentralDirectory != 0 ||
         directory.totalCentralDirectoryEntriesOnThisDisk !=
@@ -87,7 +139,7 @@ class ArchiveSecurity {
     }
 
     final headers = directory.fileHeaders;
-    if (headers.length > maxEntries ||
+    if (headers.length > limits.entries ||
         headers.length != directory.totalCentralDirectoryEntries) {
       throw const FormatException('アーカイブ内のファイル数が上限を超えているか不正です');
     }
@@ -117,7 +169,7 @@ class ArchiveSecurity {
       if (size == null) {
         throw const FormatException('ZIPエントリの展開後サイズが不正です');
       }
-      _validateEntrySize(name, size);
+      _validateEntrySize(name, size, limits);
       final file = header.file;
       if (file == null) throw const FormatException('ZIPエントリの実体がありません');
       final actualSize = switch (header.compressionMethod) {
@@ -126,6 +178,7 @@ class ArchiveSecurity {
           file.rawContent,
           expandedBytes,
           size,
+          limits,
         ),
         _ => throw const FormatException('未対応のZIP圧縮方式です'),
       };
@@ -133,7 +186,7 @@ class ArchiveSecurity {
         throw const FormatException('ZIPエントリの展開後サイズが申告値と一致しません');
       }
       expandedBytes += actualSize;
-      if (expandedBytes > maxExpandedBytes) {
+      if (expandedBytes > limits.expandedBytes) {
         throw const FormatException('アーカイブの展開後サイズが上限を超えています');
       }
     }
@@ -143,12 +196,13 @@ class ArchiveSecurity {
     InputStreamBase? rawContent,
     int expandedSoFar,
     int declaredSize,
+    ArchiveLimits limits,
   ) {
     if (rawContent == null) throw const FormatException('ZIPエントリの圧縮データがありません');
-    final remainingTotal = maxExpandedBytes - expandedSoFar;
-    final limit = remainingTotal < maxSingleEntryBytes
+    final remainingTotal = limits.expandedBytes - expandedSoFar;
+    final limit = remainingTotal < limits.singleEntryBytes
         ? remainingTotal
-        : maxSingleEntryBytes;
+        : limits.singleEntryBytes;
     // The entry's bytes are later read with the platform zlib
     // (ZipFile.content), which expands a stream the same way. When it expands
     // to exactly the declared size within the limit, the Dart inflater below
