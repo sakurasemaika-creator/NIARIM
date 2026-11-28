@@ -2449,9 +2449,16 @@ onTap: ...)`だったために
   フィルターを1つ選んで調整している間。組み込み・複製・自作のどのフィルターも
   同じ）の間は、上部バー
   （独自のUndo/Redoを持つ）・太さ/不透明度スライダー・ツールバー・
-  フレーム一覧を出さず、`FilterPanel(bottomBar: true)`を画面下部に
-  横幅いっぱいで出す（Undo/Redoボタンを2か所に出さない、というユーザー
-  指定）。プレビューは別枠ではなく、`FilterPanel.onCanvasPreviewChanged`
+  フレーム一覧を出さず、`FilterPanel(bottomBar: true)`をキャンバスの上の
+  フォーカスの窓（`lib/screens/canvas/widgets/focus_mode_menu.dart`の`FocusModeMenu`、
+  キー`filter-focus-menu`。下から始まり、動かす・最小化・大きさを変えられる）に入れる
+  （Undo/Redoボタンを2か所に出さない、というユーザー指定）。窓の閉じるは
+  `focus-mode-menu-close`、一覧の検索・お気に入り・読み込み・フォルダ・並べ替えと
+  「一覧へ戻る」は窓の見出しのメニュー（`filter-focus-menu-actions`）にある。選択範囲・
+  メッシュ変形（`selection-focus-menu`）・色調整も同じ窓で、窓が開いている間は
+  フレーム一覧を隠す（状態は残す）。testでフィルターの閉じる・検索・一覧へ戻るを押すときは
+  `test/helpers/filter_focus_window.dart`を使い、窓の下のキャンバスを押す・色を読む所は
+  窓の外を選ぶこと。プレビューは別枠ではなく、`FilterPanel.onCanvasPreviewChanged`
   で受けた縮小画像を`CanvasArea.currentLayerPreview`へ渡し、**編集中の
   レイヤーの合成画像だけを差し替えて**描く（レイヤーの画素は適用まで
   変えない）。この間`CanvasArea.lockToolInput`で描画を止め、つまみ以外は

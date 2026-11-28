@@ -180,8 +180,13 @@ void main() {
         ),
         matching: find.widgetWithIcon(IconButton, Icons.close),
       );
-      if (close.evaluate().isEmpty) return;
-      await tester.tap(close.hitTestable().first);
+      // フィルター・色調整・選択範囲はキャンバスのフォーカスの窓に入り、
+      // 閉じるボタンは窓の見出しにある。
+      final windowClose = find.byKey(const ValueKey('focus-mode-menu-close'));
+      if (close.evaluate().isEmpty && windowClose.evaluate().isEmpty) return;
+      await tester.tap(
+        (close.evaluate().isNotEmpty ? close : windowClose).hitTestable().first,
+      );
       await tester.pump(const Duration(milliseconds: 400));
     }
 

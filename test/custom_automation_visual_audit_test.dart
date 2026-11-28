@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pick_filter_card.dart';
+import 'helpers/filter_focus_window.dart';
 
 class _AutomationMember extends PremiumService {
   @override
@@ -320,10 +321,7 @@ void main() {
       await capture('05_real_filter_applied_and_recorded');
 
       final panel = find.byType(FilterPanel);
-      final closeFilter = find.descendant(
-        of: panel,
-        matching: find.byIcon(Icons.close),
-      );
+      final closeFilter = filterPanelCloseButton();
       await tester.tap(closeFilter);
       await tester.pump(const Duration(milliseconds: 250));
       expect(panel, findsNothing);

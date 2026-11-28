@@ -19,6 +19,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers/filter_focus_window.dart';
 import '../helpers/load_app_fonts.dart';
 
 class _FakeFilePicker extends FilePicker {
@@ -161,10 +162,7 @@ void main() {
     await capture('01_filter_panel_open');
 
     final panel = find.byType(FilterPanel);
-    await tester.tap(
-      find.descendant(of: panel, matching: find.byIcon(Icons.search)).first,
-    );
-    await tester.pump();
+    await showFilterSearch(tester, l10n);
     final searchField = find.descendant(
       of: panel,
       matching: find.byType(TextField),
@@ -218,14 +216,8 @@ void main() {
     stage('apply:settled');
     await capture('04_vhs_applied_canvas');
 
-    final close = find.descendant(
-      of: panel,
-      matching: find.byIcon(Icons.close),
-    );
-    if (close.evaluate().isNotEmpty) {
-      await tester.tap(close.first);
-      await settle(4);
-    }
+    await tester.tap(filterPanelCloseButton());
+    await settle(4);
     await capture('05_vhs_applied_canvas_clean');
 
     final afterVhs = await tester.runAsync(() => _layerRgba(tm, layerKey));

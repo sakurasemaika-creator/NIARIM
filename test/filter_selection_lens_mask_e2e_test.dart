@@ -28,6 +28,7 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pick_filter_card.dart';
 import 'helpers/pump_real_async.dart';
+import 'helpers/filter_focus_window.dart';
 
 const _size = 256;
 const _thresholdFilterId = 'Filter0014';
@@ -200,11 +201,8 @@ void main() {
       await pumpRealAsync(tester, const Duration(milliseconds: 1500));
       await pumpRealAsync(tester, const Duration(milliseconds: 600));
       expect(fs.currentFilter, isNull);
-      final close = find.descendant(
-        of: find.byType(FilterPanel),
-        matching: find.byIcon(Icons.close),
-      );
-      await tester.tap(close.first);
+      final close = filterPanelCloseButton();
+      await tester.tap(close);
       await pumpRealAsync(tester, const Duration(milliseconds: 400));
       expect(find.byType(FilterPanel), findsNothing);
     }
@@ -254,14 +252,7 @@ void main() {
     // ── Opening the filter panel and closing it again (cancel) ──
     await openFilterPanel();
     expectSelectionEditing(false, 'while the filter panel is open');
-    await tester.tap(
-      find
-          .descendant(
-            of: find.byType(FilterPanel),
-            matching: find.byIcon(Icons.close),
-          )
-          .first,
-    );
+    await tester.tap(filterPanelCloseButton());
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
     expect(find.byType(FilterPanel), findsNothing);
     expectSelectionEditing(true, 'after the filter panel is closed');
@@ -360,25 +351,16 @@ void main() {
     await tester.pump();
     expect(find.text(l10n.canvasLayerLockedNotice), findsNothing);
 
+    // A locked layer is told when the filter is opened (the owner's choice,
+    // 2026-11-27): the filter does not open, nothing is applied.
     await openFilterPanel();
     await pickFilterCard(tester, _thresholdFilterId);
-    await tester.pump();
-    final lockedApply = find.byKey(const ValueKey('filter-apply-button'));
-    expect(lockedApply.hitTestable(), findsOneWidget);
-    await tester.tap(lockedApply);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text(l10n.canvasLayerLockedNotice), findsOneWidget);
+    expect(fs.currentFilter, isNull);
+    expect(find.byKey(const ValueKey('filter-apply-button')), findsNothing);
     expect(await layerPixels(), orderedEquals(adjusted));
-    await tester.tap(find.byKey(const ValueKey('filter-back-to-list')));
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.tap(
-      find
-          .descendant(
-            of: find.byType(FilterPanel),
-            matching: find.byIcon(Icons.close),
-          )
-          .first,
-    );
+    await tester.tap(filterPanelCloseButton());
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
 
     setLayerLocked(false);
@@ -443,16 +425,18 @@ void main() {
     await tester.tap(find.text(l10n.filterLensMaskEraser));
     await tester.pump();
     expect(lensMask().tool, FilterLensMaskTool.eraser);
+    // At the left of the stroke: the focus window floats over the bottom
+    // right of the canvas.
     final eraser = await tester.startGesture(
-      onScreen(190, 200),
+      onScreen(64, 200),
       kind: PointerDeviceKind.mouse,
     );
-    await eraser.moveTo(onScreen(200, 200));
+    await eraser.moveTo(onScreen(74, 200));
     await tester.pump();
     await eraser.up();
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    expect(coverageAt(196, 200), 0, reason: 'erased');
-    expect(coverageAt(100, 200), 255, reason: 'kept');
+    expect(coverageAt(70, 200), 0, reason: 'erased');
+    expect(coverageAt(130, 200), 255, reason: 'kept');
 
     // ── The bucket adds the stripe inside the ring ──
     await tester.tap(find.text(l10n.filterLensMaskBucket));
@@ -523,9 +507,7 @@ void main() {
         tester.widget<FilterPanel>(panel).selectionMask,
         selected ? isNotNull : isNull,
       );
-      await tester.tap(
-        find.descendant(of: panel, matching: find.byIcon(Icons.close)).first,
-      );
+      await tester.tap(filterPanelCloseButton());
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
     }
 

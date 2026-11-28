@@ -42,6 +42,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/first_use_tooltips.dart';
 import '../helpers/load_app_fonts.dart';
 import '../helpers/pick_filter_card.dart';
+import '../helpers/filter_focus_window.dart';
 
 const _captureMatch = String.fromEnvironment('CAPTURE_MATCH');
 
@@ -125,11 +126,8 @@ void main() {
               variant == NoiseStyle.filmGrain.name) {
             await h.capture('Filter0027-gallery-top');
           }
-          await h.tap(
-            find
-                .descendant(of: panel, matching: find.byIcon(Icons.search))
-                .first,
-          );
+          await showFilterSearch(tester, h.l10n);
+          await h.settle();
           await tester.enterText(
             find.descendant(of: panel, matching: find.byType(TextField)).first,
             _filterSearchLabel(h, filter),
@@ -320,11 +318,8 @@ void main() {
           await h.capture('$id-before-ui');
           await h.openMenu(h.l10n.filterPanelTitle);
           final panel = find.byType(FilterPanel);
-          await h.tap(
-            find
-                .descendant(of: panel, matching: find.byIcon(Icons.search))
-                .first,
-          );
+          await showFilterSearch(tester, h.l10n);
+          await h.settle();
           await tester.enterText(
             find.descendant(of: panel, matching: find.byType(TextField)).first,
             _filterName(h, filter),
@@ -784,14 +779,7 @@ void main() {
         'recorded filter must finish and restore the catalog',
       );
       // The filter palette stays open by design after Apply.
-      await h.tap(
-        find
-            .descendant(
-              of: find.byType(FilterPanel),
-              matching: find.byIcon(Icons.close),
-            )
-            .first,
-      );
+      await h.tap(filterPanelCloseButton());
       final expectedReplay = await h.art('$replayId-original');
       await h.tap(find.text(h.l10n.customAutomationStopRecording));
       await h.capture('$replayId-review');
@@ -1310,14 +1298,7 @@ class _Harness {
     // After Apply the catalog stays open; close it explicitly before
     // entering the layer panel to inspect generated output.
     if (find.byType(FilterPanel).evaluate().isNotEmpty) {
-      await tap(
-        find
-            .descendant(
-              of: find.byType(FilterPanel),
-              matching: find.byIcon(Icons.close),
-            )
-            .first,
-      );
+      await tap(filterPanelCloseButton());
     }
     final visibleInputs = layers
         .where(

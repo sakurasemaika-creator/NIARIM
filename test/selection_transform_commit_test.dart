@@ -119,9 +119,15 @@ void main() {
       }
 
       Future<Uint8List> thumbnailPixels() async {
+        // The frame list is hidden (kept, and kept up to date) while the
+        // selection's focus window is open.
         final thumbnail = find.descendant(
-          of: find.byKey(const ValueKey('frameStripCell0')),
-          matching: find.byType(RawImage),
+          of: find.byKey(
+            const ValueKey('frameStripCell0'),
+            skipOffstage: false,
+          ),
+          matching: find.byType(RawImage, skipOffstage: false),
+          skipOffstage: false,
         );
         return imagePixels(tester.widget<RawImage>(thumbnail).image!);
       }

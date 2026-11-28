@@ -54,6 +54,9 @@ void main() {
     final layer = projects.layersOf(p.id, scene.id, 0).first;
     final key = projects.tileKeyFor(p.id, scene.id, 0, layer.id);
     final tm = projects.tileManagerOf(p.id);
+    // The lift checks below need the smoothed preview to lag behind the pen
+    // (hand-shake correction is an app setting, off by default).
+    SharedPreferences.setMockInitialValues({'stroke_stabilization': 60});
     final providers = await tester.runAsync(buildAppProviders);
     var lockInput = false;
     var tool = DrawingTool.pen;

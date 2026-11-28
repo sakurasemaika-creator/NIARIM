@@ -29,6 +29,7 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pick_filter_card.dart';
 import 'helpers/pump_real_async.dart';
+import 'helpers/filter_focus_window.dart';
 
 const _size = 256;
 const _disc = [40, 120, 200];
@@ -207,19 +208,32 @@ void main() {
     expect(find.text(l10n.filterSphereCanvasHint), findsOneWidget);
 
     // While adjusting, the canvas chrome is folded away: no top bar (with
-    // its own Undo/Redo), toolbar or frame list; the panel runs along the
-    // bottom at full width, under the canvas.
+    // its own Undo/Redo), toolbar or frame list; the panel is in the focus
+    // window, which starts at the bottom of the screen and can be moved,
+    // folded and resized over the canvas.
     expect(find.byIcon(Icons.settings), findsNothing);
     expect(find.byType(ToolbarWidget), findsNothing);
     expect(find.byType(FrameStripWidget), findsNothing);
     final bar = find.byKey(const ValueKey('filter-bottom-bar'));
     expect(bar, findsOneWidget);
-    final screen = tester.getSize(find.byType(CanvasScreen));
-    expect(tester.getSize(bar).width, greaterThan(screen.width - 40));
     expect(
-      tester.getRect(bar).top,
-      greaterThanOrEqualTo(tester.getRect(canvasFinder).bottom - 1),
-      reason: 'below the canvas, not over it',
+      find.descendant(
+        of: find.byKey(const ValueKey('filter-focus-menu')),
+        matching: bar,
+      ),
+      findsOneWidget,
+    );
+    final screen = tester.getRect(find.byType(CanvasScreen));
+    final barRect = tester.getRect(bar);
+    expect(
+      screen.contains(barRect.topLeft) && screen.contains(barRect.bottomRight),
+      isTrue,
+      reason: 'the whole panel is on the screen',
+    );
+    expect(
+      barRect.center.dy,
+      greaterThan(screen.center.dy),
+      reason: 'it starts in the lower half, under the light',
     );
     expect(
       find.byKey(const ValueKey('filter-undo-button')),
@@ -255,10 +269,25 @@ void main() {
       greaterThan(_disc[2] + 10),
       reason: 'lit on the canvas',
     );
+    // The focus window floats over the bottom of the canvas: look at a
+    // shaded part of the disc (inside it, away from the light) that the
+    // window does not cover.
+    final window = tester.getRect(
+      find.descendant(
+        of: find.byKey(const ValueKey('filter-focus-menu')),
+        matching: find.byKey(const ValueKey('focus-mode-menu-surface')),
+      ),
+    );
+    final shadedPoint = [
+      const Offset(128, 225),
+      const Offset(210, 150),
+      const Offset(205, 175),
+      const Offset(60, 190),
+    ].firstWhere((p) => !window.inflate(4).contains(onScreen(p)));
     expect(
-      (await onScreenColour(const Offset(128, 225)))[2],
+      (await onScreenColour(shadedPoint))[2],
       lessThan(_disc[2] - 10),
-      reason: 'shaded on the canvas',
+      reason: 'shaded on the canvas at $shadedPoint',
     );
     expect(await layerPixels(), orderedEquals(disc), reason: 'not applied');
     await capture('canvas_1_opened');
@@ -349,9 +378,7 @@ void main() {
     expect(gizmoOnCanvas(), isNull, reason: 'the edit overlay was cleared');
     expect(tester.widget<CanvasArea>(canvasFinder).currentLayerPreview, isNull);
     expect(find.byType(ToolbarWidget), findsNothing);
-    await tester.tap(
-      find.descendant(of: panel, matching: find.byIcon(Icons.close)),
-    );
+    await tester.tap(filterPanelCloseButton());
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(panel, findsNothing);
     expect(find.byIcon(Icons.settings), findsWidgets, reason: 'top bar back');
@@ -385,14 +412,32 @@ void main() {
     expect(eye.resizable, isFalse);
     expect(eye.center, const Offset(_size / 2, _size / 2));
     expect(find.text(l10n.filterFisheyeCanvasHint), findsOneWidget);
-    // Folding the panel gives the canvas more room: folded, only the name
-    // and Undo / Redo / Apply stay.
-    final collapse = find.byKey(const ValueKey('filter-collapse-button'));
+    // Minimizing the focus window gives the canvas more room: only its
+    // header (name, move, close) stays; the edit is kept.
+    final focusWindow = find.byKey(const ValueKey('filter-focus-menu'));
+    final collapse = find.descendant(
+      of: focusWindow,
+      matching: find.byKey(const ValueKey('focus-mode-menu-toggle')),
+    );
     await tester.tap(collapse);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(find.text(l10n.filterFisheyeCanvasHint), findsNothing);
-    expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
-    expect(tester.getSize(panel).height, lessThan(200));
+    expect(
+      find.byKey(const ValueKey('filter-apply-button')).hitTestable(),
+      findsNothing,
+    );
+    expect(
+      tester
+          .getSize(
+            find.descendant(
+              of: focusWindow,
+              matching: find.byKey(const ValueKey('focus-mode-menu-surface')),
+            ),
+          )
+          .height,
+      lessThan(120),
+    );
+    expect(fs.currentFilter?.kind, FilterKind.fisheye);
     await capture('canvas_5_fisheye_folded');
     await drag(onScreen(eye.center), const Offset(-50, 0));
     expect(
@@ -430,7 +475,7 @@ void main() {
     await capture('canvas_6_fisheye_moved');
 
     // ── Picking a colour from the canvas reaches the canvas ──
-    await tester.tap(find.byKey(const ValueKey('filter-back-to-list')));
+    await backToFilterList(tester, l10n);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     await pickFilterCard(tester, 'Filter0006');
     await pumpRealAsync(tester, const Duration(milliseconds: 600));

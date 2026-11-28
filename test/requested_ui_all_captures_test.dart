@@ -646,13 +646,23 @@ void main() {
     await tester.tap(meshEntry.last);
     await settle();
     expect(find.byType(MeshTransformPanel), findsOneWidget);
-    // Regressions: the bottom floating mesh action bar must not draw
-    // a black shadow or an opaque enclosing rectangle.
+    // On PC the mesh controls are the panel itself, inside the movable
+    // focus window (phones show a smaller bar of Cancel/Apply there).
+    final meshWindow = find.byKey(const ValueKey('selection-focus-menu'));
+    expect(
+      find.descendant(
+        of: meshWindow,
+        matching: find.byType(MeshTransformPanel),
+      ),
+      findsOneWidget,
+    );
+    // Regressions: the phone's mesh action bar must not draw a black shadow
+    // or an opaque enclosing rectangle.
     final meshBar = find.byKey(const ValueKey('mesh-transform-action-bar'));
-    expect(meshBar, findsOneWidget);
-    final meshMaterial = tester.widget<Material>(meshBar);
-    expect(meshMaterial.type, MaterialType.transparency);
-    expect(meshMaterial.elevation, 0);
+    for (final meshMaterial in tester.widgetList<Material>(meshBar)) {
+      expect(meshMaterial.type, MaterialType.transparency);
+      expect(meshMaterial.elevation, 0);
+    }
     await shot('popup_fix_mesh_transform');
 
     await navigate('/home');
