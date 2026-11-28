@@ -359,6 +359,14 @@ class _HelpScreenState extends State<HelpScreen>
       description: l10n.helpTimelineDesc,
       category: l10n.helpCategoryAnimation,
     ),
+    // 描いたアニメーションの再生のしかた（タイムラインとプロジェクト詳細画面の
+    // プレビュー）。以前は再生を説明する項目が無く、探しても見つからなかった。
+    _HelpEntry(
+      topicKey: '作品の再生',
+      title: l10n.helpPlaybackTitle,
+      description: l10n.helpPlaybackDesc,
+      category: l10n.helpCategoryAnimation,
+    ),
     _HelpEntry(
       topicKey: 'シーン',
       title: l10n.helpSceneTitle,
@@ -532,6 +540,14 @@ class _HelpScreenState extends State<HelpScreen>
       topicKey: '特典の期限が切れたら',
       title: l10n.helpPremiumExpiryTitle,
       description: l10n.helpPremiumExpiryDesc,
+      category: l10n.helpCategoryPremium,
+    ),
+    // オパールの貯め方（ミッション・広告）・特典交換・クーポンコード・
+    // プレゼントボックス（ホームのメニューの「オパール・特典」の画面）。
+    _HelpEntry(
+      topicKey: 'オパール・特典',
+      title: l10n.helpOpalRewardsTitle,
+      description: l10n.helpOpalRewardsDesc,
       category: l10n.helpCategoryPremium,
     ),
 
