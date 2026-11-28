@@ -11,6 +11,7 @@ import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/community_work_counts.dart';
 import '../../widgets/grouped_sheet.dart';
@@ -100,6 +101,9 @@ class _CommunityWorkSettingsScreenState
           ? <String, dynamic>{'title': work.title, 'description': ''}
           : await service.api!.workMetadata(work.id);
       if (!mounted || !service.isOwnWork(work)) return;
+      // Disposed by DisposeOnUnmount once the dialog is gone: its fields
+      // still use them while it closes (the keyboard closing with it lays
+      // them out again).
       final titleController = TextEditingController(
         text: metadata['title'] as String? ?? work.title,
       );
@@ -107,89 +111,92 @@ class _CommunityWorkSettingsScreenState
         text: metadata['description'] as String? ?? '',
       );
       final formKey = GlobalKey<FormState>();
-      try {
-        final saved = await _showOwnerDialog<Map<String, String>>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            insetPadding: typingDialogInsetPadding(dialogContext),
-            title: Text(labels.edit),
-            content: SizedBox(
-              width: 460,
-              child: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextFormField(
-                        key: const Key('communityWorkSettingsTitleInput'),
-                        controller: titleController,
-                        maxLength: 100,
-                        decoration: InputDecoration(
-                          labelText: labels.title,
-                          border: const OutlineInputBorder(),
+      final saved = await _showOwnerDialog<Map<String, String>>(
+        context: context,
+        builder: (dialogContext) => DisposeOnUnmount(
+          controller: titleController,
+          builder: (_) => DisposeOnUnmount(
+            controller: descriptionController,
+            builder: (_) => AlertDialog(
+              insetPadding: typingDialogInsetPadding(dialogContext),
+              title: Text(labels.edit),
+              content: SizedBox(
+                width: 460,
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          key: const Key('communityWorkSettingsTitleInput'),
+                          controller: titleController,
+                          maxLength: 100,
+                          decoration: InputDecoration(
+                            labelText: labels.title,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? labels.title
+                              : null,
                         ),
-                        validator: (value) =>
-                            value == null || value.trim().isEmpty
-                            ? labels.title
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        key: const Key('communityWorkSettingsDescriptionInput'),
-                        controller: descriptionController,
-                        minLines: 2,
-                        maxLines: 6,
-                        maxLength: 2000,
-                        decoration: InputDecoration(
-                          labelText: labels.description,
-                          hintText: labels.descriptionHint,
-                          border: const OutlineInputBorder(),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          key: const Key(
+                            'communityWorkSettingsDescriptionInput',
+                          ),
+                          controller: descriptionController,
+                          minLines: 2,
+                          maxLines: 6,
+                          maxLength: 2000,
+                          decoration: InputDecoration(
+                            labelText: labels.description,
+                            hintText: labels.descriptionHint,
+                            border: const OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                      Text(
-                        labels.info,
-                        style: Theme.of(dialogContext).textTheme.bodySmall,
-                      ),
-                    ],
+                        Text(
+                          labels.info,
+                          style: Theme.of(dialogContext).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(AppLocalizations.of(dialogContext)!.commonCancel),
+                ),
+                FilledButton(
+                  key: const Key('communityWorkSettingsMetadataSave'),
+                  onPressed: () {
+                    if (formKey.currentState?.validate() != true) return;
+                    Navigator.pop(dialogContext, {
+                      'title': titleController.text.trim(),
+                      'description': descriptionController.text.trim(),
+                    });
+                  },
+                  child: Text(AppLocalizations.of(dialogContext)!.commonSave),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(AppLocalizations.of(dialogContext)!.commonCancel),
-              ),
-              FilledButton(
-                key: const Key('communityWorkSettingsMetadataSave'),
-                onPressed: () {
-                  if (formKey.currentState?.validate() != true) return;
-                  Navigator.pop(dialogContext, {
-                    'title': titleController.text.trim(),
-                    'description': descriptionController.text.trim(),
-                  });
-                },
-                child: Text(AppLocalizations.of(dialogContext)!.commonSave),
-              ),
-            ],
           ),
-        );
-        if (saved == null || !mounted) return;
-        await service.updateOwnWorkMetadata(
-          work.id,
-          title: saved['title']!,
-          description: saved['description']!,
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(labels.saved)));
-        }
-      } finally {
-        titleController.dispose();
-        descriptionController.dispose();
+        ),
+      );
+      if (saved == null || !mounted) return;
+      await service.updateOwnWorkMetadata(
+        work.id,
+        title: saved['title']!,
+        description: saved['description']!,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(labels.saved)));
       }
     } on CommunityAccountChangedException {
       // Owner/account changed while the editor was open.
