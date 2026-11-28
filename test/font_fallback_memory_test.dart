@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,18 @@ import 'helpers/load_app_fonts.dart';
 /// tool, share cards, text in another family that inherits the body list).
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('Kuramubon.otf is the subroutinized build', () {
+    // Headings load Kuramubon on every launch, and Android inflates the whole
+    // file from the APK into memory. The font as distributed is 15.6 MB;
+    // tool/build_kuramubon_font.py packs the same outlines into 11.1 MB.
+    final bytes = File('assets/fonts/Kuramubon.otf').readAsBytesSync();
+    expect(
+      bytes.length,
+      lessThan(12 * 1000 * 1000),
+      reason: 'run tool/build_kuramubon_font.py on the new Kuramubon.otf',
+    );
+  });
 
   test('HakkouMincho has every character of Noto Serif JP', () {
     final noto = cmapCodePoints('assets/fonts/NotoSerifJP.ttf');

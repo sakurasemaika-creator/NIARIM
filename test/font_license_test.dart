@@ -71,6 +71,8 @@ void main() {
     // OFL第3条（改変版はReserved Font Nameを使えない）への言及があること
     expect(text, contains("Reserved Font Name 'Source'"));
     expect(text, contains('The Dela Gothic Project Authors'));
+    // くらむぼんは字形のデータを詰め直した改変版で、その作り方が書いてあること
+    expect(text, contains('tool/build_kuramubon_font.py'));
     expect(text, contains('Adobe'));
     // OFL本文（全文）が含まれていること。
     expect(text, contains('SIL OPEN FONT LICENSE Version 1.1'));

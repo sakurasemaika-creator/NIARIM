@@ -1464,6 +1464,17 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   読まないようにした（描いた画素が同じことは`test/font_fallback_memory_test.dart`）。本文の書式を受け
   継いで主フォントだけを別の書体にする文は`fallbackUnderOtherFamily`で元の列に戻す（エラー表示の
   monospaceが実例。ドロップダウン・一覧の行は見出しの列を受け継ぐので要らない）。
+- **くらむぼん（`assets/fonts/Kuramubon.otf`）は字形のデータを詰め直した改変版（2026-11-28）**：見出しの
+  書体なので起動のたびに読まれ、Androidでは`AAsset_getBuffer`がAPKの中の圧縮を展開してファイル全部を
+  メモリに置き、アプリを閉じるまで残す。配布されている版（Version 1.02、15.6MB）はCFFの字形にサブルーチンが
+  無いので、`tool/build_kuramubon_font.py`（`pip install fonttools cffsubr freetype-py`。cffsubrに同梱のAFDKOの
+  txがサブルーチンを付ける）で11.1MBにした（APKの中の圧縮後は7.63→8.01MB）。輪郭の点・字の幅・ほかの表は
+  元のまま（スクリプトが表のバイト・全部の字形の輪郭・FreeTypeで読んだ点を確かめ、
+  `tool/compare_kuramubon_render_test.dart`がエンジンで描いた画素と行の大きさを元の版と突き合わせる。元の版は
+  `git show 367d8b07:assets/fonts/Kuramubon.otf`）。TrueType（glyf）へ変えると16.0MBで軽くならず、輪郭を
+  2次曲線へ近似するので描く画素も変わる。**くらむぼんを入れ替えるときは、このスクリプトを通してから置くこと**
+  （`font_fallback_memory_test`が12MB未満を見張る）。改変版であることと作り方は`FONT_LICENSES.txt`に書いてある
+  （予約フォント名は無いので名前は元のまま）。
 - **トーンのタイルは模様の間隔で割り切れる大きさ（所有者の依頼、2026-11-25「ストッキング以外もテクスチャ系やトーンは
   つなぎ目がきれいにループするように」）**：トーンは1枚のタイルを縦横に繰り返して貼る。64pxのタイルに間隔6pxの
   ライン・7pxのクロスハッチ・3〜10pxの網目を並べると、継ぎ目だけ間隔が狭くなって64pxごとに筋が出た（タイツは

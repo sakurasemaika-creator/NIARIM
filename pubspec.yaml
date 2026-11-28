@@ -154,7 +154,9 @@ flutter:
       fonts:
         - asset: assets/fonts/HakkouMincho.ttf
     # チュートリアル・説明・演出テキスト用フォント（くらむぼん：フロップ
-    # デザイン制作、SIL Open Font License 1.1、DelaGothic派生）
+    # デザイン制作、SIL Open Font License 1.1、DelaGothic派生）。起動のたびに
+    # 読まれるので、字形のデータを詰め直した改変版を置いている
+    # （tool/build_kuramubon_font.py。入れ替えるときもこれを通す）。
     - family: Kuramubon
       fonts:
         - asset: assets/fonts/Kuramubon.otf

@@ -34,6 +34,16 @@ License     : SIL Open Font License 1.1
                 側には OFL 1.1 の記載が正しく入っている（下記参照）。
                 そのため OFL 1.1 として扱う。
 License URL : https://openfontlicense.org
+Modified    : 改変版。字形の輪郭のデータ（CFF）を、繰り返し出る命令の並びを
+              サブルーチンにまとめた形に詰め直した（15.6MB → 11.1MB。
+              tool/build_kuramubon_font.py、AFDKO の tx を同梱した
+              cffsubr 0.4.0 と fontTools 4.69.1）。輪郭の点・字の幅・
+              ほかの表（名前・著作権表示を含む）は元のまま。
+              元のファイルは配布されている くらむぼん Version 1.02
+              （SHA-256 15638fee24b4d9d428b9c580742659e6831043c62404668cf78435bca14dd06b）。
+              このフォントも改変元の Dela Gothic One も、著作権表示・
+              ライセンスの記載に予約フォント名（Reserved Font Name）を
+              挙げていないため、名前は元のまま。
 
 
 --- assets/fonts/DelaGothicOne-Regular.ttf（Dela Gothic One / くらむぼんの
