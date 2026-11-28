@@ -5349,11 +5349,22 @@ class ProjectService extends ChangeNotifier {
       // Repeated paste must not create indistinguishable copies. 名前は
       // 写し終えて一覧へ加える直前の一覧で決める（押した時点で決めると、
       // 写している間にもう一度複製したとき同じ名前が2つできた）。
+      // ホームの作品の番号は、複製先のフォルダに並ぶ作品の名前で決める
+      // （[duplicateProjectName]と同じ決まり）。以前はホームの貼り付け・
+      // メニューの複製だけ全部の作品で数え、作品詳細の複製はフォルダの中で
+      // 数えたので、同じ作品の複製でも番号が違った。共有の受け取った作品は
+      // 今までどおり受け取った作品全部で数える。
+      final folderId = useTargetFolder ? targetFolderId : original.folderId;
+      final sharedFolderId = useTargetSharedFolder
+          ? targetSharedFolderId
+          : original.sharedFolderId;
       final copyName =
           name ??
           (namer ?? _nextCopyName)(original.name, {
             for (final p in _projects)
-              if (p.isSharedImport == original.isSharedImport) p.name,
+              if (p.isSharedImport == original.isSharedImport &&
+                  (original.isSharedImport || p.folderId == folderId))
+                p.name,
           });
       // 作成と最終保存は同じ1回の時刻（最終保存は直後の保存の時刻になる）。
       final now = DateTime.now();
@@ -5362,10 +5373,8 @@ class ProjectService extends ChangeNotifier {
         name: copyName,
         createdAt: now,
         updatedAt: now,
-        folderId: useTargetFolder ? targetFolderId : original.folderId,
-        sharedFolderId: useTargetSharedFolder
-            ? targetSharedFolderId
-            : original.sharedFolderId,
+        folderId: folderId,
+        sharedFolderId: sharedFolderId,
         // 複製元と同じファイルを指したままだと、複製元の削除で一緒に消えた。
         thumbnailPath: thumbnail,
       );

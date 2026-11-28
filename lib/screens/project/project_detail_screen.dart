@@ -323,20 +323,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'rename':
                   _showRenameDialog(context, project.name);
                 case 'duplicate':
-                  // 画面の言語の「(コピー)」。同じ名前の複製があれば番号を付ける。
-                  // 名前は複製を一覧へ加える直前の一覧で決める（素材を写して
-                  // いる間にもう一度押しても同じ名前にしない）。この画面に
-                  // 残るので、できた複製の名前を知らせる（ホームの複製と同じ）。
+                  // 画面の言語の「(コピー)」。複製先のフォルダに同じ名前の
+                  // 複製があれば番号を付ける（ホームの複製・貼り付けと同じく、
+                  // 数える作品はサービスが渡す）。名前は複製を一覧へ加える
+                  // 直前の一覧で決める（素材を写している間にもう一度押しても
+                  // 同じ名前にしない）。この画面に残るので、できた複製の名前を
+                  // 知らせる（ホームの複製と同じ）。
                   await duplicateProjectWithNotice(
                     context,
                     projectService,
                     widget.projectId,
-                    namer: (name, _) => duplicateProjectName(
-                      l10n,
-                      name,
-                      folderId: project.folderId,
-                      projects: projectService.projects,
-                    ),
+                    namer: (name, taken) => numberedCopyName(l10n, name, taken),
                   );
                 case 'move':
                   _showMoveToFolderDialog(context, projectService);

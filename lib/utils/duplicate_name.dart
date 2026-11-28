@@ -21,6 +21,8 @@ String uniqueNumberedName(String name, Iterable<String> names) {
 /// 付ける（「作品1 (コピー)」「作品1 (コピー 2)」…）。番号が無いと、同じ
 /// 作品を2回貼り付けたとき同じ名前の作品が並び、見分けられなかった。
 /// 「共有」から取り込んだ作品はホームのフォルダに並ばないので数えない。
+/// `ProjectService.duplicateProject`（ホームの貼り付け・複製、作品詳細の
+/// 複製）も同じ決まりで数える作品を決める。
 String duplicateProjectName(
   AppLocalizations l10n,
   String name, {
