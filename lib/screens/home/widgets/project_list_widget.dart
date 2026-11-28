@@ -1886,10 +1886,25 @@ Future<void> runNiashareFlow(
     handles.tell(handles.l10n.homeTrashWorking);
     return;
   }
+  // 同梱を選べるのは、作品にある種類の素材だけ（素材の無い作品で「素材の
+  // 同梱」を聞かない）。
+  var available = _allMaterialTypes;
+  final materials = context.read<MaterialService?>();
+  if (materials != null) {
+    try {
+      await materials.ensureLoaded(project.id);
+      available = {
+        for (final material in materials.materialsOf(project.id)) material.type,
+      };
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    if (!context.mounted) return;
+  }
   NiashareIncludeOptions? chosen;
   // 確認は一度に1つ（同じフレームの二度押しで2つ開かない）。
   await ExportShareService.runExclusive('$key:confirm', () async {
-    chosen = await showMaterialIncludeDialog(context);
+    chosen = await showMaterialIncludeDialog(context, available: available);
   });
   final options = chosen;
   if (options == null) return; // 取り消した（または、確認がもう開いている）
@@ -1911,65 +1926,65 @@ Future<void> runNiashareFlow(
   if (!started) handles.tell(handles.l10n.homeTrashWorking);
 }
 
+const _allMaterialTypes = {
+  MaterialType.image,
+  MaterialType.video,
+  MaterialType.audio,
+};
+
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
-/// 種類ごとに選択できる）。
+/// 種類ごとに選択できる）。選べるのは[available]の種類（作品にある素材の
+/// 種類）だけで、どれも無ければ同梱の選択を出さず、作成の確認だけにする
+/// （以前は素材の無い作品でも「素材の同梱」の選択が出た）。
 /// キャンセル時はnullを返す。
 Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
-  BuildContext context,
-) {
+  BuildContext context, {
+  Set<MaterialType> available = _allMaterialTypes,
+}) {
   final l10n = AppLocalizations.of(context)!;
-  final selected = <MaterialType>{
-    MaterialType.image,
-    MaterialType.video,
-    MaterialType.audio,
-  };
+  final choices = [
+    for (final (type, label) in [
+      (MaterialType.image, l10n.projectListMaterialImage),
+      (MaterialType.video, l10n.projectListMaterialVideo),
+      (MaterialType.audio, l10n.projectListMaterialAudio),
+    ])
+      if (available.contains(type)) (type, label),
+  ];
+  final selected = <MaterialType>{for (final (type, _) in choices) type};
   return showDialog<NiashareIncludeOptions>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
+        key: const Key('niashareIncludeDialog'),
         // 横向きのスマホ・低い画面・大きな文字では選択肢が入りきらないので、
         // 題名と選択肢をスクロールさせ、ボタンは下に残す。
         scrollable: true,
-        title: Text(l10n.projectListMaterialIncludeTitle),
+        title: Text(
+          choices.isEmpty
+              ? l10n.projectListCreateShareAction
+              : l10n.projectListMaterialIncludeTitle,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.projectListMaterialIncludeHint,
-              style: const TextStyle(fontSize: 12),
-            ),
-            CheckboxListTile(
-              value: selected.contains(MaterialType.image),
-              title: Text(l10n.projectListMaterialImage),
-              contentPadding: EdgeInsets.zero,
-              onChanged: (v) => setDialogState(
-                () => v == true
-                    ? selected.add(MaterialType.image)
-                    : selected.remove(MaterialType.image),
+            if (choices.isNotEmpty) ...[
+              Text(
+                l10n.projectListMaterialIncludeHint,
+                style: const TextStyle(fontSize: 12),
               ),
-            ),
-            CheckboxListTile(
-              value: selected.contains(MaterialType.video),
-              title: Text(l10n.projectListMaterialVideo),
-              contentPadding: EdgeInsets.zero,
-              onChanged: (v) => setDialogState(
-                () => v == true
-                    ? selected.add(MaterialType.video)
-                    : selected.remove(MaterialType.video),
-              ),
-            ),
-            CheckboxListTile(
-              value: selected.contains(MaterialType.audio),
-              title: Text(l10n.projectListMaterialAudio),
-              contentPadding: EdgeInsets.zero,
-              onChanged: (v) => setDialogState(
-                () => v == true
-                    ? selected.add(MaterialType.audio)
-                    : selected.remove(MaterialType.audio),
-              ),
-            ),
-            const Divider(),
+              for (final (type, label) in choices)
+                CheckboxListTile(
+                  value: selected.contains(type),
+                  title: Text(label),
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (v) => setDialogState(
+                    () =>
+                        v == true ? selected.add(type) : selected.remove(type),
+                  ),
+                ),
+              const Divider(),
+            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

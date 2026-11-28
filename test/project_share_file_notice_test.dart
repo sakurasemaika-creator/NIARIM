@@ -65,7 +65,7 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
     final createFailed = failureLead(l10n.projectDetailNiashareFailedSnackbar);
     expect(createFailed, isNotEmpty);
-    final includeDialog = find.text(l10n.projectListMaterialIncludeTitle);
+    final includeDialog = find.byKey(const Key('niashareIncludeDialog'));
 
     /// 同梱の確認で「作成」を押し、共有が呼ばれるまで（作成が終わるまで）待つ。
     Future<void> confirmAndWait() async {

@@ -108,7 +108,7 @@ void main() {
 
   /// 同梱の確認で「作成」を押し、共有が呼ばれるまで（作成が終わるまで）待つ。
   Future<void> confirmAndWait(WidgetTester tester) async {
-    expect(find.text(l10n.projectListMaterialIncludeTitle), findsOneWidget);
+    expect(find.byKey(const Key('niashareIncludeDialog')), findsOneWidget);
     final before = share.calls;
     await tester.tap(find.widgetWithText(FilledButton, l10n.commonCreate));
     for (var i = 0; i < 100 && share.calls == before; i++) {
@@ -119,7 +119,7 @@ void main() {
 
   /// 同梱の確認で「作成」を押し、作成の失敗が知らされるまで待つ。
   Future<void> confirmAndWaitForNotice(WidgetTester tester) async {
-    expect(find.text(l10n.projectListMaterialIncludeTitle), findsOneWidget);
+    expect(find.byKey(const Key('niashareIncludeDialog')), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, l10n.commonCreate));
     for (var i = 0; i < 100 && find.byType(SnackBar).evaluate().isEmpty; i++) {
       await pumpRealAsync(tester, const Duration(milliseconds: 100));
@@ -201,7 +201,7 @@ void main() {
       'project on every screen, and the share still happens', (tester) async {
     final project = await openHomeWithProject(tester);
     final createFailed = failureLead(l10n.projectDetailNiashareFailedSnackbar);
-    final includeDialog = find.text(l10n.projectListMaterialIncludeTitle);
+    final includeDialog = find.byKey(const Key('niashareIncludeDialog'));
     await tester.runAsync(service.refreshOutgoingShares);
     final savedBefore = service.outgoingShares.length;
 
@@ -323,7 +323,7 @@ void main() {
     final project = await openHomeWithProject(tester);
     final createFailed = failureLead(l10n.projectDetailNiashareFailedSnackbar);
     expect(createFailed, isNotEmpty);
-    final includeDialog = find.text(l10n.projectListMaterialIncludeTitle);
+    final includeDialog = find.byKey(const Key('niashareIncludeDialog'));
 
     // ホームの一覧のメニューで同じ作品の共有を始め、共有シートを開いたままにする。
     share.pending = Completer<String>();
