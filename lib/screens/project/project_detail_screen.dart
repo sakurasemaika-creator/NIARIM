@@ -19,6 +19,7 @@ import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/theme_service.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/frame_preview_background.dart';
@@ -290,7 +291,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
     return _lastPage = Scaffold(
       appBar: AppBar(
-        title: Text(project.name),
+        // 長い作品名は「…」で切れるので、押すと全部の名前を出す。
+        title: DataTitle(project.name),
         actions: [
           if (history != null && (canUndo || canRedo)) ...[
             IconButton(
