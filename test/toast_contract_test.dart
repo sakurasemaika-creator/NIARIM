@@ -1605,7 +1605,10 @@ void main() {
         ),
         'lib/services/api/niarim_api_client.dart': (1, '通信をやり直すまでの間'),
         'lib/services/advertising_service.dart': (1, '広告読み込みの待ち時間の上限'),
-        'lib/services/autosave_service.dart': (2, '自動保存の間隔と、変更の後のまとめ'),
+        'lib/services/autosave_service.dart': (
+          3,
+          '自動保存の間隔と、変更の後のまとめと、休まず描き続けたときの30秒の区切り',
+        ),
         'lib/services/making_compactor.dart': (
           3,
           'メイキングの古い記録を、何もしていない間（4秒）だけ動画にする',
