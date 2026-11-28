@@ -3,11 +3,8 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, cacheChannelInfo, getUser } from "../../lib/auth";
-import {
-  postingMembershipTier,
-  releasePostQuota,
-  reservePostQuota,
-} from "../../lib/quota";
+import { postingMembershipTier } from "../../lib/postingTier";
+import { releasePostQuota, reservePostQuota } from "../../lib/quota";
 import {
   getVideoSnippet,
   getOwnChannelInfo,

@@ -1,7 +1,8 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { authenticate, getUser } from "../../lib/auth";
 import { assertPostingAllowed } from "../../lib/moderation";
-import { postingMembershipTier, readPostQuota } from "../../lib/quota";
+import { postingMembershipTier } from "../../lib/postingTier";
+import { readPostQuota } from "../../lib/quota";
 import { forbidden, ok } from "../../lib/response";
 
 /**
