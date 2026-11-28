@@ -1279,6 +1279,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "已建立共享檔案，並儲存在「共享」中的「我建立的檔案」裡。{reason}",
   "projectDetailTrashMenuItem": "移至垃圾桶",
   "commonOff": "關閉",
   "perfSettingsScreenTitle": "效能設定",

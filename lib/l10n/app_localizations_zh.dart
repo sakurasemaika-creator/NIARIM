@@ -3604,6 +3604,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return '已创建共享文件，并保存在“共享”中的“我创建的文件”里。$reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => '移至回收站';
 
   @override
@@ -14926,6 +14931,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String projectDetailNiashareFailedSnackbar(String error) {
     return '.niashare建立失敗：$error';
+  }
+
+  @override
+  String projectNiashareSavedNotShared(String reason) {
+    return '已建立共享檔案，並儲存在「共享」中的「我建立的檔案」裡。$reason';
   }
 
   @override

@@ -1281,6 +1281,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "The share file was created and saved in “Created by me” in Shared. {reason}",
   "projectDetailTrashMenuItem": "Move to Trash",
   "commonOff": "OFF",
   "perfSettingsScreenTitle": "Performance Settings",

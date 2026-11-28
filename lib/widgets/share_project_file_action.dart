@@ -88,5 +88,10 @@ Future<void> createAndShareProjectNiashare(
         ),
       );
     },
+    // 共有できない端末・共有の失敗でも、作ったファイルは「共有」の
+    // 「自分が作成したもの」に残る（以前は「この端末では、この操作に
+    // 対応していません。」だけで、作れたのか・どこにあるのか分からなかった）。
+    notSharedNotice: (l10n, reason) =>
+        l10n.projectNiashareSavedNotShared(reason),
   );
 }

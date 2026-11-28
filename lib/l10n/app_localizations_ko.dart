@@ -3655,6 +3655,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return '공유 파일을 생성해 “공유”의 “내가 만든 파일”에 저장했습니다. $reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => '휴지통으로 이동';
 
   @override

@@ -1279,6 +1279,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "已创建共享文件，并保存在“共享”中的“我创建的文件”里。{reason}",
   "projectDetailTrashMenuItem": "移至回收站",
   "commonOff": "关闭",
   "perfSettingsScreenTitle": "性能设置",

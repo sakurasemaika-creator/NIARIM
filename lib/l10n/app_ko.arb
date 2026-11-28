@@ -1279,6 +1279,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "공유 파일을 생성해 “공유”의 “내가 만든 파일”에 저장했습니다. {reason}",
   "projectDetailTrashMenuItem": "휴지통으로 이동",
   "commonOff": "OFF",
   "perfSettingsScreenTitle": "성능 설정",

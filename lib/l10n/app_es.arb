@@ -1279,6 +1279,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "El archivo compartido se creó y se guardó en «Creados por mí», en Compartidos. {reason}",
   "projectDetailTrashMenuItem": "Mover a la papelera",
   "commonOff": "Desactivado",
   "perfSettingsScreenTitle": "Ajustes de rendimiento",

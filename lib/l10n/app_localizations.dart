@@ -6615,6 +6615,12 @@ abstract class AppLocalizations {
   /// **'.niashareの作成に失敗しました: {error}'**
   String projectDetailNiashareFailedSnackbar(String error);
 
+  /// 共有ファイル（.niashare）を作って「自分が作成したもの」に保存したが、共有できなかったとき（共有の仕組みが無い端末・共有の失敗）。reasonは共有できなかった理由の文（communityErrorUnsupported・communityErrorGeneric）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルを作成し、「共有」の「自分が作成したもの」に保存しました。{reason}'**
+  String projectNiashareSavedNotShared(String reason);
+
   /// No description provided for @projectDetailTrashMenuItem.
   ///
   /// In ja, this message translates to:

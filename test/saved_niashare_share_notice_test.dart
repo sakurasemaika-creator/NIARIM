@@ -279,7 +279,9 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
     expect(share.calls, 1, reason: '作成が終わったら共有する');
-    expect(snackBarTexts(tester), [l10n.communityErrorUnsupported]);
+    expect(snackBarTexts(tester), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorUnsupported),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));
     await tester.runAsync(service.refreshOutgoingShares);
@@ -363,7 +365,7 @@ void main() {
 
     // 共有の仕組みが無い端末。作成はできていて「自分が作成したもの」に残る。
     final recorded = AppErrorReporter.recentErrors.length;
-    // 一覧のメニューで作った分（作品のフォルダの中）も「作成したもの」に入る。
+    // 一覧のメニューで作った分も「作成したもの」に入る。
     await tester.runAsync(service.refreshOutgoingShares);
     final savedBefore = service.outgoingShares.length;
     share.failure = MissingPluginException(mockText);
@@ -379,7 +381,9 @@ void main() {
       contains(share.lastPaths.single),
       reason: '保存したそのファイルを共有する',
     );
-    expect(snackBarTexts(tester), [l10n.communityErrorUnsupported]);
+    expect(snackBarTexts(tester), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorUnsupported),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));
     await clearSnackBars(tester);
@@ -391,7 +395,9 @@ void main() {
     await confirmAndWait(tester);
     expect(tester.takeException(), isNull);
     expect(share.calls, 3);
-    expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
+    expect(snackBarTexts(tester), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorGeneric),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     await clearSnackBars(tester);
 
@@ -479,7 +485,9 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(share.calls, 1);
     expect(service.outgoingShares.length, 2, reason: '作成はできている');
-    expect(snackBarTexts(tester), [l10n.communityErrorUnsupported]);
+    expect(snackBarTexts(tester), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorUnsupported),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));
     await clearSnackBars(tester);
@@ -514,7 +522,9 @@ void main() {
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
-    expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
+    expect(snackBarTexts(tester), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorGeneric),
+    ]);
     await expectNoQueuedSnackBar(tester);
     expect(service.outgoingShares.length, 3);
 

@@ -1764,6 +1764,15 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "共有ファイルを作成し、「共有」の「自分が作成したもの」に保存しました。{reason}",
+  "@projectNiashareSavedNotShared": {
+    "description": "共有ファイル（.niashare）を作って「自分が作成したもの」に保存したが、共有できなかったとき（共有の仕組みが無い端末・共有の失敗）。reasonは共有できなかった理由の文（communityErrorUnsupported・communityErrorGeneric）",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "projectDetailTrashMenuItem": "ゴミ箱へ移動",
   "commonOff": "OFF",
   "@commonOff": {

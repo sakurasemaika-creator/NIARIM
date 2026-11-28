@@ -1279,6 +1279,7 @@
       }
     }
   },
+  "projectNiashareSavedNotShared": "Le fichier partagé a été créé et enregistré dans « Créés par moi », dans Partagés. {reason}",
   "projectDetailTrashMenuItem": "Mettre à la corbeille",
   "commonOff": "Désactivé",
   "perfSettingsScreenTitle": "Paramètres de performance",

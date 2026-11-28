@@ -18,6 +18,9 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
 /// 作品の共有ファイル（.niashare）の作成と共有（ホームの一覧のメニュー）。
+/// 共有できない端末でも、作ったファイルが「自分が作成したもの」に残ったことを
+/// 知らせる（以前は「この端末では、この操作に対応していません。」だけで、
+/// 作れたのか・どこにあるのか分からなかった。Linuxの実画面で発見、P3-15）。
 ///
 /// 以前は、作成と共有を1つの`catch`で受けて「共有ファイルの作成に失敗しました:
 /// MissingPluginException(…)」と出し（作成はできている）、作成中にもう一度
@@ -122,7 +125,16 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(share.calls, 1);
     expect(share.lastPaths.single, endsWith('.niashare'));
-    expect(snackBarTexts(), [l10n.communityErrorUnsupported]);
+    // 作ったファイルは「共有」の「自分が作成したもの」にすぐ出る（作品詳細の
+    // 共有と同じ。以前は作品のフォルダに書き、一覧は読み直すまで変わらな
+    // かった）。共有できなかった知らせは、作れたこととその場所を言う。
+    expect(
+      service.outgoingShares.map((saved) => saved.path),
+      contains(share.lastPaths.single),
+    );
+    expect(snackBarTexts(), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorUnsupported),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));
     await clearSnackBars();
@@ -153,7 +165,9 @@ void main() {
     await confirmAndWait();
     expect(tester.takeException(), isNull);
     expect(share.calls, 3);
-    expect(snackBarTexts(), [l10n.communityErrorGeneric]);
+    expect(snackBarTexts(), [
+      l10n.projectNiashareSavedNotShared(l10n.communityErrorGeneric),
+    ]);
     expectNoInternalText(tester, also: [mockText, createFailed]);
     await clearSnackBars();
 

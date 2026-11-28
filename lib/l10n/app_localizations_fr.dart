@@ -3848,6 +3848,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return 'Le fichier partagé a été créé et enregistré dans « Créés par moi », dans Partagés. $reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => 'Mettre à la corbeille';
 
   @override

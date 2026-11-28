@@ -3638,6 +3638,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return '共有ファイルを作成し、「共有」の「自分が作成したもの」に保存しました。$reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => 'ゴミ箱へ移動';
 
   @override

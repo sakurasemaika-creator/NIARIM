@@ -72,11 +72,14 @@ class ExportShareHandles {
   }
 
   /// [shareFilesWithNotice]と同じ（共有の結果を返し、できなかったときは
-  /// 知らせてnullを返す）。
+  /// 知らせてnullを返す）。[failureNotice]は、できなかった理由の文
+  /// （[exportShareFailureText]）から知らせる文を作る（作ったファイルが
+  /// どこに残ったかを添える等。無ければ理由の文だけ）。
   Future<ShareResult?> shareFiles(
     List<XFile> files, {
     required String key,
     List<String>? fileNameOverrides,
+    String Function(String reason)? failureNotice,
   }) async {
     try {
       return await ExportShareService.shareFiles(
@@ -87,14 +90,21 @@ class ExportShareHandles {
       );
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      tell(exportShareFailureText(l10n, error));
+      final reason = exportShareFailureText(l10n, error);
+      tell(failureNotice?.call(reason) ?? reason);
       return null;
     }
   }
 
   /// 書き出したファイル1つを共有する（[shareExportedFileWithNotice]と同じ）。
-  Future<ShareResult?> share(File file) =>
-      shareFiles([XFile(file.path)], key: file.absolute.path);
+  Future<ShareResult?> share(
+    File file, {
+    String Function(String reason)? failureNotice,
+  }) => shareFiles(
+    [XFile(file.path)],
+    key: file.absolute.path,
+    failureNotice: failureNotice,
+  );
 }
 
 /// ダイアログ・パネルの中から共有する。できなかったときは記録して、その中に

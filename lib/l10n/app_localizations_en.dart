@@ -3793,6 +3793,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return 'The share file was created and saved in “Created by me” in Shared. $reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => 'Move to Trash';
 
   @override

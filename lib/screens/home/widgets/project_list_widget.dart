@@ -30,6 +30,8 @@ import '../../../widgets/project_trash_dialog.dart';
 import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/project_duplicated_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
+import '../../../widgets/share_project_file_action.dart'
+    show createAndShareProjectNiashare;
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_card_keys.dart';
 import '../../../widgets/collection_tile_layout.dart';
@@ -1569,7 +1571,10 @@ class ProjectListWidget extends StatelessWidget {
           namer: (name, taken) => numberedCopyName(l10n, name, taken),
         );
       case 'share':
-        _createNiashare(context, project);
+        // 作品詳細・受け取った作品の共有と同じく、作った共有ファイルは
+        // 「共有」の「自分が作成したもの」に残す（以前は作品のフォルダに
+        // 書き、一覧は次に読み直すまで変わらなかった）。
+        createAndShareProjectNiashare(context, service, project);
       case 'favorite':
         runProjectAction(context, () => service.toggleFavorite(project.id));
       case 'move':
@@ -1725,35 +1730,6 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
-  Future<void> _createNiashare(BuildContext context, Project project) {
-    final service = context.read<ProjectService>();
-    final materialService = context.read<MaterialService>();
-    final fontService = context.read<FontService>();
-    return runNiashareFlow(
-      context,
-      project,
-      build: (options) async {
-        final bundle = await materialService.buildShareBundle(
-          project.id,
-          options.materialTypes,
-        );
-        return NiaproSerializer.saveShare(
-          project: project,
-          scenes: service.scenesOf(project.id),
-          tileManager: service.tileManagerOf(project.id),
-          materialFiles: bundle.files.isEmpty ? null : bundle.files,
-          materialsManifest: bundle.manifest,
-          fontsManifest: projectFontNamesManifest(
-            service,
-            fontService,
-            project.id,
-          ),
-        );
-      },
-    );
-  }
-
   void _showRenameDialog(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
@@ -1873,11 +1849,13 @@ typedef NiashareIncludeOptions = ({Set<MaterialType> materialTypes});
 /// 通知先から、作成の失敗・共有できないことを知らせ、共有シートを開く
 /// （黙って止めると、押せそうに見えて何も起きない時間ができる）。
 /// 作成の失敗と、共有できない端末・共有の失敗は別のことなので、別の文で
-/// 知らせる。
+/// 知らせる。共有できなかったときの文は[notSharedNotice]で作れる（作った
+/// ファイルが残った場所を添える。無ければ理由の文だけ）。
 Future<void> runNiashareFlow(
   BuildContext context,
   Project project, {
   required Future<File> Function(NiashareIncludeOptions options) build,
+  String Function(AppLocalizations l10n, String reason)? notSharedNotice,
 }) async {
   final key = niashareKey(project.id);
   final handles = ExportShareHandles.of(context);
@@ -1921,7 +1899,12 @@ Future<void> runNiashareFlow(
       );
       return;
     }
-    await handles.share(file);
+    await handles.share(
+      file,
+      failureNotice: notSharedNotice == null
+          ? null
+          : (reason) => notSharedNotice(handles.l10n, reason),
+    );
   });
   if (!started) handles.tell(handles.l10n.homeTrashWorking);
 }

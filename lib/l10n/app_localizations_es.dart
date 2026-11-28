@@ -3852,6 +3852,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String projectNiashareSavedNotShared(String reason) {
+    return 'El archivo compartido se creó y se guardó en «Creados por mí», en Compartidos. $reason';
+  }
+
+  @override
   String get projectDetailTrashMenuItem => 'Mover a la papelera';
 
   @override
