@@ -183,128 +183,136 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
       _currentIndex = visibleWorks.length - 1;
     }
 
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: Column(
-        children: [
-          // YouTube IFrame controls must never be covered by NIARIM's own
-          // buttons. Keep exit / end behavior in a dedicated header.
-          SafeArea(
-            bottom: false,
-            child: SizedBox(
-              height: 56,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 4,
-                    left: 8,
-                    child: _TopControlButton(
-                      tooltip: l10n.communityShortsModeExitTooltip,
-                      icon: Icons.close,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  Positioned(
-                    top: 4,
-                    right: 8,
-                    child: PopupMenuButton<CommunityShortsEndBehavior>(
-                      tooltip: l10n.communityShortsEndBehaviorTooltip,
-                      initialValue: _endBehavior,
-                      onSelected: _setEndBehavior,
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: CommunityShortsEndBehavior.loopCurrent,
-                          child: _EndBehaviorMenuItem(
-                            selected:
-                                _endBehavior ==
-                                CommunityShortsEndBehavior.loopCurrent,
-                            icon: Icons.repeat_one_rounded,
-                            label: l10n.communityShortsEndBehaviorLoop,
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: CommunityShortsEndBehavior.autoAdvance,
-                          child: _EndBehaviorMenuItem(
-                            selected:
-                                _endBehavior ==
-                                CommunityShortsEndBehavior.autoAdvance,
-                            icon: Icons.vertical_align_bottom_rounded,
-                            label: l10n.communityShortsEndBehaviorAutoAdvance,
-                          ),
-                        ),
-                      ],
-                      child: Material(
-                        color: scheme.surface.withValues(alpha: 0.88),
-                        shape: const CircleBorder(),
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Icon(
-                            _endBehavior ==
-                                    CommunityShortsEndBehavior.loopCurrent
-                                ? Icons.repeat_one_rounded
-                                : Icons.vertical_align_bottom_rounded,
-                            color: scheme.onSurface,
-                            size: 24,
-                          ),
-                        ),
+    // Esc leaves the viewer, wherever the focus is on this screen (the
+    // header's buttons too); an open menu closes first, on its own route.
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            Navigator.of(context).maybePop(),
+      },
+      child: Scaffold(
+        backgroundColor: scheme.surface,
+        body: Column(
+          children: [
+            // YouTube IFrame controls must never be covered by NIARIM's own
+            // buttons. Keep exit / end behavior in a dedicated header.
+            SafeArea(
+              bottom: false,
+              child: SizedBox(
+                height: 56,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: 4,
+                      left: 8,
+                      child: _TopControlButton(
+                        tooltip: l10n.communityShortsModeExitTooltip,
+                        icon: Icons.close,
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: CallbackShortcuts(
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-                    _stepPage(1, visibleWorks.length),
-                const SingleActivator(LogicalKeyboardKey.pageDown): () =>
-                    _stepPage(1, visibleWorks.length),
-                const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-                    _stepPage(-1, visibleWorks.length),
-                const SingleActivator(LogicalKeyboardKey.pageUp): () =>
-                    _stepPage(-1, visibleWorks.length),
-              },
-              child: Focus(
-                autofocus: true,
-                child: PageView.builder(
-                  controller: _controller,
-                  scrollDirection: Axis.vertical,
-                  itemCount: visibleWorks.length,
-                  onPageChanged: (index) =>
-                      setState(() => _currentIndex = index),
-                  itemBuilder: (context, index) {
-                    final work = visibleWorks[index];
-                    return Listener(
-                      behavior: HitTestBehavior.opaque,
-                      onPointerSignal: (event) =>
-                          _onWheel(event, visibleWorks.length),
-                      child: _ShortsVerifiedPage(
-                        key: ValueKey('shorts-verified-${work.id}'),
-                        work: work,
-                        isCurrentPage: index == _currentIndex,
-                        isBookmarked: communityService.isBookmarked(work.id),
-                        onToggleBookmark: () => reportFailedCommunityEdit(
-                          context,
-                          communityService,
-                          communityService.toggleBookmark(work.id),
-                        ),
-                        onPlaybackEnded: (onLoopCurrent) =>
-                            _handlePlaybackEnded(
-                              index,
-                              visibleWorks,
-                              onLoopCurrent: onLoopCurrent,
+                    Positioned(
+                      top: 4,
+                      right: 8,
+                      child: PopupMenuButton<CommunityShortsEndBehavior>(
+                        tooltip: l10n.communityShortsEndBehaviorTooltip,
+                        initialValue: _endBehavior,
+                        onSelected: _setEndBehavior,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: CommunityShortsEndBehavior.loopCurrent,
+                            child: _EndBehaviorMenuItem(
+                              selected:
+                                  _endBehavior ==
+                                  CommunityShortsEndBehavior.loopCurrent,
+                              icon: Icons.repeat_one_rounded,
+                              label: l10n.communityShortsEndBehaviorLoop,
                             ),
+                          ),
+                          PopupMenuItem(
+                            value: CommunityShortsEndBehavior.autoAdvance,
+                            child: _EndBehaviorMenuItem(
+                              selected:
+                                  _endBehavior ==
+                                  CommunityShortsEndBehavior.autoAdvance,
+                              icon: Icons.vertical_align_bottom_rounded,
+                              label: l10n.communityShortsEndBehaviorAutoAdvance,
+                            ),
+                          ),
+                        ],
+                        child: Material(
+                          color: scheme.surface.withValues(alpha: 0.88),
+                          shape: const CircleBorder(),
+                          elevation: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Icon(
+                              _endBehavior ==
+                                      CommunityShortsEndBehavior.loopCurrent
+                                  ? Icons.repeat_one_rounded
+                                  : Icons.vertical_align_bottom_rounded,
+                              color: scheme.onSurface,
+                              size: 24,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                      _stepPage(1, visibleWorks.length),
+                  const SingleActivator(LogicalKeyboardKey.pageDown): () =>
+                      _stepPage(1, visibleWorks.length),
+                  const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                      _stepPage(-1, visibleWorks.length),
+                  const SingleActivator(LogicalKeyboardKey.pageUp): () =>
+                      _stepPage(-1, visibleWorks.length),
+                },
+                child: Focus(
+                  autofocus: true,
+                  child: PageView.builder(
+                    controller: _controller,
+                    scrollDirection: Axis.vertical,
+                    itemCount: visibleWorks.length,
+                    onPageChanged: (index) =>
+                        setState(() => _currentIndex = index),
+                    itemBuilder: (context, index) {
+                      final work = visibleWorks[index];
+                      return Listener(
+                        behavior: HitTestBehavior.opaque,
+                        onPointerSignal: (event) =>
+                            _onWheel(event, visibleWorks.length),
+                        child: _ShortsVerifiedPage(
+                          key: ValueKey('shorts-verified-${work.id}'),
+                          work: work,
+                          isCurrentPage: index == _currentIndex,
+                          isBookmarked: communityService.isBookmarked(work.id),
+                          onToggleBookmark: () => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(work.id),
+                          ),
+                          onPlaybackEnded: (onLoopCurrent) =>
+                              _handlePlaybackEnded(
+                                index,
+                                visibleWorks,
+                                onLoopCurrent: onLoopCurrent,
+                              ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
