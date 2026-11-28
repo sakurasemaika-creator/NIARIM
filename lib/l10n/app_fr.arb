@@ -3327,6 +3327,7 @@
   "communityErrorTagUpdateConflict": "Quelqu’un d’autre a modifié les tags en même temps. Veuillez réessayer.",
   "communityErrorWorkChanged": "L’œuvre a été modifiée entre-temps. Veuillez réessayer.",
   "communityErrorVideoNotFound": "La vidéo YouTube est introuvable.",
+  "communityErrorVideoNotRecent": "Seule une vidéo qui vient d’être mise en ligne peut être enregistrée sur la Place des œuvres.",
   "communityErrorVideoAlreadyRegistered": "Cette vidéo a déjà été enregistrée sur la Place des œuvres par un autre utilisateur.",
   "communityErrorWorkDeleted": "Cette vidéo a été supprimée de la Place des œuvres et ne peut pas être réenregistrée.",
   "communityErrorVideoRegistrationConflict": "Une autre demande enregistrait cette vidéo au même moment. Actualisez vos publications, puis réessayez.",

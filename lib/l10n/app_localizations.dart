@@ -14853,6 +14853,12 @@ abstract class AppLocalizations {
   /// **'YouTube動画が見つかりませんでした。'**
   String get communityErrorVideoNotFound;
 
+  /// No description provided for @communityErrorVideoNotRecent.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場にはアップロードしてすぐの動画だけを登録できます。'**
+  String get communityErrorVideoNotRecent;
+
   /// No description provided for @communityErrorVideoAlreadyRegistered.
   ///
   /// In ja, this message translates to:

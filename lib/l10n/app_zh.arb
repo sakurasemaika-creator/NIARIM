@@ -3327,6 +3327,7 @@
   "communityErrorTagUpdateConflict": "其他人同时修改了标签。请重试。",
   "communityErrorWorkChanged": "作品已被其他操作更新。请重试。",
   "communityErrorVideoNotFound": "找不到YouTube视频。",
+  "communityErrorVideoNotRecent": "作品广场只能登记刚上传的视频。",
   "communityErrorVideoAlreadyRegistered": "此视频已由其他用户登记到作品广场。",
   "communityErrorWorkDeleted": "此视频已从作品广场删除，无法重新登记。",
   "communityErrorVideoRegistrationConflict": "另一个请求正在同时登记此视频。请刷新我的投稿后重试。",

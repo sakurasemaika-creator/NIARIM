@@ -8591,6 +8591,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The YouTube video couldn’t be found.';
 
   @override
+  String get communityErrorVideoNotRecent =>
+      'Only a video that has just been uploaded can be registered in the Work Plaza.';
+
+  @override
   String get communityErrorVideoAlreadyRegistered =>
       'This video has already been registered in the Work Plaza by another user.';
 

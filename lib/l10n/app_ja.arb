@@ -4305,6 +4305,7 @@
   "communityErrorTagUpdateConflict": "ほかの人が同時にタグを変更しました。もう一度お試しください。",
   "communityErrorWorkChanged": "作品がほかの操作で更新されました。もう一度お試しください。",
   "communityErrorVideoNotFound": "YouTube動画が見つかりませんでした。",
+  "communityErrorVideoNotRecent": "作品広場にはアップロードしてすぐの動画だけを登録できます。",
   "communityErrorVideoAlreadyRegistered": "この動画は、既に別のユーザーが作品広場に登録しています。",
   "communityErrorWorkDeleted": "この動画は作品広場から削除済みのため、再登録できません。",
   "communityErrorVideoRegistrationConflict": "この動画は同時に別の登録処理で使われました。自分の投稿を再読み込みしてから、もう一度お試しください。",

@@ -8132,6 +8132,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityErrorVideoNotFound => '找不到YouTube视频。';
 
   @override
+  String get communityErrorVideoNotRecent => '作品广场只能登记刚上传的视频。';
+
+  @override
   String get communityErrorVideoAlreadyRegistered => '此视频已由其他用户登记到作品广场。';
 
   @override
@@ -19473,6 +19476,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityErrorVideoNotFound => '找不到YouTube影片。';
+
+  @override
+  String get communityErrorVideoNotRecent => '作品廣場只能登錄剛上傳的影片。';
 
   @override
   String get communityErrorVideoAlreadyRegistered => '此影片已由其他使用者登錄到作品廣場。';

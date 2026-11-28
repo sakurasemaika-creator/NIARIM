@@ -68,14 +68,19 @@ enum _PostFailureKind {
 
   /// No post left today (`POST_QUOTA_EXCEEDED`).
   postQuotaUsedUp,
+
+  /// The video was not uploaded moments before (`VIDEO_NOT_RECENT`).
+  videoNotRecent,
 }
 
 /// Refusals of `POST /works` that no retry of the same video can get past:
 /// the pending registration is closed instead of offered again and again.
-/// The day's post limit is one: the server checks the video was uploaded
-/// moments ago, so by the time the limit resets the video is too old.
+/// The server only registers a video uploaded moments ago (no reuse of old
+/// videos), so a video refused for its age never gets in, and one refused
+/// for the day's post limit is too old by the time the limit resets.
 const _closedRegistrationKinds = <String, _PostFailureKind>{
   'POST_QUOTA_EXCEEDED': _PostFailureKind.postQuotaUsedUp,
+  'VIDEO_NOT_RECENT': _PostFailureKind.videoNotRecent,
 };
 
 /// Why a picked image or video frame can't be used as the thumbnail.
@@ -1165,6 +1170,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         _minimumScheduleLead.inMinutes,
       ),
       _PostFailureKind.postQuotaUsedUp => l10n.communityErrorPostQuotaExceeded,
+      _PostFailureKind.videoNotRecent => l10n.communityErrorVideoNotRecent,
     };
   }
 

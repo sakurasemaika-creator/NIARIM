@@ -246,15 +246,23 @@ export async function getOwnChannelInfo(
 }
 
 /**
+ * 投稿直後の動画ではない（`publishedAt`が`maxAgeMinutes`より前）ときのコード。
+ * 同じ動画で何度送っても通らないので、アプリは再試行を出さずに登録を閉じる。
+ */
+export const VIDEO_NOT_RECENT_CODE = "VIDEO_NOT_RECENT";
+
+/**
  * 6章のvideoId検証：`snippet.channelId`が連携済みチャンネルIDと一致し、
  * `snippet.publishedAt`が直近（既定15分以内）であることを確認する。
+ * 古すぎるときだけ`code`に`VIDEO_NOT_RECENT_CODE`を付ける（ステータスは
+ * 今までどおり403）。
  */
 export function verifyVideoOwnership(
   snippet: YoutubeVideoSnippet,
   expectedChannelId: string,
   now: Date = new Date(),
   maxAgeMinutes = 15,
-): { ok: true } | { ok: false; reason: string } {
+): { ok: true } | { ok: false; reason: string; code?: string } {
   if (snippet.channelId !== expectedChannelId) {
     return {
       ok: false,
@@ -272,6 +280,9 @@ export function verifyVideoOwnership(
       ok: false,
       reason:
         "投稿直後の動画ではないため登録できません（過去動画の使い回し防止）",
+      ...(ageMs > maxAgeMinutes * 60 * 1000
+        ? { code: VIDEO_NOT_RECENT_CODE }
+        : {}),
     };
   }
   return { ok: true };

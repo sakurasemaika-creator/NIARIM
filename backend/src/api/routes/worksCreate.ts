@@ -123,7 +123,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }
 
     const verification = verifyVideoOwnership(snippet, linkedChannelId);
-    if (!verification.ok) forbidden(verification.reason);
+    if (!verification.ok) forbidden(verification.reason, verification.code);
 
     // A private video is only scheduled if YouTube confirms publishAt.
     // Never expose a fabricated client-supplied release date as fact.

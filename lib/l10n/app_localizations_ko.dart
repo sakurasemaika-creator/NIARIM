@@ -8262,6 +8262,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityErrorVideoNotFound => 'YouTube 동영상을 찾을 수 없습니다.';
 
   @override
+  String get communityErrorVideoNotRecent => '작품 광장에는 방금 업로드한 동영상만 등록할 수 있습니다.';
+
+  @override
   String get communityErrorVideoAlreadyRegistered =>
       '이 동영상은 이미 다른 사용자가 작품 광장에 등록했습니다.';
 

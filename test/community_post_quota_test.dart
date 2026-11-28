@@ -8,9 +8,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/community/community_error_text.dart';
 import 'package:niarim/screens/community/community_post_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
+import 'package:niarim/services/api/niarim_api_exception.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -26,7 +28,10 @@ import 'helpers/pump_real_async.dart';
 /// there and offered "Retry" for a registration that could never succeed
 /// (found by walking the app against a local copy of the backend,
 /// 2026-11-28). The app now asks GET /me/post-quota before uploading, and a
-/// refusal that arrives after an upload closes the registration instead.
+/// refusal that arrives after an upload closes the registration instead. A
+/// video refused because it was not uploaded moments before (the server's
+/// check against reusing old videos) said "no permission" and was offered for
+/// retry too; it closes the registration the same way.
 class _VideoPicker extends FilePicker {
   _VideoPicker(this.file);
 
@@ -271,71 +276,99 @@ void main() {
     expect(harness.niarimCalls, contains('POST /works'));
   });
 
-  testWidgets('the limit reached during the upload closes the registration, '
-      'and cancelling it is the only way on', (tester) async {
-    final harness = _Harness(
-      quota: () => _json(200, {'limit': 1, 'used': 0, 'remaining': 1}),
-      register: () => _json(409, {
-        'error': '本日の投稿上限に達しています。',
-        'code': 'POST_QUOTA_EXCEEDED',
-      }),
-    );
-    await _open(tester, harness);
-    await _post(tester);
+  // Refusals no retry of the same video gets past: the day's limit reached
+  // while the video was uploading (another device posted first), and a video
+  // no longer just uploaded (the server checks it was uploaded moments ago).
+  final closingRefusals = {
+    'POST_QUOTA_EXCEEDED': (409, _l10n.communityErrorPostQuotaExceeded),
+    'VIDEO_NOT_RECENT': (403, _l10n.communityErrorVideoNotRecent),
+  };
+  for (final MapEntry(key: code, value: (status, message))
+      in closingRefusals.entries) {
+    testWidgets('$code after the upload closes the registration, '
+        'and cancelling it is the only way on', (tester) async {
+      final harness = _Harness(
+        quota: () => _json(200, {'limit': 1, 'used': 0, 'remaining': 1}),
+        register: () => _json(status, {'error': '登録できません', 'code': code}),
+      );
+      await _open(tester, harness);
+      await _post(tester);
 
-    expect(harness.youtubeCalls, ['POST', 'PUT']);
-    expect(
-      harness.niarimCalls.where((call) => call == 'POST /works'),
-      hasLength(1),
-    );
-    expect(
-      find.text(_l10n.communityPostStatusRegistrationClosed),
-      findsOneWidget,
-    );
-    expect(_errorText(_l10n.communityErrorPostQuotaExceeded), findsOneWidget);
-    // No retry: the bar's only button cancels the registration, and the
-    // card no longer promises a retry without a re-upload.
-    expect(_submit, findsNothing);
-    expect(find.text(_l10n.communityPostSubmitRetry), findsNothing);
-    expect(find.textContaining(_l10n.communityPostNoReupload), findsNothing);
-    expect(_discardClosed.hitTestable(), findsOneWidget);
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString(_pendingVideoIdKey), _videoId);
+      expect(harness.youtubeCalls, ['POST', 'PUT']);
+      expect(
+        harness.niarimCalls.where((call) => call == 'POST /works'),
+        hasLength(1),
+      );
+      expect(
+        find.text(_l10n.communityPostStatusRegistrationClosed),
+        findsOneWidget,
+      );
+      expect(_errorText(message), findsOneWidget);
+      // No retry: the bar's only button cancels the registration, and the
+      // card no longer promises a retry without a re-upload.
+      expect(_submit, findsNothing);
+      expect(find.text(_l10n.communityPostSubmitRetry), findsNothing);
+      expect(find.textContaining(_l10n.communityPostNoReupload), findsNothing);
+      expect(_discardClosed.hitTestable(), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(_pendingVideoIdKey), _videoId);
 
-    // Opened again later, the screen is in the same state.
-    await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(harness.app());
-    await pumpRealAsync(tester, const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
-    expect(
-      find.text(_l10n.communityPostStatusRegistrationClosed),
-      findsOneWidget,
-    );
-    expect(_submit, findsNothing);
+      // Opened again later, the screen is in the same state.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(harness.app());
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(_l10n.communityPostStatusRegistrationClosed),
+        findsOneWidget,
+      );
+      expect(_submit, findsNothing);
 
-    await tester.tap(_discardClosed);
-    await tester.pumpAndSettle();
-    expect(find.text(_l10n.communityPostDiscardPendingConfirm), findsOne);
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.widgetWithText(
-          FilledButton,
-          _l10n.communityPostDiscardPending,
+      await tester.tap(_discardClosed);
+      await tester.pumpAndSettle();
+      expect(find.text(_l10n.communityPostDiscardPendingConfirm), findsOne);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(
+            FilledButton,
+            _l10n.communityPostDiscardPending,
+          ),
         ),
-      ),
-    );
-    await pumpRealAsync(tester, const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
-    expect(prefs.getString(_pendingVideoIdKey), isNull);
-    expect(prefs.getString('community.pendingUpload.closedReason'), isNull);
-    expect(_discardClosed, findsNothing);
-    expect(tester.widget<FilledButton>(_submit).onPressed, isNotNull);
-    expect(find.text(_l10n.communityPostSubmitUpload), findsOneWidget);
-    expect(
-      harness.niarimCalls.where((call) => call == 'POST /works'),
-      hasLength(1),
-    );
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+      expect(prefs.getString(_pendingVideoIdKey), isNull);
+      expect(prefs.getString('community.pendingUpload.closedReason'), isNull);
+      expect(_discardClosed, findsNothing);
+      expect(tester.widget<FilledButton>(_submit).onPressed, isNotNull);
+      expect(find.text(_l10n.communityPostSubmitUpload), findsOneWidget);
+      expect(
+        harness.niarimCalls.where((call) => call == 'POST /works'),
+        hasLength(1),
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  // The age refusal has a message of its own in every language, instead of
+  // "You don't have permission to do this" for a 403.
+  for (final locale in AppLocalizations.supportedLocales) {
+    test('VIDEO_NOT_RECENT is explained (${locale.toLanguageTag()})', () {
+      final l10n = lookupAppLocalizations(locale);
+      const error = NiarimApiException(
+        403,
+        '投稿直後の動画ではないため登録できません',
+        code: 'VIDEO_NOT_RECENT',
+      );
+      expect(
+        communityErrorText(l10n, error),
+        l10n.communityErrorVideoNotRecent,
+      );
+      expect(
+        l10n.communityErrorVideoNotRecent,
+        isNot(l10n.communityErrorForbidden),
+      );
+    });
+  }
 }

@@ -50,7 +50,11 @@ describe("verifyVideoOwnership（6章：videoId所有者検証）", () => {
       "channelA",
       now,
     );
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({
+      ok: false,
+      reason: expect.stringContaining("投稿直後の動画ではない"),
+      code: "VIDEO_NOT_RECENT",
+    });
   });
 
   it("未来の日時（時計ズレ等の異常値）は拒否する", () => {
@@ -62,6 +66,9 @@ describe("verifyVideoOwnership（6章：videoId所有者検証）", () => {
       now,
     );
     expect(result.ok).toBe(false);
+    // Not "too old": a clock disagreement is not a reason to close the
+    // registration for good.
+    expect(result).not.toHaveProperty("code");
   });
 
   it("maxAgeMinutesちょうどの境界では許可する", () => {

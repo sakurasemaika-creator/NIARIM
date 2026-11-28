@@ -3327,6 +3327,7 @@
   "communityErrorTagUpdateConflict": "其他人同時變更了標籤。請再試一次。",
   "communityErrorWorkChanged": "作品已被其他操作更新。請再試一次。",
   "communityErrorVideoNotFound": "找不到YouTube影片。",
+  "communityErrorVideoNotRecent": "作品廣場只能登錄剛上傳的影片。",
   "communityErrorVideoAlreadyRegistered": "此影片已由其他使用者登錄到作品廣場。",
   "communityErrorWorkDeleted": "此影片已從作品廣場刪除，無法重新登錄。",
   "communityErrorVideoRegistrationConflict": "另一個請求正在同時登錄此影片。請重新整理我的投稿後再試一次。",

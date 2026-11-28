@@ -3327,6 +3327,7 @@
   "communityErrorTagUpdateConflict": "Otra persona cambió las etiquetas al mismo tiempo. Inténtalo de nuevo.",
   "communityErrorWorkChanged": "La obra se actualizó con otro cambio. Inténtalo de nuevo.",
   "communityErrorVideoNotFound": "No se encontró el vídeo de YouTube.",
+  "communityErrorVideoNotRecent": "En la Plaza de Obras solo se puede registrar un vídeo recién subido.",
   "communityErrorVideoAlreadyRegistered": "Otro usuario ya registró este vídeo en la Plaza de Obras.",
   "communityErrorWorkDeleted": "Este vídeo se eliminó de la Plaza de Obras y no se puede volver a registrar.",
   "communityErrorVideoRegistrationConflict": "Otra solicitud estaba registrando este vídeo al mismo tiempo. Recarga tus publicaciones e inténtalo de nuevo.",

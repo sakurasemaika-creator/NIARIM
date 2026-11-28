@@ -47,6 +47,7 @@ String? communityApiErrorCodeText(AppLocalizations l10n, String? code) =>
       'TAG_UPDATE_CONFLICT' => l10n.communityErrorTagUpdateConflict,
       'WORK_CHANGED' => l10n.communityErrorWorkChanged,
       'VIDEO_NOT_FOUND' => l10n.communityErrorVideoNotFound,
+      'VIDEO_NOT_RECENT' => l10n.communityErrorVideoNotRecent,
       'VIDEO_ALREADY_REGISTERED' => l10n.communityErrorVideoAlreadyRegistered,
       'WORK_DELETED' => l10n.communityErrorWorkDeleted,
       'VIDEO_REGISTRATION_CONFLICT' =>

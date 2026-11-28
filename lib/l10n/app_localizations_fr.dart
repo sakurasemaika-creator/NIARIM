@@ -8738,6 +8738,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityErrorVideoNotFound => 'La vidéo YouTube est introuvable.';
 
   @override
+  String get communityErrorVideoNotRecent =>
+      'Seule une vidéo qui vient d’être mise en ligne peut être enregistrée sur la Place des œuvres.';
+
+  @override
   String get communityErrorVideoAlreadyRegistered =>
       'Cette vidéo a déjà été enregistrée sur la Place des œuvres par un autre utilisateur.';
 

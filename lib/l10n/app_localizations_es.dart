@@ -8729,6 +8729,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se encontró el vídeo de YouTube.';
 
   @override
+  String get communityErrorVideoNotRecent =>
+      'En la Plaza de Obras solo se puede registrar un vídeo recién subido.';
+
+  @override
   String get communityErrorVideoAlreadyRegistered =>
       'Otro usuario ya registró este vídeo en la Plaza de Obras.';
 

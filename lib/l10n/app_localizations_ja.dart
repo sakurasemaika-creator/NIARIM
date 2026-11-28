@@ -8223,6 +8223,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityErrorVideoNotFound => 'YouTube動画が見つかりませんでした。';
 
   @override
+  String get communityErrorVideoNotRecent => '作品広場にはアップロードしてすぐの動画だけを登録できます。';
+
+  @override
   String get communityErrorVideoAlreadyRegistered =>
       'この動画は、既に別のユーザーが作品広場に登録しています。';
 

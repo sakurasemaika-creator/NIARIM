@@ -3357,6 +3357,7 @@
   "communityErrorTagUpdateConflict": "Someone else changed the tags at the same time. Please try again.",
   "communityErrorWorkChanged": "The work was updated by another change. Please try again.",
   "communityErrorVideoNotFound": "The YouTube video couldn’t be found.",
+  "communityErrorVideoNotRecent": "Only a video that has just been uploaded can be registered in the Work Plaza.",
   "communityErrorVideoAlreadyRegistered": "This video has already been registered in the Work Plaza by another user.",
   "communityErrorWorkDeleted": "This video was deleted from the Work Plaza and can’t be registered again.",
   "communityErrorVideoRegistrationConflict": "This video was being registered by another request at the same time. Reload your posts and try again.",
