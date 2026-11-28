@@ -15669,6 +15669,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, other{{count}件を貼り付けました。}}'**
   String homePastedSnackbar(int count);
 
+  /// ホームの取り消し（Ctrl+Z）で、コピーの貼り付けを取り消したとき（作った複製はゴミ箱へ移す）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{貼り付けを取り消しました。複製した{count}件はゴミ箱へ移しました。}}'**
+  String homePasteUndoneToTrash(int count);
+
+  /// ホームの取り消し（Ctrl+Z）で、切り取りの貼り付けを取り消したとき（移したものを元の場所へ戻す）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{貼り付けを取り消し、{count}件を元の場所へ戻しました。}}'**
+  String homePasteUndoneMovedBack(int count);
+
   /// No description provided for @homePasteSkippedIntoSelf.
   ///
   /// In ja, this message translates to:

@@ -4527,6 +4527,24 @@
       }
     }
   },
+  "homePasteUndoneToTrash": "{count, plural, other{貼り付けを取り消しました。複製した{count}件はゴミ箱へ移しました。}}",
+  "@homePasteUndoneToTrash": {
+    "description": "ホームの取り消し（Ctrl+Z）で、コピーの貼り付けを取り消したとき（作った複製はゴミ箱へ移す）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteUndoneMovedBack": "{count, plural, other{貼り付けを取り消し、{count}件を元の場所へ戻しました。}}",
+  "@homePasteUndoneMovedBack": {
+    "description": "ホームの取り消し（Ctrl+Z）で、切り取りの貼り付けを取り消したとき（移したものを元の場所へ戻す）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homePasteSkippedIntoSelf": "{count, plural, other{フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。}}",
   "@homePasteSkippedIntoSelf": {
     "placeholders": {

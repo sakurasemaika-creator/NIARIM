@@ -8676,6 +8676,26 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String homePasteUndoneToTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '貼り付けを取り消しました。複製した$count件はゴミ箱へ移しました。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneMovedBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '貼り付けを取り消し、$count件を元の場所へ戻しました。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homePasteSkippedIntoSelf(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

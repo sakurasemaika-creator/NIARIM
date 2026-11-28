@@ -9232,6 +9232,28 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String homePasteUndoneToTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se deshizo el pegado. $count copias se movieron a la papelera.',
+      one: 'Se deshizo el pegado. $count copia se movió a la papelera.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneMovedBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se deshizo el pegado. $count elementos volvieron a su lugar.',
+      one: 'Se deshizo el pegado. $count elemento volvió a su lugar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homePasteSkippedIntoSelf(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

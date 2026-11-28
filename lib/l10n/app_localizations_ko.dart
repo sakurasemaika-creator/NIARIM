@@ -8719,6 +8719,26 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String homePasteUndoneToTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '붙여넣기를 취소했습니다. 복제한 $count개 항목을 휴지통으로 이동했습니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneMovedBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '붙여넣기를 취소하고 $count개 항목을 원래 위치로 되돌렸습니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homePasteSkippedIntoSelf(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -8574,6 +8574,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String homePasteUndoneToTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已撤销粘贴。复制的$count项已移至回收站。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneMovedBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已撤销粘贴，$count项已移回原位置。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String homePasteSkippedIntoSelf(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -19877,6 +19897,26 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       count,
       locale: localeName,
       other: '已貼上$count項。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneToTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已復原貼上。複製的$count項已移至垃圾桶。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteUndoneMovedBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已復原貼上，$count項已移回原位置。',
     );
     return '$_temp0';
   }

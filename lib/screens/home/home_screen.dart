@@ -283,6 +283,30 @@ enum _PasteOutcome {
   failed,
 }
 
+/// 最後に「プロジェクト」へ貼り付けたもの（ホームのCtrl+Zで取り消す）。
+/// コピーを貼り付けたときは作った複製、切り取りを貼り付けたときは移す前の
+/// 場所。
+class _PasteUndo {
+  final List<String> copiedProjectIds = [];
+  final List<String> copiedFolderIds = [];
+
+  /// 移した作品 → 移す前のフォルダ（nullは一番上）。
+  final Map<String, String?> movedProjects = {};
+
+  /// 移したフォルダ → 移す前の親のフォルダ（nullは一番上）。
+  final Map<String, String?> movedFolders = {};
+
+  /// 貼り付けた順番（[nextHomeUndoSerial]）。ゴミ箱へ移したものとの新しさを
+  /// 比べる。
+  int serial = 0;
+
+  bool get isEmpty =>
+      copiedProjectIds.isEmpty &&
+      copiedFolderIds.isEmpty &&
+      movedProjects.isEmpty &&
+      movedFolders.isEmpty;
+}
+
 /// 貼り付けた件数と、貼り付けられなかった理由ごとの件数（所有者の判断6：
 /// 件数の内訳を出し、正しく貼り付けられたかが分かるようにする）。
 class _PasteTally {
@@ -2545,13 +2569,14 @@ class _HomeScreenState extends State<HomeScreen>
     if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
       return {_escapeOnce: () => _scaffoldKey.currentState?.closeEndDrawer()};
     }
-    // 取り消し（Ctrl+Z等）は、最後にゴミ箱へ移したものを元に戻す（知らせが
-    // 消えた後も。所有者の判断、2026-11-22）。どのタブでも、検索中も効く
-    // （入力欄にフォーカスがある間は入力欄の取り消し）。
+    // 取り消し（Ctrl+Z等）は、最後にゴミ箱へ移したもの（知らせが消えた後も。
+    // 所有者の判断、2026-11-22）と最後の貼り付けの、新しい方を元に戻す。
+    // どのタブでも、検索中も効く（入力欄にフォーカスがある間は入力欄の
+    // 取り消し）。
     final undo = <ShortcutActivator, VoidCallback>{
       for (final b in bindings)
         if (!b.isToolAction && b.command == ShortcutCommand.undo)
-          b.activator: _undoLastTrashMove,
+          b.activator: _undoLastChange,
     };
     // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
     // Escは検索を閉じる（Enterで入力を終えた後も）。
@@ -2619,15 +2644,118 @@ class _HomeScreenState extends State<HomeScreen>
     return result;
   }
 
-  /// 最後にゴミ箱へ移したもの（まだゴミ箱にあるもの）を元に戻す。
-  void _undoLastTrashMove() {
+  /// 最後にゴミ箱へ移したもの（まだゴミ箱にあるもの）と最後の貼り付けの、
+  /// 新しい方を元に戻す（以前は貼り付けた直後のCtrl+Zが何もしなかった）。
+  /// ゴミ箱へ移したものがもう戻せない（ゴミ箱のタブから戻した等）ときは、
+  /// 貼り付けを取り消す。
+  void _undoLastChange() {
     final messenger = _messenger;
-    if (messenger == null || !mounted) return;
-    undoLastTrashMove(
+    if (messenger == null || !mounted || _pasting) return;
+    final paste = _lastPaste;
+    final trashMove = lastTrashMoveSerial(messenger);
+    if (paste != null && (trashMove == null || paste.serial > trashMove)) {
+      _undoPaste(paste);
+      return;
+    }
+    final restored = undoLastTrashMove(
       messenger,
       AppLocalizations.of(context)!,
       context.read<ProjectService>(),
     );
+    if (!restored && paste != null) _undoPaste(paste);
+  }
+
+  /// 最後の貼り付け（Ctrl+Zで取り消す。取り消したらnull）。
+  _PasteUndo? _lastPaste;
+
+  /// 貼り付けを取り消す。コピーを貼り付けたときは、作った複製をゴミ箱へ
+  /// 移す（消さずにゴミ箱から戻せるようにする。お気に入りのままでは移せない
+  /// ので、複製のお気に入りは外す）。切り取りを貼り付けたときは、移す前の
+  /// 場所へ戻す。もう無いもの・戻す先が無いものは飛ばす。結果は貼り付けの
+  /// 知らせと同じ所に出す。
+  Future<void> _undoPaste(_PasteUndo paste) async {
+    _lastPaste = null;
+    final messenger = _messenger;
+    final service = context.read<ProjectService>();
+    final l10n = AppLocalizations.of(context)!;
+    // 1回の貼り付けは、コピーか切り取りのどちらか。
+    final copied =
+        paste.copiedProjectIds.isNotEmpty || paste.copiedFolderIds.isNotEmpty;
+    var undone = 0;
+    Object? failure;
+    Future<void> attempt(Future<bool> Function() undo) async {
+      try {
+        if (await undo()) undone++;
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+        failure ??= error;
+      }
+    }
+
+    setState(() => _pasting = true);
+    try {
+      for (final id in paste.copiedFolderIds) {
+        await attempt(() async {
+          if (!service.folders.any((f) => f.id == id)) return false;
+          final subtree = service.folderSubtreeIds(id);
+          for (final folder in service.folders.toList()) {
+            if (subtree.contains(folder.id) && folder.isFavorite) {
+              await service.toggleFolderFavorite(folder.id);
+            }
+          }
+          for (final project in service.projects.toList()) {
+            if (project.isFavorite && subtree.contains(project.folderId)) {
+              await service.setFavorite(project.id, false);
+            }
+          }
+          return await service.moveFolderToTrash(id) != null;
+        });
+      }
+      for (final id in paste.copiedProjectIds) {
+        await attempt(() async {
+          final project = service.projects.where((p) => p.id == id).firstOrNull;
+          if (project == null) return false;
+          if (project.isFavorite) await service.setFavorite(id, false);
+          await service.deleteProject(id);
+          return true;
+        });
+      }
+      for (final MapEntry(key: id, value: parent)
+          in paste.movedFolders.entries) {
+        await attempt(() async {
+          if (!service.folders.any((f) => f.id == id) ||
+              (parent != null && !service.folders.any((f) => f.id == parent))) {
+            return false;
+          }
+          await service.moveFolderTo(id, parent);
+          return true;
+        });
+      }
+      for (final MapEntry(key: id, value: folder)
+          in paste.movedProjects.entries) {
+        await attempt(() async {
+          if (!service.projects.any((p) => p.id == id) ||
+              (folder != null && !service.folders.any((f) => f.id == folder))) {
+            return false;
+          }
+          await service.moveToFolder(id, folder);
+          return true;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _pasting = false);
+    }
+    if (!mounted) return;
+    final error = failure;
+    if (error != null) {
+      if (messenger != null) showProjectActionFailure(messenger, l10n, error);
+    } else if (undone > 0) {
+      _showClipboardFeedback(
+        copied
+            ? l10n.homePasteUndoneToTrash(undone)
+            : l10n.homePasteUndoneMovedBack(undone),
+      );
+    }
   }
 
   /// Clear the in-memory clipboard, including items copied from other tabs.
@@ -3060,6 +3188,7 @@ class _HomeScreenState extends State<HomeScreen>
         outcome == _PasteOutcome.missing ||
         (outcome == _PasteOutcome.pasted &&
             (cut || target == HomePasteArea.trash));
+    final undo = _PasteUndo();
     setState(() => _pasting = true);
     try {
       if (target == HomePasteArea.trash) {
@@ -3092,18 +3221,26 @@ class _HomeScreenState extends State<HomeScreen>
         for (final id in projectIds) {
           final outcome = await tally.run(() async {
             if (cut) {
-              if (!service.projects.any((project) => project.id == id)) {
-                return false;
-              }
+              final project = service.projects
+                  .where((p) => p.id == id)
+                  .firstOrNull;
+              if (project == null) return false;
               await service.moveToFolder(id, _currentFolderId);
+              undo.movedProjects[id] = project.folderId;
               return true;
             }
-            return service.duplicateProject(
+            final before = {for (final p in service.projects) p.id};
+            final copied = await service.duplicateProject(
               id,
               targetFolderId: _currentFolderId,
               useTargetFolder: true,
               namer: namer,
             );
+            undo.copiedProjectIds.addAll([
+              for (final p in service.projects)
+                if (!before.contains(p.id)) p.id,
+            ]);
+            return copied;
           });
           if (leavesClipboard(outcome)) _clipboardProjectIds.remove(id);
         }
@@ -3119,6 +3256,7 @@ class _HomeScreenState extends State<HomeScreen>
             if (source == null) return false;
             if (cut) {
               await service.moveFolderTo(id, _currentFolderId);
+              undo.movedFolders[id] = source.parentFolderId;
               return true;
             }
             final result = await service.duplicateFolder(
@@ -3131,6 +3269,7 @@ class _HomeScreenState extends State<HomeScreen>
                 folders: service.folders,
               ),
             );
+            if (result != null) undo.copiedFolderIds.add(result.id);
             return result != null;
           });
           if (leavesClipboard(outcome)) _clipboardFolderIds.remove(id);
@@ -3157,6 +3296,9 @@ class _HomeScreenState extends State<HomeScreen>
       AppErrorReporter.record(error, stackTrace);
       tally.add(_PasteOutcome.failed);
     } finally {
+      // 何か貼り付けたら、Ctrl+Zで取り消せるように覚える（前の貼り付けは
+      // もう取り消さない）。
+      if (!undo.isEmpty) _lastPaste = undo..serial = nextHomeUndoSerial();
       if (mounted) {
         setState(() => _pasting = false);
         _showClipboardFeedback(tally.message(l10n));

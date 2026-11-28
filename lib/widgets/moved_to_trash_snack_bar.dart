@@ -60,6 +60,17 @@ class _RestoreMark {
   bool started = false;
 }
 
+/// ホームの取り消し（Ctrl+Z）で戻せる操作（ゴミ箱へ移す・貼り付け）の順番を
+/// 配る。後の操作ほど大きい。ホームは、最後の貼り付けと最後にゴミ箱へ移した
+/// ものの新しい方から戻す。
+int nextHomeUndoSerial() => ++_homeUndoSerial;
+int _homeUndoSerial = 0;
+
+/// [undoLastTrashMove]で戻せる、最後にゴミ箱へ移したことを伝えた知らせの
+/// 順番（[nextHomeUndoSerial]）。無ければnull。
+int? lastTrashMoveSerial(ScaffoldMessengerState messenger) =>
+    _lastTrashNotice[messenger]?.serial;
+
 /// ゴミ箱へ移した知らせの印（取り下げるときに、他の機能の知らせと
 /// 見分ける）。知らせごとに別のキーになる。
 class _MovedToTrashNoticeKey extends UniqueKey {
@@ -67,6 +78,9 @@ class _MovedToTrashNoticeKey extends UniqueKey {
 
   /// この知らせの「元に戻す」で戻すもの（移した順）。
   final List<_TrashMove> moves;
+
+  /// 移した順番（[nextHomeUndoSerial]）。
+  final int serial = nextHomeUndoSerial();
 
   final _TrashNoticeState state = _TrashNoticeState();
 }

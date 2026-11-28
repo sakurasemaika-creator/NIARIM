@@ -3480,6 +3480,8 @@
   "homeCutSnackbar": "已剪切{count}项。打开目标位置后，点按屏幕底部工具栏的粘贴。",
   "homeCopiedSnackbar": "已复制{count}项。打开要粘贴的位置后，点按屏幕底部工具栏的粘贴。",
   "homePastedSnackbar": "{count, plural, other{已粘贴{count}项。}}",
+  "homePasteUndoneToTrash": "{count, plural, other{已撤销粘贴。复制的{count}项已移至回收站。}}",
+  "homePasteUndoneMovedBack": "{count, plural, other{已撤销粘贴，{count}项已移回原位置。}}",
   "homePasteSkippedIntoSelf": "{count, plural, other{{count}个文件夹无法移入自身或其子文件夹，已保留为剪切状态。}}",
   "homePasteSkippedMissing": "{count, plural, other{有{count}项因原作品或文件夹已不存在（已移至回收站或已删除）而无法粘贴。}}",
   "homePasteSkippedFavorite": "{count, plural, other{有{count}项是已加星标的作品或文件夹（或含有它们的文件夹），因此未移至回收站。请先取消星标，再重新粘贴。}}",
