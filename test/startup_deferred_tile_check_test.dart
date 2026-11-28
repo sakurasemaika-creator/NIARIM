@@ -467,6 +467,25 @@ void main() {
     expect(projects.takeAutosaveRecovery(work.id), work.savedAt);
   });
 
+  test('a work deleted from the trash while its check restores it stays '
+      'deleted', () async {
+    final work = await savedWork();
+    final first = await started();
+    await first.deleteProject(work.id);
+    await first.backgroundChecksSettled;
+    damageTiles(work.id);
+
+    final projects = await started();
+    projects.checkListedTilesInBackground();
+    await projects.permanentDelete(work.id);
+    await projects.backgroundChecksSettled;
+    expect(Directory(File(workPath(work.id)).parent.path).existsSync(), false);
+    expect(projects.trash.map((p) => p.id), isNot(contains(work.id)));
+    final next = await started();
+    expect(next.projects.map((p) => p.id), isNot(contains(work.id)));
+    expect(next.trash.map((p) => p.id), isNot(contains(work.id)));
+  });
+
   test('a work damaged only in its tiles with no readable automatic save '
       'leaves the list as at start-up, and its file is kept', () async {
     final work = await savedWork(autosave: false);

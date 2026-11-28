@@ -1401,8 +1401,8 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   ファイル全体を`decodeZip`で読む。タイルの確かめ（`NiaproSerializer.checkListedTiles`＝ファイル全体の
   `decodeZip`）は、最初の画面を描いた後に裏のisolateで1作品ずつ（`checkListedTilesInBackground`、
   `app_bootstrap.dart`）。作品のタイルを使う前にもその作品を確かめる：`_tilesOf`（タイルを読むことが確かめ）と
-  `_queueProjectSave`に並ぶ書き込み（名前の変更・お気に入り・フォルダ・ゴミ箱へ移す・戻す。消すだけの完全削除は
-  `readsWorkFile: false`）。開く画面（詳細・キャンバス・タイムライン）は`initState`の最初に`readTilesNow`を呼び、
+  `_queueProjectSave`に並ぶ処理（名前の変更・お気に入り・フォルダ・ゴミ箱へ移す・戻す・完全削除。完全削除も待つのは、
+  確かめが戻した作品のファイルの作り直しが、消した後に書き戻さないため）。開く画面（詳細・キャンバス・タイムライン）は`initState`の最初に`readTilesNow`を呼び、
   画面が作品を読む前に確かめる。**作品のファイルを読む・写す処理を足すときは、`_tilesOf`か`_queueProjectSave`を
   通すこと**（通さないと、確かめていないファイルの壊れたタイルをそのまま写す・読めずに失敗する）。絵だけが壊れて
   いた作品は、一覧に出したときのままのファイル（大きさと更新日時が同じ、`UncheckedWorkFile.sameAs`）なら、起動時に

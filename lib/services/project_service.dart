@@ -5054,16 +5054,10 @@ class ProjectService extends ChangeNotifier {
   /// Runs [write] after the writes queued for [id] before it. A work listed
   /// before its tiles were checked has them checked first (and is restored
   /// from its automatic save when damaged, with its file rebuilt), so that no
-  /// write keeps or reads the tiles of a damaged file; [readsWorkFile] false
-  /// skips that (the work file is only deleted).
-  Future<T> _queueProjectSave<T>(
-    String id,
-    Future<T> Function() write, {
-    bool readsWorkFile = true,
-  }) {
-    if (readsWorkFile &&
-        (_uncheckedTiles.containsKey(id) ||
-            _recoveryRewrites.containsKey(id))) {
+  /// write keeps or reads the tiles of a damaged file, and no rebuilt file is
+  /// written after the work was deleted.
+  Future<T> _queueProjectSave<T>(String id, Future<T> Function() write) {
+    if (_uncheckedTiles.containsKey(id) || _recoveryRewrites.containsKey(id)) {
       final unchecked = write;
       write = () async {
         await _settleTileCheck(id);
@@ -5124,20 +5118,17 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
-  Future<void> _queueTrash(
-    String id,
-    Future<void> Function() operation, {
-    bool readsWorkFile = true,
-  }) => _queueFolder(
-    () => _queueProjectSave(id, () async {
-      try {
-        await operation();
-      } catch (error, stackTrace) {
-        AppErrorReporter.record(error, stackTrace);
-        rethrow;
-      }
-    }, readsWorkFile: readsWorkFile),
-  );
+  Future<void> _queueTrash(String id, Future<void> Function() operation) =>
+      _queueFolder(
+        () => _queueProjectSave(id, () async {
+          try {
+            await operation();
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+            rethrow;
+          }
+        }),
+      );
 
   void _notifyFolders() {
     if (!_folderDisposed) notifyListeners();
@@ -5440,7 +5431,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> permanentDelete(String id) =>
-      _queueTrash(id, () => _permanentDeleteNow(id), readsWorkFile: false);
+      _queueTrash(id, () => _permanentDeleteNow(id));
 
   /// [permanentDelete]の中身（フォルダの処理の中から呼ぶとき用。
   /// [_restoreProjectNow]と同じ）。
@@ -6609,11 +6600,7 @@ class ProjectService extends ChangeNotifier {
         for (final id in record.projectIds) {
           if (!_trash.any((p) => p.id == id)) continue;
           try {
-            await _queueProjectSave(
-              id,
-              () => _permanentDeleteNow(id),
-              readsWorkFile: false,
-            );
+            await _queueProjectSave(id, () => _permanentDeleteNow(id));
           } catch (error, stackTrace) {
             AppErrorReporter.record(error, stackTrace);
           }
