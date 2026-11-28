@@ -97,10 +97,24 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     }
     final next = _currentIndex + delta;
     if (next < 0 || next >= count) return;
-    _controller.animateToPage(
-      next,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
+    final position = _controller.position;
+    if (position is! ScrollPositionWithSingleContext) {
+      _controller.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    position.beginActivity(
+      _PageStepActivity(
+        position,
+        from: position.pixels,
+        to: next * position.viewportDimension,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        vsync: position.context.vsync,
+      ),
     );
   }
 
@@ -294,6 +308,26 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
       ),
     );
   }
+}
+
+/// ホイール・キーで1つ送る動き。送っている間もページ（ホイールを受ける
+/// [Listener]）に触れられる。既定の送り（animateToPage）は送る間ページへの
+/// 触れを止めるので、その間に届いたホイールはPageView自身が受けて送りを止め、
+/// 53pxだけ動かしてから元のページへ戻していた（ホイールを続けて回すと1つも
+/// 進まなかった）。今は送る間のホイールもページの[Listener]が受け、送り終える
+/// まで何もしない。
+class _PageStepActivity extends DrivenScrollActivity {
+  _PageStepActivity(
+    super.delegate, {
+    required super.from,
+    required super.to,
+    required super.duration,
+    required super.curve,
+    required super.vsync,
+  });
+
+  @override
+  bool get shouldIgnorePointer => false;
 }
 
 /// Revalidate each vertical-page activation (including when a queued next
