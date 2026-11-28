@@ -3750,6 +3750,7 @@
   "rewardUnlockEarnSignIn": "Connectez-vous avec Google pour gagner des opales",
   "rewardUnlockBalanceLoadFailed": "Impossible de charger votre solde d’opales",
   "rewardUnlockRedeem": "Échanger les opales",
+  "rewardUnlockOpalsShort": "{count, plural, one{Encore {count} opale pour échanger} other{Encore {count} opales pour échanger}}",
   "rewardUnlockWatchRewardedAd": "Voir une publicité pour gagner des opales",
   "rewardUnlockRewardPending": "Vérification en attente. Les opales seront ajoutées après confirmation.",
   "rewardUnlockRewardUnavailable": "Impossible d’afficher la publicité. Réessayez plus tard.",

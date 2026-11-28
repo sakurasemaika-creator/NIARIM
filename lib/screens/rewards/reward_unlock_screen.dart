@@ -23,6 +23,7 @@ import '../../services/google_auth_service.dart';
 import '../../services/premium_service.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_row_or_stack.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
@@ -1180,6 +1181,18 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     );
   }
 
+  /// Opens the tab of the Opals screen where Opals are earned ([tab]: 0 for
+  /// the missions, 1 for the ads), or that page ([route]) when this screen is
+  /// shown on its own.
+  void _showEarning(int tab, String route) {
+    final tabs = DefaultTabController.maybeOf(context);
+    if (widget.embedded && tabs != null) {
+      tabs.animateTo(tab);
+    } else {
+      context.push(route);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = RewardUnlockLabels.of(context);
@@ -1215,6 +1228,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         !_redeemBusy &&
         balance is int &&
         balance >= (serverPrice ?? referenceTotal);
+    // What the balance lacks for the chosen benefits, when that is the only
+    // thing keeping them from being redeemed.
+    final opalsShort =
+        balance is int &&
+            _selected.isNotEmpty &&
+            (individualOffer || fullPremiumOffer)
+        ? (serverPrice ?? referenceTotal) - balance
+        : 0;
     final rewardCoins = _rewardState?['rewardedCoinsPerCompletion'];
     final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
     final rewardDailyRemaining = _rewardState?['rewardedDailyRemaining'];
@@ -1496,6 +1517,32 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                               : null,
                           child: messageText(t['redeem']),
                         ),
+                        if (opalsShort > 0) ...[
+                          const SizedBox(height: 12),
+                          messageText(
+                            l10n.rewardUnlockOpalsShort(opalsShort),
+                            key: const Key('rewardOpalsShort'),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          ButtonRowOrStack(
+                            children: [
+                              TextButton.icon(
+                                key: const Key('rewardOpalsShortEarn'),
+                                icon: const Icon(Icons.smart_display_outlined),
+                                onPressed: () => _showEarning(1, '/earn-coins'),
+                                label: messageText(nav['earnTab']),
+                              ),
+                              TextButton.icon(
+                                key: const Key('rewardOpalsShortMissions'),
+                                icon: const Icon(Icons.flag_outlined),
+                                onPressed: () =>
+                                    _showEarning(0, '/creator-missions'),
+                                label: messageText(nav['missions']),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

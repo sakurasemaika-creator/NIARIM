@@ -9623,6 +9623,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockRedeem => 'オパールと引き換え';
 
   @override
+  String rewardUnlockOpalsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'あと$countStringオパールで交換できます';
+  }
+
+  @override
   String get rewardUnlockWatchRewardedAd => 'リワード広告を見てオパールを貯める';
 
   @override

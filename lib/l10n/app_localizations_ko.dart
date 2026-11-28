@@ -9673,6 +9673,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockRedeem => '오팔로 교환';
 
   @override
+  String rewardUnlockOpalsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString오팔이 더 있으면 교환할 수 있습니다';
+  }
+
+  @override
   String get rewardUnlockWatchRewardedAd => '보상형 광고를 보고 오팔 적립';
 
   @override

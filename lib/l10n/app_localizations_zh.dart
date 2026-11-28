@@ -9507,6 +9507,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockRedeem => '用欧泊兑换';
 
   @override
+  String rewardUnlockOpalsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '再获得$countString欧泊即可兑换';
+  }
+
+  @override
   String get rewardUnlockWatchRewardedAd => '观看激励广告获得欧泊';
 
   @override
@@ -20852,6 +20861,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get rewardUnlockRedeem => '用歐泊兌換';
+
+  @override
+  String rewardUnlockOpalsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '再獲得$countString歐泊即可兌換';
+  }
 
   @override
   String get rewardUnlockWatchRewardedAd => '觀看獎勵廣告獲得歐泊';

@@ -3750,6 +3750,7 @@
   "rewardUnlockEarnSignIn": "Inicia sesión con Google para ganar ópalos",
   "rewardUnlockBalanceLoadFailed": "No se pudo cargar tu saldo de ópalos",
   "rewardUnlockRedeem": "Canjear ópalos",
+  "rewardUnlockOpalsShort": "{count, plural, one{Consigue {count} ópalo más para canjear} other{Consigue {count} ópalos más para canjear}}",
   "rewardUnlockWatchRewardedAd": "Ver un anuncio para ganar ópalos",
   "rewardUnlockRewardPending": "Verificación pendiente. Los ópalos se añadirán después de la confirmación.",
   "rewardUnlockRewardUnavailable": "No se pudo mostrar el anuncio. Inténtalo más tarde.",

@@ -10277,6 +10277,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockRedeem => 'Canjear ópalos';
 
   @override
+  String rewardUnlockOpalsShort(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Consigue $countString ópalos más para canjear',
+      one: 'Consigue $countString ópalo más para canjear',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get rewardUnlockWatchRewardedAd => 'Ver un anuncio para ganar ópalos';
 
   @override

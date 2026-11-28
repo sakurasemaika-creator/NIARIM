@@ -3780,6 +3780,7 @@
   "rewardUnlockEarnSignIn": "Sign in with Google to earn Opals",
   "rewardUnlockBalanceLoadFailed": "Couldn’t load your Opal balance",
   "rewardUnlockRedeem": "Redeem Opals",
+  "rewardUnlockOpalsShort": "{count, plural, one{Collect {count} more Opal to redeem} other{Collect {count} more Opals to redeem}}",
   "rewardUnlockWatchRewardedAd": "Watch a rewarded ad to earn Opals",
   "rewardUnlockRewardPending": "Pending verification. Opals appear after Google’s signed confirmation.",
   "rewardUnlockRewardUnavailable": "Could not show the ad. Please try again later.",

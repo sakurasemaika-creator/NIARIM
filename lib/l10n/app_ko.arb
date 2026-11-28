@@ -3750,6 +3750,7 @@
   "rewardUnlockEarnSignIn": "오팔을 획득하려면 Google로 로그인해 주세요",
   "rewardUnlockBalanceLoadFailed": "오팔 잔액을 불러오지 못했습니다",
   "rewardUnlockRedeem": "오팔로 교환",
+  "rewardUnlockOpalsShort": "{count}오팔이 더 있으면 교환할 수 있습니다",
   "rewardUnlockWatchRewardedAd": "보상형 광고를 보고 오팔 적립",
   "rewardUnlockRewardPending": "검증 대기 중입니다. Google 확인 후 오팔이 반영됩니다.",
   "rewardUnlockRewardUnavailable": "광고를 표시할 수 없습니다. 나중에 다시 시도하세요.",

@@ -3750,6 +3750,7 @@
   "rewardUnlockEarnSignIn": "使用 Google 登入後即可賺取歐泊",
   "rewardUnlockBalanceLoadFailed": "無法載入歐泊餘額",
   "rewardUnlockRedeem": "用歐泊兌換",
+  "rewardUnlockOpalsShort": "再獲得{count}歐泊即可兌換",
   "rewardUnlockWatchRewardedAd": "觀看獎勵廣告獲得歐泊",
   "rewardUnlockRewardPending": "等待驗證中。Google 確認後歐泊才會入帳。",
   "rewardUnlockRewardUnavailable": "無法播放廣告，請稍後再試。",

@@ -17205,6 +17205,12 @@ abstract class AppLocalizations {
   /// **'オパールと引き換え'**
   String get rewardUnlockRedeem;
 
+  /// 特典交換：選んだ特典の合計に残高が足りないとき、あといくつ要るか（交換のボタンの下。広告・ミッションのタブへ移るボタンを添える）
+  ///
+  /// In ja, this message translates to:
+  /// **'あと{count}オパールで交換できます'**
+  String rewardUnlockOpalsShort(int count);
+
   /// No description provided for @rewardUnlockWatchRewardedAd.
   ///
   /// In ja, this message translates to:
