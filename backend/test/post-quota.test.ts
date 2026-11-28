@@ -16,12 +16,13 @@ vi.mock("../src/lib/dynamo", async (original) => ({
   ...(await original<typeof import("../src/lib/dynamo")>()),
   ddb: { send },
 }));
+const signedIn = vi.hoisted(() => ({ tier: "free" as "free" | "premium" }));
 vi.mock("../src/lib/auth", async (original) => ({
   ...(await original<typeof import("../src/lib/auth")>()),
   authenticate: vi.fn(async () => ({
     niarimUserId: "Nposter",
     googleSub: "sub",
-    membershipTier: "free",
+    membershipTier: signedIn.tier,
   })),
 }));
 
@@ -73,6 +74,7 @@ async function quota() {
 
 beforeEach(() => {
   process.env.TABLE_NAME = "test-table";
+  signedIn.tier = "free";
   items.clear();
   send.mockReset();
   send.mockImplementation(async (command: unknown) => {
@@ -119,6 +121,14 @@ describe("GET /me/post-quota", () => {
       niarimUserId: "Nposter",
       membershipTier: "premium",
     });
+    put(Keys.dailyCounter("Nposter", today()), { count: 1 });
+    expect((await quota()).body).toEqual({ limit: 3, used: 1, remaining: 2 });
+  });
+
+  it("gives a verified Google Play subscriber three a day although the stored tier says free", async () => {
+    // authenticate() reports premium for a verified Play subscription (or
+    // Premium redeemed with Opals); the stored user record is not updated.
+    signedIn.tier = "premium";
     put(Keys.dailyCounter("Nposter", today()), { count: 1 });
     expect((await quota()).body).toEqual({ limit: 3, used: 1, remaining: 2 });
   });

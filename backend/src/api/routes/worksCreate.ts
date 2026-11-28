@@ -3,7 +3,11 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, cacheChannelInfo, getUser } from "../../lib/auth";
-import { reservePostQuota, releasePostQuota } from "../../lib/quota";
+import {
+  postingMembershipTier,
+  releasePostQuota,
+  reservePostQuota,
+} from "../../lib/quota";
 import {
   getVideoSnippet,
   getOwnChannelInfo,
@@ -139,7 +143,10 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       snippet.privacyStatus === "private"
       ? new Date(youtubeSchedule).toISOString() : undefined;
 
-    await reservePostQuota(auth.niarimUserId, user.membershipTier);
+    await reservePostQuota(
+      auth.niarimUserId,
+      postingMembershipTier(auth.membershipTier, user.membershipTier),
+    );
     quotaReserved = true;
 
     if (channelInfo) {

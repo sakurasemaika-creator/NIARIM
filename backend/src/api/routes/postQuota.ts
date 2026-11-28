@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { authenticate, getUser } from "../../lib/auth";
 import { assertPostingAllowed } from "../../lib/moderation";
-import { readPostQuota } from "../../lib/quota";
+import { postingMembershipTier, readPostQuota } from "../../lib/quota";
 import { forbidden, ok } from "../../lib/response";
 
 /**
@@ -19,5 +19,10 @@ export async function getMyPostQuota(event: APIGatewayProxyEventV2) {
   const user = await getUser(auth.niarimUserId);
   if (!user) forbidden("NIARIMユーザー情報を取得できませんでした");
   assertPostingAllowed(user);
-  return ok(await readPostQuota(auth.niarimUserId, user.membershipTier));
+  return ok(
+    await readPostQuota(
+      auth.niarimUserId,
+      postingMembershipTier(auth.membershipTier, user.membershipTier),
+    ),
+  );
 }
