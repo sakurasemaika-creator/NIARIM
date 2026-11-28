@@ -39,10 +39,11 @@ void main() {
     int invalid,
     Uint8List rgba,
   })
-  draw(Brush brush) {
+  draw(Brush brush, {int stabilization = 0}) {
     final tm = TileManager(canvasWidth: _w, canvasHeight: _h);
     final engine = DrawingEngine(tileManager: tm)
       ..currentBrush = brush
+      ..stabilizationStrength = stabilization
       ..currentColor = const ui.Color(0xFF2040A0)
       ..pressureEnabled = false;
     StrokePoint p(double x, double y) =>
@@ -141,10 +142,9 @@ void main() {
         ),
       ),
       'opacity_40': base.copyWith(opacity: 40),
-      'stabilization_90': base.copyWith(
-        stabilization: true,
-        stabilizationStrength: 90,
-      ),
+      // 手ぶれ補正はブラシではなくアプリの設定（ペン入力設定）で、
+      // DrawingEngine.stabilizationStrengthが全ブラシに同じ強さで効く。
+      'stabilization_90': base,
       'pixel_mode': base.copyWith(pixelMode: true),
       'decay': base.copyWith(strokeDecay: true),
       'fade_weak': base.copyWith(fadeMode: FadeMode.weak),
@@ -184,8 +184,12 @@ void main() {
             Uint8List rgba,
           })
         >{};
+    const appStabilization = {'stabilization_90': 90};
     for (final entry in variants.entries) {
-      final r = draw(entry.value);
+      final r = draw(
+        entry.value,
+        stabilization: appStabilization[entry.key] ?? 0,
+      );
       results[entry.key] = r;
       await save(entry.key, r.rgba);
       expect(r.invalid, 0, reason: '${entry.key}：色が不透明度より大きい画素');

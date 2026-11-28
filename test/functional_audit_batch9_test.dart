@@ -361,12 +361,10 @@ void _line(
 Future<Uint8List> _drawJitter({required bool stabilized}) async {
   final tm = TileManager(canvasWidth: 128, canvasHeight: 96);
   final engine = DrawingEngine(tileManager: tm)
-    ..currentBrush = _brush(
-      size: 5,
-      opacity: 100,
-      stabilization: stabilized,
-      stabilizationStrength: stabilized ? 90 : 0,
-    )
+    ..currentBrush = _brush(size: 5, opacity: 100)
+    // 手ぶれ補正はブラシではなくアプリの設定（ペン入力設定）で、
+    // DrawingEngine.stabilizationStrengthが全ブラシに同じ強さで効く。
+    ..stabilizationStrength = stabilized ? 90 : 0
     ..currentColor = const ui.Color(0xFF202020);
   const ys = [
     48.0,
