@@ -1836,7 +1836,7 @@ class HomeMatrix {
         HomeView.projects => {
           if (searching) ...{
             'close search': appBarButton(l10n.commonClose),
-            'search by tag': appBarButton(l10n.projectDetailTagsQuickAction),
+            'search by tag': appBarButton(l10n.creativePanelTagSearchHint),
             'search field': searchField,
           } else ...{
             'view size': find.byType(ProjectViewModeMenu),

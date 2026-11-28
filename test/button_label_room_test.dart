@@ -538,8 +538,12 @@ void main() {
       'フィルターをかけるボタン）は、面の外へ出る字を切らない', (tester) async {
     await loadAppFonts(tester);
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
-    // 縦長（スマホの配置）で、行の全部のボタンが画面に入る幅。
-    const size = Size(1200, 1600);
+    // 縦長（スマホの配置）で、行の全部のボタンが名前のまま画面に入る幅（入ら
+    // ない幅ではアイコンのボタンになり、名前の字が無い）。仏語・文字2倍の行
+    // （全選択・全解除・複製・削除・フィルター適用）は1200pxに入らない。
+    Size sizeFor(String language, double scale) => scale > 1 && language == 'fr'
+        ? const Size(1800, 2400)
+        : const Size(1200, 1600);
     final root = GlobalKey();
     var measured = 0.0;
     final problems = <String>[];
@@ -598,6 +602,7 @@ void main() {
       ('ja', 2.0),
     ]) {
       final where = '$language ×$scale';
+      final size = sizeFor(language, scale);
       final dir = Directory.systemTemp.createTempSync('niarim_filter_btn_');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathChannel, (call) async => dir.path);
