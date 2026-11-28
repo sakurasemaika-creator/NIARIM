@@ -110,6 +110,7 @@ class ActionBesideOrBelow
     this.minTextWidth,
     this.besideActionPadding = EdgeInsets.zero,
     this.belowActionPadding = EdgeInsets.zero,
+    this.actionAboveAtEnd = false,
   });
 
   /// 文。幅が足りなければ折り返してよいもの。
@@ -141,6 +142,11 @@ class ActionBesideOrBelow
   /// 下（[actionFirst]なら上）に回したときの、操作の周りの余白。
   final EdgeInsetsGeometry belowActionPadding;
 
+  /// 横に並べられないとき、操作を文の下ではなく上の行の終わりの側に置くか
+  /// （[actionFirst]でないとき）。題の右の閉じるボタン（×）のように、文の
+  /// 後ろに並べるが、下へ回すと閉じるボタンに見えないもの。
+  final bool actionAboveAtEnd;
+
   @override
   Iterable<ActionBesideOrBelowSlot> get slots => ActionBesideOrBelowSlot.values;
 
@@ -160,6 +166,7 @@ class ActionBesideOrBelow
         minTextWidth: minTextWidth,
         besideActionPadding: besideActionPadding,
         belowActionPadding: belowActionPadding,
+        actionAboveAtEnd: actionAboveAtEnd,
         textDirection: Directionality.of(context),
       );
 
@@ -176,6 +183,7 @@ class ActionBesideOrBelow
       ..minTextWidth = minTextWidth
       ..besideActionPadding = besideActionPadding
       ..belowActionPadding = belowActionPadding
+      ..actionAboveAtEnd = actionAboveAtEnd
       ..textDirection = Directionality.of(context);
   }
 }
@@ -192,7 +200,16 @@ class RenderActionBesideOrBelow extends RenderBox
     this._minTextWidth,
     this._besideActionPadding = EdgeInsets.zero,
     this._belowActionPadding = EdgeInsets.zero,
+    this._actionAboveAtEnd = false,
   });
+
+  bool get actionAboveAtEnd => _actionAboveAtEnd;
+  bool _actionAboveAtEnd;
+  set actionAboveAtEnd(bool value) {
+    if (_actionAboveAtEnd == value) return;
+    _actionAboveAtEnd = value;
+    markNeedsLayout();
+  }
 
   double get gap => _gap;
   double _gap;
@@ -413,6 +430,16 @@ class RenderActionBesideOrBelow extends RenderBox
       place?.call(
         action,
         Offset(ltr ? 0 : width - actionSize.width, 0) + pad.topLeft,
+      );
+      place?.call(text, Offset(ltr ? 0 : width - textSize.width, textTop));
+      return (size: size, textTop: textTop);
+    }
+    if (actionAboveAtEnd) {
+      // 操作を上の行の終わりに、文をその下に行の幅いっぱいで。
+      final textTop = actionSize.height + spacing;
+      place?.call(
+        action,
+        Offset(ltr ? width - actionSize.width : 0, 0) + pad.topLeft,
       );
       place?.call(text, Offset(ltr ? 0 : width - textSize.width, textTop));
       return (size: size, textTop: textTop);

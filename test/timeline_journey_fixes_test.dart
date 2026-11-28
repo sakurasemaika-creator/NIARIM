@@ -487,7 +487,7 @@ void main() {
           .first;
       final texts = tester
           .widgetList<Text>(
-            find.descendant(of: row, matching: find.byType(Text)),
+            find.descendant(of: row, matching: find.bySubtype<Text>()),
           )
           .map((t) => t.data)
           .toList();

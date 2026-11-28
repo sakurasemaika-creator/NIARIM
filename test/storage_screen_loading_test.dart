@@ -187,9 +187,12 @@ void main() {
     );
     expect(clearCache.enabled, isFalse);
     expect((clearCache.subtitle! as Text).data, isEmpty);
-    // 原因はエラーの記録に残る。
+    // 原因はエラーの記録に残る（起動処理の共有の受け取りの片付けも同じ場所を
+    // 聞いて記録するので、容量の集計の分を数える）。
     expect(
-      AppErrorReporter.recentErrors.where((e) => e.contains('no cache dir')),
+      AppErrorReporter.recentErrors.where(
+        (e) => e.contains('no cache dir') && e.contains('StorageInfoService'),
+      ),
       hasLength(1),
     );
 

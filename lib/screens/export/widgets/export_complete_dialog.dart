@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../../widgets/action_beside_or_below.dart';
 import '../../../widgets/icon_notice.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/export_share_feedback.dart';
@@ -68,18 +69,22 @@ class _ExportCompleteDialogState extends State<ExportCompleteDialog> {
       insetPadding: MediaQuery.sizeOf(context).height < 360
           ? const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
           : null,
-      // The × closes the dialog (the export screen stays). It is in the
-      // title row: AlertDialog.icon would centre the title.
-      title: Row(
-        children: [
-          Expanded(child: Text(l10n.exportCompleteTitle)),
-          IconButton(
-            key: const ValueKey('exportCompleteClose'),
-            tooltip: l10n.commonClose,
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-          ),
-        ],
+      // The × closes the dialog (the export screen stays). It is at the end
+      // of the title row (AlertDialog.icon would centre the title); where a
+      // word of the title would not fit beside it (Spanish at 320px with
+      // twice the text size), it goes above the title instead of breaking
+      // the word.
+      title: ActionBesideOrBelow(
+        gap: 4,
+        spacing: 0,
+        actionAboveAtEnd: true,
+        text: Text(l10n.exportCompleteTitle),
+        action: IconButton(
+          key: const ValueKey('exportCompleteClose'),
+          tooltip: l10n.commonClose,
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,

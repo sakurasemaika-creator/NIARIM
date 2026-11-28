@@ -40,12 +40,10 @@ void main() {
     for (final strength in strengths) {
       final tm = TileManager(canvasWidth: _w, canvasHeight: _h);
       final engine = DrawingEngine(tileManager: tm)
-        ..currentBrush = _brush(
-          size: 4,
-          stabilization: true,
-          stabilizationStrength: strength,
-        )
-        ..currentColor = const ui.Color(0xFF202020);
+        ..currentBrush = _brush(size: 4)
+        ..currentColor = const ui.Color(0xFF202020)
+        // 手ぶれ補正はブラシごとではなくアプリの設定（どのブラシにも同じ強さ）。
+        ..stabilizationStrength = strength;
       engine.beginStroke(raw.first, _layer);
       for (final p in raw.skip(1)) {
         engine.continueStroke(p, _layer);

@@ -42,7 +42,8 @@ void main() {
   late Directory cache;
   var documentsLookups = 0;
 
-  /// アプリ専用キャッシュの場所を聞くのは、容量の集計だけ（1回の集計の最後）。
+  /// アプリ専用キャッシュの場所を聞くのは、起動処理（共有の受け取りの残りの
+  /// 片付け）と容量の集計（1回の集計の最後）。
   var cacheLookups = 0;
 
   setUp(() {
@@ -174,8 +175,9 @@ void main() {
   testWidgets('集計の途中で離れて戻ると、走っている1回の集計を分け合い、結果が出る', (tester) async {
     final providers = await bootstrapStorageScreen(tester);
     final service = _SameZoneStorage();
-    // 起動処理も書類の場所を聞くので、ここから数える。
+    // 起動処理も書類・キャッシュの場所を聞くので、ここから数える。
     documentsLookups = 0;
+    cacheLookups = 0;
     await showStorageScreen(tester, providers, service);
     // 走査は始まったばかり（実時間を進めていないので、ファイルの一覧は返らない）。
     await tester.pump();
