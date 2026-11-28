@@ -186,30 +186,33 @@ abstract final class MakingExport {
   static bool carriesOfficialEndCard(MakingExportFormat format) =>
       format != MakingExportFormat.gif;
 
-  /// 書き出しで選べる本編の長さ（秒）。メイキングは1回の操作を1コマにして
-  /// [fps]で流すので、長さは操作の数で決まる。書き出しでは、それより短い
-  /// 長さだけを選べる（長くはしない）。
-  static const List<int> lengthPresets = [15, 30, 60, 180, 300, 600];
+  /// 書き出しで選べるいちばん短い本編の長さ（秒）。
+  static const int shortestSeconds = 1;
 
-  /// [count]枚の記録を[format]で書き出すとき選べる、元の長さより短い本編の
-  /// 長さ（秒、短い順）。GIFはもともと短く間引くので無い。
-  static List<int> shorterLengths(int count, MakingExportFormat format) {
-    if (format == MakingExportFormat.gif) return const [];
-    return [
-      for (final seconds in lengthPresets)
-        if (seconds * fps < count) seconds,
-    ];
+  /// [count]枚の記録を[format]で書き出すとき、選べる本編の長さの上限（秒）。
+  /// メイキングは1回の操作を1コマにして[fps]で流すので、長さは操作の数で
+  /// 決まる。書き出しでは、[shortestSeconds]からこの元の長さまでを1秒ごとに
+  /// 選べる（長くはしない。上限を選ぶと元のまま）。GIFはもともと短く
+  /// 間引くので選ばず、元の長さが[shortestSeconds]以下のときも選ばない（null）。
+  static int? lengthLimitSeconds(int count, MakingExportFormat format) {
+    if (format == MakingExportFormat.gif) return null;
+    final original = count ~/ fps;
+    return original > shortestSeconds ? original : null;
   }
 
-  /// 本編の長さを[maxSeconds]（[shorterLengths]の1つ、nullは元のまま）に
-  /// したとき書き出す記録の枚数。
+  /// 本編の長さを[maxSeconds]秒（nullか[lengthLimitSeconds]以上なら元のまま）
+  /// にしたとき書き出す記録の枚数。元の枚数より多くはならない。
   static int exportedCount(
     int count,
     MakingExportFormat format,
     int? maxSeconds,
-  ) => maxSeconds != null && shorterLengths(count, format).contains(maxSeconds)
-      ? maxSeconds * fps
-      : count;
+  ) {
+    final limit = lengthLimitSeconds(count, format);
+    if (maxSeconds == null || limit == null || maxSeconds >= limit) {
+      return count;
+    }
+    return math.max(shortestSeconds, maxSeconds) * fps;
+  }
 
   /// GIFで使う記録の間隔（[count]枚から何枚ごとに1枚使うか）。
   static int gifStep(int count) =>
@@ -231,7 +234,7 @@ abstract final class MakingExport {
   /// 足す。GIFではエンドマークの代わりに、どのコマにも隅へNIARIMのロゴを
   /// 入れる。その隅は[watermarkAreas]（利用者のウォーターマークの描かれた所。
   /// キャンバスに対する0〜1の割合）を避けて選ぶ。MP4では、動画になった記録は
-  /// エンコードし直さずにつなぐ。[maxSeconds]（[shorterLengths]の1つ）を
+  /// エンコードし直さずにつなぐ。[maxSeconds]（元の長さより短い秒数）を
   /// 渡すと、本編がその長さになるよう、記録から最初と最後を含めて均等に
   /// コマを選ぶ（1秒のコマの数は変えない）。
   static Future<void> export({

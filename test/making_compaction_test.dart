@@ -350,9 +350,10 @@ void main() {
     final log = MakingLogData.read(dir);
     expect(log.segments, isNotEmpty);
     final inSegments = log.segments.fold(0, (sum, s) => sum + s.frames);
-    expect(MakingExport.shorterLengths(before.length, MakingExportFormat.mp4), [
-      15,
-    ]);
+    expect(
+      MakingExport.lengthLimitSeconds(before.length, MakingExportFormat.mp4),
+      greaterThan(15),
+    );
     tools.ffmpegRuns.clear();
     tools.encoded.clear();
 

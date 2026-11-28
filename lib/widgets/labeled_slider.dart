@@ -19,6 +19,7 @@ class LabeledSlider extends StatelessWidget {
     required this.onChanged,
     this.onChangeEnd,
     this.valueText,
+    this.unit,
     this.editable = true,
     this.isInt = true,
     this.divisions,
@@ -43,6 +44,9 @@ class LabeledSlider extends StatelessWidget {
 
   /// 1行目の右端に出す値。nullなら出さない。
   final String? valueText;
+
+  /// 直接入力の欄の後ろに添える単位（「秒」等）。
+  final String? unit;
 
   /// 値をタップして直接入力できるか。
   final bool editable;
@@ -108,6 +112,7 @@ class LabeledSlider extends StatelessWidget {
                       style: valueTextStyle,
                       textAlign: TextAlign.end,
                       title: label,
+                      unit: unit,
                       value: value,
                       min: min,
                       max: max,

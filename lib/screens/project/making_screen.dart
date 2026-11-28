@@ -24,6 +24,7 @@ import '../../utils/making_strings.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/icon_notice.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/menu_surface.dart';
 
 class MakingScreen extends StatefulWidget {
@@ -375,6 +376,38 @@ class _MakingScreenState extends State<MakingScreen> {
         : l10n.exportOutputWithCornerLogo(duration);
   }
 
+  /// 書き出す本編の長さのスライダー。[limit]（元の長さ）より長くはできず、
+  /// 右端を選ぶと元のまま書き出す。
+  Widget _lengthSlider(AppLocalizations l10n, int limit) {
+    const shortest = MakingExport.shortestSeconds;
+    final seconds = (_maxSeconds ?? limit).clamp(shortest, limit);
+    final time = MaterialLocalizations.of(context);
+    final range = limit - shortest;
+    return LabeledSlider(
+      key: const Key('makingExportLength'),
+      label: l10n.makingExportLength,
+      value: seconds.toDouble(),
+      min: shortest.toDouble(),
+      max: limit.toDouble(),
+      // 目盛りが詰まりすぎない間だけ1秒ごとに止める（長い記録は打つか±で）。
+      divisions: range <= 120 ? range : null,
+      unit: l10n.newProjectDurationUnit,
+      valueText: seconds >= limit
+          ? l10n.makingExportLengthOriginal(clockDurationLabel(time, limit))
+          : clockDurationLabel(time, seconds),
+      sliderLabel: clockDurationLabel(time, seconds),
+      onChanged: _exporting
+          ? null
+          : (value) {
+              final next = value.round().clamp(shortest, limit);
+              final chosen = next >= limit ? null : next;
+              if (chosen != _maxSeconds) {
+                setState(() => _maxSeconds = chosen);
+              }
+            },
+    );
+  }
+
   String _formatName(AppLocalizations l10n, MakingExportFormat format) =>
       switch (format) {
         MakingExportFormat.mp4 => l10n.exportFormatMp4,
@@ -551,53 +584,12 @@ class _MakingScreenState extends State<MakingScreen> {
                           ),
                         ),
                       // 元の長さより短い長さだけを選べる（長くはしない）。
-                      if (MakingExport.shorterLengths(length, _format)
-                          case final lengths when lengths.isNotEmpty)
+                      // 右端が元の長さで、値を押すと秒で打てる。
+                      if (MakingExport.lengthLimitSeconds(length, _format)
+                          case final limit?)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: MenuSurface(
-                            child: DropdownButtonFormField<int?>(
-                              key: const Key('makingExportLength'),
-                              initialValue: lengths.contains(_maxSeconds)
-                                  ? _maxSeconds
-                                  : null,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                labelText: l10n.makingExportLength,
-                                border: const OutlineInputBorder(),
-                              ),
-                              items: [
-                                DropdownMenuItem<int?>(
-                                  value: null,
-                                  child: Text(
-                                    l10n.makingExportLengthOriginal(
-                                      clockDurationLabel(
-                                        MaterialLocalizations.of(context),
-                                        MakingExport.bodySeconds(
-                                          length,
-                                          _format,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                for (final seconds in lengths.reversed)
-                                  DropdownMenuItem<int?>(
-                                    value: seconds,
-                                    child: Text(
-                                      clockDurationLabel(
-                                        MaterialLocalizations.of(context),
-                                        seconds,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                              onChanged: _exporting
-                                  ? null
-                                  : (value) =>
-                                        setState(() => _maxSeconds = value),
-                            ),
-                          ),
+                          child: _lengthSlider(l10n, limit),
                         ),
                       Row(
                         children: [

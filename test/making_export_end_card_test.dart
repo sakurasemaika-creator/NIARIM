@@ -249,6 +249,31 @@ void main() {
         expect(_looksLikeEndCard(frame), isFalse);
       }
     });
+
+    test('the length can be any whole second from 1 up to the original, and '
+        'never longer', () {
+      const mp4 = MakingExportFormat.mp4;
+      // 1000 operations are 125 seconds.
+      expect(MakingExport.lengthLimitSeconds(1000, mp4), 125);
+      expect(MakingExport.exportedCount(1000, mp4, null), 1000);
+      expect(MakingExport.exportedCount(1000, mp4, 37), 37 * MakingExport.fps);
+      expect(MakingExport.exportedCount(1000, mp4, 1), MakingExport.fps);
+      expect(MakingExport.exportedCount(1000, mp4, 0), MakingExport.fps);
+      // The original length or more keeps every frame (not longer).
+      expect(MakingExport.exportedCount(1000, mp4, 125), 1000);
+      expect(MakingExport.exportedCount(1000, mp4, 600), 1000);
+      // Nothing to choose for a GIF or a making of a second or less.
+      expect(
+        MakingExport.lengthLimitSeconds(1000, MakingExportFormat.gif),
+        isNull,
+      );
+      expect(
+        MakingExport.exportedCount(1000, MakingExportFormat.gif, 10),
+        1000,
+      );
+      expect(MakingExport.lengthLimitSeconds(15, mp4), isNull);
+      expect(MakingExport.lengthLimitSeconds(16, mp4), 2);
+    });
   });
 
   group('MakingScreen', () {
@@ -398,17 +423,63 @@ void main() {
         l10n.exportOutputWithEndCard(clockDurationLabel(time, 16)),
       );
 
-      // Only 15 seconds is shorter than 16: nothing longer is offered.
-      expect(MakingExport.shorterLengths(count, MakingExportFormat.mp4), [15]);
+      // The slider ends at the original length: it can only be made shorter.
+      expect(
+        MakingExport.lengthLimitSeconds(count, MakingExportFormat.mp4),
+        16,
+      );
+      final lengthSlider = find.byKey(const Key('makingExportLength'));
+      final original = l10n.makingExportLengthOriginal(
+        clockDurationLabel(time, 16),
+      );
+      expect(
+        find.descendant(of: lengthSlider, matching: find.text(original)),
+        findsOneWidget,
+      );
+      final slider = tester.widget<Slider>(
+        find.descendant(of: lengthSlider, matching: find.byType(Slider)),
+      );
+      expect((slider.min, slider.max), (1.0, 16.0));
+      IconButton stepper(IconData icon) => tester.widget<IconButton>(
+        find.ancestor(
+          of: find.descendant(of: lengthSlider, matching: find.byIcon(icon)),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(stepper(Icons.add_circle_outline).onPressed, isNull);
+
+      // A longer number typed in is refused and the dialog stays open.
       await tester.tap(
-        find.text(
-          l10n.makingExportLengthOriginal(clockDurationLabel(time, 16)),
+        find.descendant(of: lengthSlider, matching: find.text(original)),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, '40');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.numberInputRangeError('1', '16')), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, '14');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(
+        summary(tester),
+        l10n.exportOutputWithEndCard(clockDurationLabel(time, 14)),
+      );
+
+      // ＋ goes back towards the original; one second short of it is 15.
+      await tester.tap(
+        find.descendant(
+          of: lengthSlider,
+          matching: find.byIcon(Icons.add_circle_outline),
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text(clockDurationLabel(time, 30)), findsNothing);
-      await tester.tap(find.text(clockDurationLabel(time, 15)).last);
-      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: lengthSlider,
+          matching: find.text(clockDurationLabel(time, 15)),
+        ),
+        findsOneWidget,
+      );
       expect(
         summary(tester),
         l10n.exportOutputWithEndCard(clockDurationLabel(time, 15)),
