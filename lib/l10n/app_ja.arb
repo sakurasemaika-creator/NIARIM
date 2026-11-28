@@ -1124,7 +1124,15 @@
   "@widgetColorForeground": {
     "description": "ホーム画面ウィジェットの文字・アイコンの色を選ぶ行の見出し"
   },
-  "widgetNoProjects": "まだ作品がありません。作品を作るとここで選べるようになります。",
+  "widgetNoProjects": "まだ作品がありません",
+  "widgetNoProjectsHint": "作品を作ると、ここで選んでウィジェットに表示できます。",
+  "@widgetNoProjectsHint": {
+    "description": "ウィジェットの作品を選ぶ画面：作品が1つも無いときの補足（題はwidgetNoProjects）"
+  },
+  "widgetArtworkShowNone": "作品を表示しない",
+  "@widgetArtworkShowNone": {
+    "description": "ウィジェットの作品を選ぶ画面：作品を選ばない（ウィジェットに作品を出さない）選択肢"
+  },
   "assetTagLineArt": "線画",
   "assetTagBasic": "基本",
   "assetTagMainLine": "主線",

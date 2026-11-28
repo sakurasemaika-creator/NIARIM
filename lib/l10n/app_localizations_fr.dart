@@ -2801,8 +2801,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetColorForeground => 'Couleur du texte et des icônes';
 
   @override
-  String get widgetNoProjects =>
-      'Aucune œuvre pour l’instant. Dès que vous en créez une, vous pourrez la choisir ici.';
+  String get widgetNoProjects => 'Aucune œuvre pour l’instant';
+
+  @override
+  String get widgetNoProjectsHint =>
+      'Une fois une œuvre créée, vous pourrez la choisir ici pour l’afficher dans le widget.';
+
+  @override
+  String get widgetArtworkShowNone => 'N’afficher aucune œuvre';
 
   @override
   String get assetTagLineArt => 'Trait';

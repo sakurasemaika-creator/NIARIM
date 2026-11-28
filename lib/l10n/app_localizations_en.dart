@@ -2759,8 +2759,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetColorForeground => 'Text and icon color';
 
   @override
-  String get widgetNoProjects =>
-      'No works yet. Once you create one, you can choose it here.';
+  String get widgetNoProjects => 'No works yet';
+
+  @override
+  String get widgetNoProjectsHint =>
+      'Once you create a work, you can choose it here to show on the widget.';
+
+  @override
+  String get widgetArtworkShowNone => 'Don’t show a work';
 
   @override
   String get assetTagLineArt => 'Line art';

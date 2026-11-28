@@ -2614,7 +2614,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetColorForeground => '文字与图标颜色';
 
   @override
-  String get widgetNoProjects => '还没有作品。创作后即可在这里选择。';
+  String get widgetNoProjects => '还没有作品';
+
+  @override
+  String get widgetNoProjectsHint => '创作作品后，即可在这里选择并显示在小组件上。';
+
+  @override
+  String get widgetArtworkShowNone => '不显示作品';
 
   @override
   String get assetTagLineArt => '线稿';
@@ -13902,7 +13908,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get widgetColorForeground => '文字與圖示顏色';
 
   @override
-  String get widgetNoProjects => '還沒有作品。創作後即可在這裡選擇。';
+  String get widgetNoProjects => '還沒有作品';
+
+  @override
+  String get widgetNoProjectsHint => '創作作品後，即可在這裡選擇並顯示在小工具上。';
+
+  @override
+  String get widgetArtworkShowNone => '不顯示作品';
 
   @override
   String get assetTagLineArt => '線稿';

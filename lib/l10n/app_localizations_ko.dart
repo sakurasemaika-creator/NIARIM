@@ -2652,7 +2652,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get widgetColorForeground => '글자·아이콘 색';
 
   @override
-  String get widgetNoProjects => '아직 작품이 없습니다. 작품을 만들면 여기에서 고를 수 있습니다.';
+  String get widgetNoProjects => '아직 작품이 없습니다';
+
+  @override
+  String get widgetNoProjectsHint => '작품을 만들면 여기에서 골라 위젯에 표시할 수 있습니다.';
+
+  @override
+  String get widgetArtworkShowNone => '작품 표시 안 함';
 
   @override
   String get assetTagLineArt => '선화';

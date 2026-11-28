@@ -4824,8 +4824,20 @@ abstract class AppLocalizations {
   /// No description provided for @widgetNoProjects.
   ///
   /// In ja, this message translates to:
-  /// **'まだ作品がありません。作品を作るとここで選べるようになります。'**
+  /// **'まだ作品がありません'**
   String get widgetNoProjects;
+
+  /// ウィジェットの作品を選ぶ画面：作品が1つも無いときの補足（題はwidgetNoProjects）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を作ると、ここで選んでウィジェットに表示できます。'**
+  String get widgetNoProjectsHint;
+
+  /// ウィジェットの作品を選ぶ画面：作品を選ばない（ウィジェットに作品を出さない）選択肢
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を表示しない'**
+  String get widgetArtworkShowNone;
 
   /// No description provided for @assetTagLineArt.
   ///

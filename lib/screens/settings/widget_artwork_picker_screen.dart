@@ -12,6 +12,8 @@ import '../../services/home_widget_refresh.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/project_service.dart';
 import '../../services/theme_service.dart';
+import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/grouped_sheet.dart';
 import '../../widgets/responsive.dart';
@@ -161,7 +163,6 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final widgets = context.watch<HomeWidgetService>();
-    final scheme = Theme.of(context).colorScheme;
     final hasAnyProjects = context.watch<ProjectService>().projects.isNotEmpty;
     // 作品を読み込めなかった間は、作品が無いとは言わず、知らせて読み直せる
     // ようにする（読めた作品があれば、知らせと一緒に並べる）。
@@ -185,12 +186,9 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            : SortModeControl(
-                sortByName: _sortByName,
-                sortAscending: _sortAscending,
-                onSortByNameChanged: _setSortByName,
-                onToggleDirection: _toggleSortDirection,
-              ),
+            // 画面名（入らなければ出さない）。並び替えは一覧の上の行
+            // （ホームのプロジェクトの一覧と同じ所）。
+            : FitOrHideTitle(l10n.widgetArtworkPickButton),
         actions: [
           if (_isSearching)
             IconButton(
@@ -221,13 +219,19 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
         !hasAnyProjects && loadFailedNotice != null
             ? ListView(children: [loadFailedNotice])
             : !hasAnyProjects
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    l10n.widgetNoProjects,
+            // 作品が1つも無いときは、ホームの空の一覧と同じ形（一覧の物の印・
+            // 題・補足・次の操作）で、作品を作る所へ進めるようにする。
+            ? EmptyStatePlaceholder(
+                key: const Key('widgetArtworkNoProjects'),
+                icon: Icons.movie_creation_outlined,
+                title: l10n.widgetNoProjects,
+                hint: l10n.widgetNoProjectsHint,
+                action: FilledButton.icon(
+                  onPressed: () => context.push('/new-project'),
+                  icon: const Icon(Icons.note_add_outlined),
+                  label: Text(
+                    l10n.homeAddSheetNewProject,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
               )
@@ -240,11 +244,13 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                     child: GroupedSheet(
                       children: [
                         ListTile(
-                          leading: Icon(
-                            Icons.block_outlined,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                          title: Text(l10n.widgetArtworkNone),
+                          // 印の色はListTileに任せる（選んでいる行では
+                          // 選択色の上の文字色。補助の文字色を渡すと、選んだ
+                          // 行の上で印だけが暗く沈んだ）。
+                          leading: const Icon(Icons.block_outlined),
+                          // 選ぶ物の名前（「作品を選んでいません」は状態の
+                          // 文で、押すと何になるのかが分からなかった）。
+                          title: Text(l10n.widgetArtworkShowNone),
                           selected: widgets.projectId == null,
                           onTap: () => _clearSelection(context),
                         ),
@@ -256,6 +262,8 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                       horizontal: 8,
                       vertical: 4,
                     ),
+                    // お気に入りの絞り込みと並び替え（ホームのプロジェクトの
+                    // 一覧と同じ並び：絞り込みを左、並び替えを右）。
                     child: Row(
                       children: [
                         FilterChip(
@@ -269,6 +277,18 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                           selected: _showFavoritesOnly,
                           onSelected: (v) =>
                               setState(() => _showFavoritesOnly = v),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: SortModeControl(
+                              sortByName: _sortByName,
+                              sortAscending: _sortAscending,
+                              onSortByNameChanged: _setSortByName,
+                              onToggleDirection: _toggleSortDirection,
+                            ),
+                          ),
                         ),
                       ],
                     ),

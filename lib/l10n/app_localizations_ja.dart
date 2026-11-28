@@ -2642,7 +2642,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get widgetColorForeground => '文字・アイコンの色';
 
   @override
-  String get widgetNoProjects => 'まだ作品がありません。作品を作るとここで選べるようになります。';
+  String get widgetNoProjects => 'まだ作品がありません';
+
+  @override
+  String get widgetNoProjectsHint => '作品を作ると、ここで選んでウィジェットに表示できます。';
+
+  @override
+  String get widgetArtworkShowNone => '作品を表示しない';
 
   @override
   String get assetTagLineArt => '線画';
