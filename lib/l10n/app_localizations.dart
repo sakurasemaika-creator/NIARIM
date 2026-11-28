@@ -15294,7 +15294,7 @@ abstract class AppLocalizations {
   /// No description provided for @canvasBackgroundColorChoices.
   ///
   /// In ja, this message translates to:
-  /// **'白 / 黒 / 透明'**
+  /// **'白 / 透明 / ほかの色'**
   String get canvasBackgroundColorChoices;
 
   /// No description provided for @canvasBackgroundColorHiddenWhileTransparent.
@@ -15308,6 +15308,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'透明'**
   String get canvasBackgroundTransparent;
+
+  /// No description provided for @backgroundColorOther.
+  ///
+  /// In ja, this message translates to:
+  /// **'ほかの色'**
+  String get backgroundColorOther;
 
   /// No description provided for @canvasTimelineModeTooltip.
   ///

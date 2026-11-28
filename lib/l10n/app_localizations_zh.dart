@@ -8359,7 +8359,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => '检查剪影';
 
   @override
-  String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+  String get canvasBackgroundColorChoices => '白 / 透明 / 其他颜色';
 
   @override
   String get canvasBackgroundColorHiddenWhileTransparent =>
@@ -8367,6 +8367,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasBackgroundTransparent => '透明';
+
+  @override
+  String get backgroundColorOther => '其他颜色';
 
   @override
   String get canvasTimelineModeTooltip => '时间轴模式';
@@ -19608,7 +19611,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasAutofillCheckSilhouette => '檢查剪影';
 
   @override
-  String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+  String get canvasBackgroundColorChoices => '白 / 透明 / 其他顏色';
 
   @override
   String get canvasBackgroundColorHiddenWhileTransparent =>
@@ -19616,6 +19619,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasBackgroundTransparent => '透明';
+
+  @override
+  String get backgroundColorOther => '其他顏色';
 
   @override
   String get canvasTimelineModeTooltip => '時間軸模式';

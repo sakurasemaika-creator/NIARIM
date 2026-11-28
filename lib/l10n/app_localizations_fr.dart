@@ -8988,7 +8988,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => 'Vérifier la silhouette';
 
   @override
-  String get canvasBackgroundColorChoices => 'Blanc / Noir / Transparent';
+  String get canvasBackgroundColorChoices =>
+      'Blanc / Transparent / Autre couleur';
 
   @override
   String get canvasBackgroundColorHiddenWhileTransparent =>
@@ -8996,6 +8997,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasBackgroundTransparent => 'Transparent';
+
+  @override
+  String get backgroundColorOther => 'Autre couleur';
 
   @override
   String get canvasTimelineModeTooltip => 'Mode timeline';

@@ -8499,7 +8499,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => '실루엣 확인';
 
   @override
-  String get canvasBackgroundColorChoices => '흰색 / 검정 / 투명';
+  String get canvasBackgroundColorChoices => '흰색 / 투명 / 다른 색';
 
   @override
   String get canvasBackgroundColorHiddenWhileTransparent =>
@@ -8507,6 +8507,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasBackgroundTransparent => '투명';
+
+  @override
+  String get backgroundColorOther => '다른 색';
 
   @override
   String get canvasTimelineModeTooltip => '타임라인 모드';

@@ -47,6 +47,11 @@ class ColorPickerPanel extends StatefulWidget {
   /// 色を選ぶときに、選んでいる色がアプリのどこに効くかの見本を出す。
   final Widget? header;
 
+  /// 不透明な色だけを選ぶ（作品の背景色）。不透明度のスライダーと透明の
+  /// ボタンを出さず、パレット・最近使った色・HEXから選んだ半透明の色も
+  /// 不透明にして渡す。
+  final bool opaqueOnly;
+
   const ColorPickerPanel({
     super.key,
     required this.currentColor,
@@ -55,6 +60,7 @@ class ColorPickerPanel extends StatefulWidget {
     this.onEyedropperTap,
     this.showCloseBar = true,
     this.header,
+    this.opaqueOnly = false,
   });
 
   @override
@@ -109,11 +115,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     _hue = hsv.hue;
     _saturation = hsv.saturation;
     _value = hsv.value;
-    _alpha = color.a;
+    _alpha = widget.opaqueOnly ? 1.0 : color.a;
     _r = (color.r * 255).round();
     _g = (color.g * 255).round();
     _b = (color.b * 255).round();
   }
+
+  void _emit(Color color) =>
+      widget.onColorChanged(widget.opaqueOnly ? color.withAlpha(255) : color);
 
   Color get _currentColor =>
       HSVColor.fromAHSV(_alpha, _hue, _saturation, _value).toColor();
@@ -128,7 +137,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     _g = (color.g * 255).round();
     _b = (color.b * 255).round();
     _hexController.text = _colorToHex(color);
-    widget.onColorChanged(color);
+    _emit(color);
   }
 
   void _applyRgb() {
@@ -142,12 +151,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       _value = hsv.value;
     });
     _hexController.text = _colorToHex(color);
-    widget.onColorChanged(color);
+    _emit(color);
   }
 
   void _applyAlpha() {
     setState(() {});
-    widget.onColorChanged(_currentColor);
+    _emit(_currentColor);
     _hexController.text = _colorToHex(_currentColor);
   }
 
@@ -155,7 +164,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   /// 透明（alpha=0）にする。既に透明の場合はタップ前の不透明色へ戻す。
   void _toggleTransparent() {
     setState(() => _alpha = _alpha == 0 ? 1.0 : 0.0);
-    widget.onColorChanged(_currentColor);
+    _emit(_currentColor);
     _hexController.text = _colorToHex(_currentColor);
     _commitToRecent();
   }
@@ -163,7 +172,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   void _applyColor(Color color) {
     setState(() => _syncFromColor(color));
     _hexController.text = _colorToHex(color);
-    widget.onColorChanged(color);
+    _emit(color);
   }
 
   /// 色の確定操作（スライダーの操作終了・HEX確定・スウォッチ選択）時に
@@ -283,7 +292,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                           },
                           onChangeEnd: () => _commitToRecent(adjusting: true),
                           isTransparent: _alpha == 0,
-                          onToggleTransparent: _toggleTransparent,
+                          onToggleTransparent: widget.opaqueOnly
+                              ? null
+                              : _toggleTransparent,
                           showHsvSliders: _showHsvSliders,
                           onSliderModeChanged: (hsv) => setState(
                             () => _showHsvSliders = _lastShowHsvSliders = hsv,
@@ -332,25 +343,26 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
                     // 現在色プレビューは一目で分かるよう大きめに表示する。
                     // 0〜1で持つが、直接入力と同じく百分率で動かす。
-                    LabeledSlider(
-                      padding: EdgeInsets.zero,
-                      label: l10n.colorPickerOpacityLabel,
-                      labelStyle: TextStyle(
-                        fontSize: 10,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    if (!widget.opaqueOnly)
+                      LabeledSlider(
+                        padding: EdgeInsets.zero,
+                        label: l10n.colorPickerOpacityLabel,
+                        labelStyle: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        value: _alpha * 100,
+                        min: 0,
+                        max: 100,
+                        sliderLabel: '${(_alpha * 100).round()}%',
+                        valueText: '${(_alpha * 100).round()}%',
+                        valueStyle: const TextStyle(fontSize: 11),
+                        onChanged: (v) {
+                          _alpha = v / 100;
+                          _applyAlpha();
+                        },
+                        onChangeEnd: (_) => _commitToRecent(adjusting: true),
                       ),
-                      value: _alpha * 100,
-                      min: 0,
-                      max: 100,
-                      sliderLabel: '${(_alpha * 100).round()}%',
-                      valueText: '${(_alpha * 100).round()}%',
-                      valueStyle: const TextStyle(fontSize: 11),
-                      onChanged: (v) {
-                        _alpha = v / 100;
-                        _applyAlpha();
-                      },
-                      onChangeEnd: (_) => _commitToRecent(adjusting: true),
-                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -938,7 +950,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
         .substring(2)
         .toUpperCase();
     final a = (color.a * 255).round();
-    if (a >= 255) return rgb;
+    if (a >= 255 || widget.opaqueOnly) return rgb;
     return '$rgb${a.toRadixString(16).padLeft(2, '0').toUpperCase()}';
   }
 
