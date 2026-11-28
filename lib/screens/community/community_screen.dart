@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
@@ -2646,6 +2647,64 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 }
 
+/// 投稿日の範囲のカレンダーで、今月を下端に置いて開く。Flutterの範囲の
+/// カレンダーは最初に見せる月（今月）を上端に置くので、今日までに限ると
+/// 今月の下が空き、前の月は上へ戻さないと見えなかった。最初に見せる月から
+/// 後ろの月が画面に収まるときだけ、最後の月が下端に来るように送る（前に
+/// 選んだ範囲の月から開くときは、その後ろが画面を埋めるならそのまま）。
+class _LatestMonthAtBottom extends StatefulWidget {
+  const _LatestMonthAtBottom({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_LatestMonthAtBottom> createState() => _LatestMonthAtBottomState();
+}
+
+class _LatestMonthAtBottomState extends State<_LatestMonthAtBottom> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _align());
+  }
+
+  void _align() {
+    if (!mounted) return;
+    // 月の一覧は、最初に見せる月より前の月を上へ並べる（中心の前に別の
+    // 並びがある）ビューポート。
+    RenderViewport? months;
+    void visit(RenderObject object) {
+      if (months != null) return;
+      if (object is RenderViewport &&
+          object.center != null &&
+          object.firstChild != object.center) {
+        months = object;
+        return;
+      }
+      object.visitChildren(visit);
+    }
+
+    final root = context.findRenderObject();
+    if (root == null) return;
+    visit(root);
+    final viewport = months;
+    final after = viewport?.center;
+    final position = viewport?.offset;
+    if (after is! RenderSliverMultiBoxAdaptor ||
+        position is! ScrollPosition ||
+        !position.hasContentDimensions ||
+        position.maxScrollExtent > 0) {
+      return;
+    }
+    final last = after.lastChild;
+    if (last == null) return;
+    position.ensureVisible(last, alignment: 1);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _MuteEntry {
   _MuteEntry(this.value, {this.editing = false});
   String value;
@@ -2890,12 +2949,23 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       };
 
   Future<void> _chooseDateRange() async {
-    final now = DateTime.now();
+    // 投稿日なので今日まで（以前は来年の末まで選べ、今月の下に先の月が
+    // 続いていた）。前に選んだ範囲が今日より先にかかっていれば今日までに
+    // 縮める。
+    final today = DateUtils.dateOnly(DateTime.now());
+    final previous = _dateRange;
+    final initial = previous == null || previous.start.isAfter(today)
+        ? null
+        : DateTimeRange(
+            start: previous.start,
+            end: previous.end.isAfter(today) ? today : previous.end,
+          );
     final picked = await showDateRangePicker(
       context: context,
-      initialDateRange: _dateRange,
+      initialDateRange: initial,
       firstDate: DateTime(2005),
-      lastDate: DateTime(now.year + 1, 12, 31),
+      lastDate: today,
+      builder: (context, child) => _LatestMonthAtBottom(child: child!),
     );
     if (picked != null && mounted) {
       setState(() {
