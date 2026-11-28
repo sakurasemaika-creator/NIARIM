@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -447,6 +448,12 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   final makingRecorder = MakingRecorder(projectService, undoManager);
   disposers.add(makingRecorder.dispose);
   settlers.add(makingRecorder.flush);
+  // 前回の起動で描いている途中に閉じた作品は、作品ファイルより新しい自動保存の
+  // 内容にする（開くまでホームの絵と最終保存の日時が古いままだった）。読むのは
+  // その作品の絵だけで、最初の画面を描いてから行う。
+  SchedulerBinding.instance.addPostFrameCallback(
+    (_) => unawaited(projectService.settleNewerAutosaves()),
+  );
 
   return [
     ChangeNotifierProvider.value(value: settingsService),

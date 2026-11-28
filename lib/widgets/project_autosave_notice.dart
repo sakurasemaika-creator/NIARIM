@@ -23,7 +23,9 @@ enum _RecoveredChoice { cancel, chooseData, keep }
 /// - The app closed before the work file got the last changes, and an
 ///   automatic save from that launch is newer and different: the work opens
 ///   with it at once, without asking or telling (the newest content is what
-///   anyone expects to see). Undo goes back to the work file.
+///   anyone expects to see), and the work's last-saved time becomes the
+///   automatic save's. Undo goes back to the work file. Usually this has
+///   already happened after start-up ([ProjectService.settleNewerAutosaves]).
 ///
 /// [saveEntry] is how the save screen opened from the dialog loads a save
 /// (`entry` of `/save-tree/:id`). [onRestored] runs after the newer automatic
@@ -110,6 +112,6 @@ Future<void> settleOpenedWork(
           content) {
     return;
   }
-  projects.useSavedVersion(projectId, newer.data);
+  projects.useSavedVersion(projectId, newer.data, savedAt: newer.savedAt);
   onRestored?.call();
 }

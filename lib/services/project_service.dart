@@ -2874,9 +2874,62 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// Load the selected snapshot into the editable work, keeping its history.
-  void useSavedVersion(String projectId, NiaproData data) {
-    restoreFromAutosave(projectId, data);
-    _saveAsync(projectId);
+  ///
+  /// [savedAt] is the time the snapshot was written, for an automatic save
+  /// that only caught up with work the file did not get (the app closed
+  /// first): the work's last-saved time becomes that time instead of now,
+  /// so the list shows when the work was last changed.
+  void useSavedVersion(String projectId, NiaproData data, {DateTime? savedAt}) {
+    restoreFromAutosave(projectId, data, savedAt: savedAt);
+    _saveAsync(projectId, keepUpdatedAt: savedAt != null);
+  }
+
+  /// Works an earlier launch left with an automatic save newer than their
+  /// work file and holding different content (the app closed while drawing):
+  /// each takes that content the way opening it does
+  /// ([AutosaveService.newerThanWorkFile], undo goes back to the work file),
+  /// keeps the automatic save's time as its last-saved time and gets a new
+  /// list picture. Before, the list showed the old picture and time until
+  /// the work was opened.
+  ///
+  /// Only the works in the automatic save slots (at most
+  /// [AutosaveService.maxSlots]) whose newest slot is newer than their work
+  /// file are read; the pictures of the other works stay in their files.
+  /// A work changed meanwhile (opened and drawn on) is left as it is.
+  Future<void> settleNewerAutosaves() async {
+    final autosaves = _autosaves;
+    if (autosaves == null) return;
+    final ids = {for (final slot in autosaves.slots) slot.projectId};
+    for (final id in ids) {
+      if (_folderDisposed) return;
+      final project = _projects.where((p) => p.id == id).firstOrNull;
+      final latest = autosaves.slotsForProject(id).firstOrNull;
+      if (project == null ||
+          latest == null ||
+          !latest.savedAt.isAfter(project.updatedAt)) {
+        continue;
+      }
+      try {
+        final tiles = tileManagerOf(id);
+        final content = NiaproSerializer.contentSignature(
+          project,
+          scenesOf(id),
+        );
+        final newer = await autosaves.newerThanWorkFile(this, id);
+        if (newer == null || _folderDisposed) continue;
+        final now = _projects.where((p) => p.id == id).firstOrNull;
+        if (now == null ||
+            !identical(_tileManagers[id], tiles) ||
+            tiles.hasDirtyTiles ||
+            NiaproSerializer.contentSignature(now, scenesOf(id)) != content) {
+          continue;
+        }
+        useSavedVersion(id, newer.data, savedAt: newer.savedAt);
+        await generateAndSaveThumbnail(id, keepUpdatedAt: true);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
   }
 
   Future<void> _checkpointAutosave(String projectId) async {
@@ -2889,7 +2942,14 @@ class ProjectService extends ChangeNotifier {
 
   /// 保存データを既存プロジェクトへ復元する。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
-  void restoreFromAutosave(String projectId, NiaproData data) {
+  ///
+  /// [savedAt] becomes the work's last-saved time (see [useSavedVersion]);
+  /// without it, now.
+  void restoreFromAutosave(
+    String projectId,
+    NiaproData data, {
+    DateTime? savedAt,
+  }) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
     final tiles = tileManagerOf(projectId);
@@ -2902,7 +2962,7 @@ class ProjectService extends ChangeNotifier {
       )..importAll(data.tileData);
       final before = _captureTimeline(projectId);
       _tileManagers[projectId] = restoredTiles;
-      _installAutosave(projectId, idx, data);
+      _installAutosave(projectId, idx, data, updatedAt: savedAt);
       final after = _captureTimeline(projectId);
       _undoManager?.push(
         ProjectEditUndoAction(
@@ -2930,23 +2990,28 @@ class ProjectService extends ChangeNotifier {
       editTimeline(
         projectId,
         'Restore saved project',
-        () => restoreFromAutosave(projectId, data),
+        () => restoreFromAutosave(projectId, data, savedAt: savedAt),
       );
       return;
     }
-    _installAutosave(projectId, idx, data);
+    _installAutosave(projectId, idx, data, updatedAt: savedAt);
     tiles.importAll(data.tileData);
     notifyListeners();
   }
 
-  void _installAutosave(String projectId, int idx, NiaproData data) {
+  void _installAutosave(
+    String projectId,
+    int idx,
+    NiaproData data, {
+    DateTime? updatedAt,
+  }) {
     // The saved version brings the whole picture back: the work can be saved
     // again even if its file could not be read.
     _unreadableTiles.remove(projectId);
     final live = _projects[idx];
     _projects[idx] = data.project.copyWith(
       id: projectId,
-      updatedAt: DateTime.now(),
+      updatedAt: updatedAt ?? DateTime.now(),
       // 入っているフォルダ・お気に入り・タグは今の作品のまま（古い手動の
       // 保存を読み込むと、作品が前に入っていたフォルダ〔ゴミ箱へ移した・
       // 消したフォルダも〕へ戻り、お気に入り・タグも戻った）。
@@ -4894,6 +4959,7 @@ class ProjectService extends ChangeNotifier {
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
   Future<bool> _saveReportingSuccess(
     String projectId, {
+    bool keepUpdatedAt = false,
     bool keepUpdatedAtIfUnchanged = false,
   }) {
     if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
@@ -4901,6 +4967,7 @@ class ProjectService extends ChangeNotifier {
       projectId,
       () => _writeProjectFile(
         projectId,
+        keepUpdatedAt: keepUpdatedAt,
         keepUpdatedAtIfUnchanged: keepUpdatedAtIfUnchanged,
       ),
     ).then((_) => true, onError: (Object _, StackTrace _) => false);
@@ -5628,11 +5695,15 @@ class ProjectService extends ChangeNotifier {
   /// （先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
   /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
   /// 生成できない場合（シーン・フレームが存在しない等）は何もしない。
+  ///
+  /// [keepUpdatedAt] keeps the work's last-saved time as it is (the picture
+  /// is made for a work whose time was just set).
   Future<void> generateAndSaveThumbnail(
     String projectId, {
     String? sceneId,
     int? frameIndex,
     bool force = false,
+    bool keepUpdatedAt = false,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
 
@@ -5721,6 +5792,7 @@ class ProjectService extends ChangeNotifier {
     // 変えていなければ、最終保存の日時はそのまま）。
     final saved = _saveReportingSuccess(
       projectId,
+      keepUpdatedAt: keepUpdatedAt,
       keepUpdatedAtIfUnchanged: !force,
     );
     notifyListeners();
