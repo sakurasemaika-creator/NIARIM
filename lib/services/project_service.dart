@@ -5700,6 +5700,9 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [generateAndSaveThumbnail]が作る一覧のサムネイルの長辺（画素）。
+  static const int thumbnailLongSide = 200;
+
   /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する
   /// （先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
   /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
@@ -5737,7 +5740,7 @@ class ProjectService extends ChangeNotifier {
     final h = tm.canvasHeight;
     if (w <= 0 || h <= 0) return;
 
-    const thumbMax = 200;
+    const thumbMax = thumbnailLongSide;
     final scale = thumbMax / math.max(w, h);
     final tw = (w * scale).round().clamp(1, thumbMax);
     final th = (h * scale).round().clamp(1, thumbMax);

@@ -7132,8 +7132,11 @@ class _TrashTabState extends State<_TrashTab> {
               : Image.file(
                   File(path),
                   fit: BoxFit.cover,
-                  cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context))
-                      .round(),
+                  // 細い線が点線にならない幅で読む（一覧の詳細の行と同じ）。
+                  cacheWidth: projectThumbnailDecodeWidth(
+                    48,
+                    MediaQuery.devicePixelRatioOf(context),
+                  ),
                   errorBuilder: (context, error, stackTrace) => placeholder,
                 ),
         ),

@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -53,10 +54,26 @@ import '../../../utils/file_failure_reason.dart';
 /// [collectionDetailThumbExtent]の`usual`）。
 const double kProjectDetailThumbExtent = 48;
 
+/// 作品のサムネイルを小さく（論理の幅[logicalWidth]で）出すときに読む幅
+/// （画素）。表示の画素数で読むと、保存の絵（長辺
+/// [ProjectService.thumbnailLongSide]）を半分より小さく縮めるとき、読み込みの
+/// 縮小（補間だけで、間の画素を平均しない）で細い線が点線になり、消えた
+/// （画面の倍率1の詳細の行で発見）。そのときは表示の2倍（保存の絵の半分まで）で
+/// 読み、表示の大きさへは描くときにImageの既定（FilterQuality.medium、
+/// 縮めた絵を平均する）で縮める。表示の画素数が保存の絵の半分以上なら今までと
+/// 同じ幅で読む（メモリは増えない）。
+int projectThumbnailDecodeWidth(double logicalWidth, double devicePixelRatio) {
+  final shown = (logicalWidth * devicePixelRatio).round();
+  return math.max(
+    shown,
+    math.min(shown * 2, ProjectService.thumbnailLongSide ~/ 2),
+  );
+}
+
 /// プロジェクトの一覧（[ProjectListWidget]）が[viewMode]で作品のサムネイルを
 /// 読むときの画像。カードは保存された大きさのまま、詳細の行は行の絵の
-/// 大きさ×画面の倍率まで縮めて読む（一覧の`Image.file`と同じキーになる）。
-/// 起動画面が先に読んでおくときに使う。
+/// 大きさ×画面の倍率に合わせた幅（[projectThumbnailDecodeWidth]）で読む
+/// （一覧の`Image.file`と同じキーになる）。起動画面が先に読んでおくときに使う。
 ImageProvider projectListThumbnailImage(
   String path, {
   required ProjectViewMode viewMode,
@@ -64,13 +81,14 @@ ImageProvider projectListThumbnailImage(
   required double devicePixelRatio,
 }) => ResizeImage.resizeIfNeeded(
   viewMode.isDetail
-      ? (collectionDetailThumbExtentFor(
-                  size: viewMode.size,
-                  width: screenWidth,
-                  usual: kProjectDetailThumbExtent,
-                ) *
-                devicePixelRatio)
-            .round()
+      ? projectThumbnailDecodeWidth(
+          collectionDetailThumbExtentFor(
+            size: viewMode.size,
+            width: screenWidth,
+            usual: kProjectDetailThumbExtent,
+          ),
+          devicePixelRatio,
+        )
       : null,
   null,
   FileImage(File(path)),
@@ -661,9 +679,9 @@ class ProjectListWidget extends StatelessWidget {
 
   /// プロジェクトカードのサムネイル。生成済みのPNGがあればそれを表示し、
   /// 未生成・読み込み失敗の場合は背景色のプレースホルダーへフォールバックする。
-  /// [displayWidth]は表示上の論理幅。指定するとその画素数へ落として
-  /// デコードする（一覧行の48px表示で、保存されている長辺200pxのまま
-  /// 画像キャッシュへ載せないため）。カード表示のように表示側の方が
+  /// [displayWidth]は表示上の論理幅。指定するとその大きさに合わせた幅
+  /// （[projectThumbnailDecodeWidth]）でデコードする（一覧行の48px表示で、
+  /// 保存されている長辺200pxのまま画像キャッシュへ載せないため）。カード表示のように表示側の方が
   /// 大きくなる場合は指定しない。
   Widget _thumbnail(
     BuildContext context,
@@ -696,7 +714,10 @@ class ProjectListWidget extends StatelessWidget {
           fit: BoxFit.cover,
           cacheWidth: displayWidth == null
               ? null
-              : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
+              : projectThumbnailDecodeWidth(
+                  displayWidth,
+                  MediaQuery.devicePixelRatioOf(context),
+                ),
           errorBuilder: (context, error, stackTrace) => placeholder,
         ),
       ),
