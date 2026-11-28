@@ -148,7 +148,8 @@ void main() {
 
       router.go('/settings');
       await tester.pumpAndSettle();
-      final setting = find.text('この端末のプッシュ通知');
+      // The row is named after the screen it opens.
+      final setting = find.text(l10n.communityNotificationSettingsTitle);
       await tester.scrollUntilVisible(setting, 180);
       await tester.tap(setting);
       await tester.pumpAndSettle();

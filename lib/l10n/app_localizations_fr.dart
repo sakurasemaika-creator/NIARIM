@@ -350,6 +350,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsThemeSubtitle => 'Couleurs du thème, texte et fond';
 
   @override
+  String get settingsNotificationsSubtitle =>
+      'Notifications push sur cet appareil, enregistrement et publication des œuvres';
+
+  @override
   String get settingsWatermarkTitle => 'Filigrane';
 
   @override

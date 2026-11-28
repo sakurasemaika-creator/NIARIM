@@ -109,6 +109,7 @@
   "settingsBucketSubtitle": "Tolérance, extension, sous les traits",
   "settingsThemeTitle": "Thème et apparence",
   "settingsThemeSubtitle": "Couleurs du thème, texte et fond",
+  "settingsNotificationsSubtitle": "Notifications push sur cet appareil, enregistrement et publication des œuvres",
   "settingsWatermarkTitle": "Filigrane",
   "settingsWatermarkSubtitle": "Filigrane personnalisé",
   "settingsTransferTitle": "Transfert",

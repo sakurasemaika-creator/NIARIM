@@ -279,10 +279,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       (
         icon: Icons.notifications_outlined,
-        title: devicePushLabel(l10n),
+        // The name of the screen it opens; the subtitle says what is set
+        // there (this device's push notifications and the posting ones).
+        title: l10n.communityNotificationSettingsTitle,
         group: _SettingsGroup.general,
-        subtitle: devicePushDescription(l10n),
-        keywords: '通知 プッシュ push notifications',
+        subtitle: l10n.settingsNotificationsSubtitle,
+        keywords: '通知 プッシュ この端末 push notifications device',
         onTap: () => context.push(communityNotificationSettingsRoute),
       ),
       // 無料会員はMaterialのlockアイコンで表示

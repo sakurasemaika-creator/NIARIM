@@ -109,6 +109,7 @@
   "settingsBucketSubtitle": "Tolerance, expand, fill under lines",
   "settingsThemeTitle": "Theme & Appearance",
   "settingsThemeSubtitle": "Theme colors, text and background",
+  "settingsNotificationsSubtitle": "Push notifications on this device, work posts and publications",
   "settingsWatermarkTitle": "Watermark",
   "settingsWatermarkSubtitle": "Custom watermark",
   "settingsTransferTitle": "Transfer",

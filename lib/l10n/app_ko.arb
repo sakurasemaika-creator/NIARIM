@@ -109,6 +109,7 @@
   "settingsBucketSubtitle": "허용 오차·확장·선 아래로 파고들기",
   "settingsThemeTitle": "테마·외관",
   "settingsThemeSubtitle": "테마 배색·글자색·배경색",
+  "settingsNotificationsSubtitle": "이 기기의 푸시 알림, 작품 게시 및 공개",
   "settingsWatermarkTitle": "워터마크",
   "settingsWatermarkSubtitle": "커스텀 워터마크",
   "settingsTransferTitle": "데이터 이전",

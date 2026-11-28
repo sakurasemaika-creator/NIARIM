@@ -338,6 +338,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeSubtitle => 'Theme colors, text and background';
 
   @override
+  String get settingsNotificationsSubtitle =>
+      'Push notifications on this device, work posts and publications';
+
+  @override
   String get settingsWatermarkTitle => 'Watermark';
 
   @override

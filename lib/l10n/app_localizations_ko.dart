@@ -324,6 +324,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsThemeSubtitle => '테마 배색·글자색·배경색';
 
   @override
+  String get settingsNotificationsSubtitle => '이 기기의 푸시 알림, 작품 게시 및 공개';
+
+  @override
   String get settingsWatermarkTitle => '워터마크';
 
   @override

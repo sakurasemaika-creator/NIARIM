@@ -323,6 +323,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsThemeSubtitle => 'テーマ配色・文字色・背景色';
 
   @override
+  String get settingsNotificationsSubtitle => 'この端末のプッシュ通知・作品の投稿と公開';
+
+  @override
   String get settingsWatermarkTitle => 'ウォーターマーク';
 
   @override

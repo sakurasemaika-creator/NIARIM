@@ -677,6 +677,12 @@ abstract class AppLocalizations {
   /// **'テーマ配色・文字色・背景色'**
   String get settingsThemeSubtitle;
 
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末のプッシュ通知・作品の投稿と公開'**
+  String get settingsNotificationsSubtitle;
+
   /// No description provided for @settingsWatermarkTitle.
   ///
   /// In ja, this message translates to:

@@ -185,6 +185,7 @@
   "settingsBucketSubtitle": "許容誤差・拡張・線の下まで潜る",
   "settingsThemeTitle": "テーマ・外観",
   "settingsThemeSubtitle": "テーマ配色・文字色・背景色",
+  "settingsNotificationsSubtitle": "この端末のプッシュ通知・作品の投稿と公開",
   "settingsWatermarkTitle": "ウォーターマーク",
   "settingsWatermarkSubtitle": "カスタムウォーターマーク",
   "settingsTransferTitle": "引き継ぎ",

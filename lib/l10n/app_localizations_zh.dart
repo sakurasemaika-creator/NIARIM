@@ -320,6 +320,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeSubtitle => '主题配色、文字色、背景色';
 
   @override
+  String get settingsNotificationsSubtitle => '此设备的推送通知、作品投稿与公开';
+
+  @override
   String get settingsWatermarkTitle => '水印';
 
   @override
@@ -11671,6 +11674,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsThemeSubtitle => '主題配色、文字色、背景色';
+
+  @override
+  String get settingsNotificationsSubtitle => '此裝置的推播通知、作品投稿與公開';
 
   @override
   String get settingsWatermarkTitle => '浮水印';
