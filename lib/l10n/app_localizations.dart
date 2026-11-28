@@ -14685,6 +14685,12 @@ abstract class AppLocalizations {
   /// **'YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。'**
   String get communityPostStatusRegistrationRetryable;
 
+  /// No description provided for @communityPostStatusRegistrationClosed.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は作品広場に登録できません。YouTubeの動画はアップロードしたまま残っています。登録をやめると、新しい動画を選べます。'**
+  String get communityPostStatusRegistrationClosed;
+
   /// No description provided for @communityPostErrorNoVideo.
   ///
   /// In ja, this message translates to:

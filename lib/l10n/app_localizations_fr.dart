@@ -8629,6 +8629,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'La vidéo est enregistrée sur YouTube. Vous pouvez réessayer uniquement l’enregistrement sur la Place des œuvres.';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      'Cette vidéo ne peut pas être enregistrée sur la Place des œuvres. Elle reste sur YouTube telle qu’elle a été mise en ligne. Annulez l’enregistrement pour choisir une nouvelle vidéo.';
+
+  @override
   String get communityPostErrorNoVideo => 'Choisissez une vidéo à publier';
 
   @override

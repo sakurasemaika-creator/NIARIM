@@ -8039,6 +8039,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '视频已保存在YouTube上。可以只重试作品广场登记。';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      '此视频无法在作品广场登记。已上传的视频仍保留在YouTube上。取消登记后即可选择新的视频。';
+
+  @override
   String get communityPostErrorNoVideo => '请选择要发布的视频';
 
   @override
@@ -19376,6 +19380,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get communityPostStatusRegistrationRetryable =>
       '影片已保存在YouTube上。可以只重試作品廣場登錄。';
+
+  @override
+  String get communityPostStatusRegistrationClosed =>
+      '此影片無法在作品廣場登錄。已上傳的影片仍保留在YouTube上。取消登錄後即可選擇新的影片。';
 
   @override
   String get communityPostErrorNoVideo => '請選擇要發佈的影片';

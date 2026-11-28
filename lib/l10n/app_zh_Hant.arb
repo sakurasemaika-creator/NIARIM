@@ -3299,6 +3299,7 @@
   "communityPostStatusRegistering": "已上傳到YouTube。正在登錄到作品廣場…",
   "communityPostStatusUploadFailed": "上傳失敗",
   "communityPostStatusRegistrationRetryable": "影片已保存在YouTube上。可以只重試作品廣場登錄。",
+  "communityPostStatusRegistrationClosed": "此影片無法在作品廣場登錄。已上傳的影片仍保留在YouTube上。取消登錄後即可選擇新的影片。",
   "communityPostErrorNoVideo": "請選擇要發佈的影片",
   "communityPostErrorNoTitle": "請輸入標題",
   "communityPostErrorServerNotConfigured": "由於未設定作品廣場的伺服器，無法發佈",

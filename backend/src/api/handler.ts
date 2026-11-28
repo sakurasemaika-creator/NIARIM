@@ -20,6 +20,7 @@ import { getWorkMetadata, updateWorkMetadata } from "./routes/workMetadata";
 import { getYoutubeComments } from "./routes/youtubeComments";
 import { getAuthorWorks, getMyWorks, getMyWork } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
+import { getMyPostQuota } from "./routes/postQuota";
 import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
 import {
   startRewardedAdSession, receiveRewardedAdSsv, getRewardedAdStatus,
@@ -144,6 +145,7 @@ const routes: Route[] = [
   route("POST", "/account-deletion/submit", (e) => startAccountDeletion(e)),
   route("POST", "/account-deletion/status", (e) => getAccountDeletionStatus(e)),
   route("GET", "/me/works/{id}", (e, p) => getMyWork(e, p.id)),
+  route("GET", "/me/post-quota", (e) => getMyPostQuota(e)),
   route("POST", "/me/youtube-channel/refresh", (e) => refreshMyYoutubeChannel(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
   route("POST", "/me/premium/play/verify", (e) => verifyMyPlayPremium(e)),

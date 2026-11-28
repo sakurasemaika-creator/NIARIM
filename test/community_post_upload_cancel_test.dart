@@ -184,6 +184,12 @@ void main() {
                 if (request.url.path == '/me/works') {
                   return http.Response('{"authorId":"owner","works":[]}', 200);
                 }
+                if (request.url.path == '/me/post-quota') {
+                  return http.Response(
+                    '{"limit":1,"used":0,"remaining":1}',
+                    200,
+                  );
+                }
                 registrations.add(
                   jsonDecode(request.body) as Map<String, dynamic>,
                 );

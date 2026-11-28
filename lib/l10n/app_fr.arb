@@ -3299,6 +3299,7 @@
   "communityPostStatusRegistering": "Mise en ligne sur YouTube terminée. Enregistrement sur la Place des œuvres…",
   "communityPostStatusUploadFailed": "Échec de la mise en ligne",
   "communityPostStatusRegistrationRetryable": "La vidéo est enregistrée sur YouTube. Vous pouvez réessayer uniquement l’enregistrement sur la Place des œuvres.",
+  "communityPostStatusRegistrationClosed": "Cette vidéo ne peut pas être enregistrée sur la Place des œuvres. Elle reste sur YouTube telle qu’elle a été mise en ligne. Annulez l’enregistrement pour choisir une nouvelle vidéo.",
   "communityPostErrorNoVideo": "Choisissez une vidéo à publier",
   "communityPostErrorNoTitle": "Saisissez un titre",
   "communityPostErrorServerNotConfigured": "Impossible de publier : le serveur de la Place des œuvres n’est pas configuré",

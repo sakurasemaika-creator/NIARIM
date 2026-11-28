@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 
 import '../../config/signal_colors.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/api/community_api.dart';
 import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
@@ -42,6 +43,11 @@ enum _PostStatus {
   registering,
   uploadFailed,
   registrationRetryable,
+
+  /// The uploaded video can never be registered (see
+  /// [_closedRegistrationKinds]); the only way on is to cancel the pending
+  /// registration.
+  registrationClosed,
 }
 
 enum _PostFailureKind {
@@ -59,7 +65,18 @@ enum _PostFailureKind {
   youtubePermissionDenied,
   noVideoId,
   scheduleTooSoon,
+
+  /// No post left today (`POST_QUOTA_EXCEEDED`).
+  postQuotaUsedUp,
 }
+
+/// Refusals of `POST /works` that no retry of the same video can get past:
+/// the pending registration is closed instead of offered again and again.
+/// The day's post limit is one: the server checks the video was uploaded
+/// moments ago, so by the time the limit resets the video is too old.
+const _closedRegistrationKinds = <String, _PostFailureKind>{
+  'POST_QUOTA_EXCEEDED': _PostFailureKind.postQuotaUsedUp,
+};
 
 /// Why a picked image or video frame can't be used as the thumbnail.
 enum _ThumbnailProblem implements Exception {
@@ -132,6 +149,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       'community.pendingUpload.isNiarimPublished';
   static const _pendingAiImageVideoKey =
       'community.pendingUpload.containsGenerativeAiImageOrVideo';
+  static const _pendingClosedKey = 'community.pendingUpload.closedReason';
 
   final _titleController = TextEditingController();
   final _youtubeTitleController = TextEditingController();
@@ -155,6 +173,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   double _progress = 0;
   _PostStatus? _status;
   Object? _error;
+
+  /// Why the pending video can't be registered, when it can't (the only
+  /// way on is then to cancel the registration).
+  _PostFailureKind? _registrationClosed;
   YoutubeUploadCancellation? _uploadCancellation;
   Future<bool?>? _uploadCancelPrompt;
 
@@ -246,7 +268,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               prefs.readString(_pendingDescriptionKey) ?? '';
           _youtubeDescriptionController.text =
               prefs.readString(_pendingYoutubeDescriptionKey) ?? '';
-          _status = _PostStatus.pendingRestored;
+          final closed = _closedRegistrationKinds.values
+              .where((kind) => kind.name == prefs.readString(_pendingClosedKey))
+              .firstOrNull;
+          _registrationClosed = closed;
+          _status = closed == null
+              ? _PostStatus.pendingRestored
+              : _PostStatus.registrationClosed;
+          _error = closed == null ? null : _PostFailure(closed);
         });
       }
     } finally {
@@ -313,6 +342,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingYoutubePrivacyKey),
       prefs.remove(_pendingPublishedKey),
       prefs.remove(_pendingAiImageVideoKey),
+      prefs.remove(_pendingClosedKey),
     ]);
   }
 
@@ -330,8 +360,23 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _uploadAccountEmail = null;
       _videoFile = null;
       _progress = 0;
+      _registrationClosed = null;
       _status = _PostStatus.pendingVideoUnavailable;
       _error = const _PostFailure(_PostFailureKind.pendingVideoUnavailable);
+    });
+  }
+
+  /// Keeps the uploaded video's details, but stops offering to register it:
+  /// [kind] says why no retry can succeed. Saved, so the screen opens in the
+  /// same state next time.
+  Future<void> _closeRegistration(_PostFailureKind kind) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingClosedKey, kind.name);
+    if (!mounted) return;
+    setState(() {
+      _registrationClosed = kind;
+      _status = _PostStatus.registrationClosed;
+      _error = _PostFailure(kind);
     });
   }
 
@@ -394,6 +439,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _youtubePrivacyStatus = 'unlisted';
       _isNiarimPublished = true;
       _containsGenerativeAiImageOrVideo = false;
+      _registrationClosed = null;
       _status = null;
       _error = null;
       _progress = 0;
@@ -692,7 +738,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   }
 
   Future<void> _submit() async {
-    if (_busy || _restoringPending) return;
+    if (_busy || _restoringPending || _registrationClosed != null) return;
     final file = _videoFile;
     final title = _titleController.text.trim();
     final youtubeTitle = _youtubeTitleController.text.trim();
@@ -836,6 +882,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           );
           return;
         }
+      }
+
+      // Look at today's posts left before uploading: once the video is on
+      // YouTube, a refusal for the day's limit leaves it there unregistered.
+      // POST /works still makes the reservation that decides.
+      if (videoId == null && !await _postsLeftToday(api)) return;
+      if (auth.account?.id != uploadAccountId) {
+        throw _PostFailure.accountChanged(uploadAccountEmail);
       }
 
       // A registration retry only reads YouTube unless it still needs to set a thumbnail.
@@ -1002,6 +1056,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         await _markPendingVideoUnavailable();
         return;
       }
+      // Some refusals hold whenever the same video is sent again: stop
+      // offering a retry and leave cancelling the registration.
+      final closedKind = error is NiarimApiException && _youtubeVideoId != null
+          ? _closedRegistrationKinds[error.code]
+          : null;
+      if (closedKind != null) {
+        await _closeRegistration(closedKind);
+        return;
+      }
       debugPrint('Community post failed: $error');
       // A Google operation already running (e.g. an account switch started
       // elsewhere) refuses this one; say so instead of a generic failure.
@@ -1017,6 +1080,32 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       });
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Whether the account may post another work today. When it may not, the
+  /// reason is shown and false comes back. A server that does not know the
+  /// question yet (404) leaves the decision to `POST /works`.
+  Future<bool> _postsLeftToday(CommunityApi api) async {
+    try {
+      if (await api.remainingPostsToday() > 0) return true;
+      if (mounted) {
+        setState(() {
+          _status = null;
+          _error = const _PostFailure(_PostFailureKind.postQuotaUsedUp);
+        });
+      }
+      return false;
+    } on NiarimApiException catch (error) {
+      if (error.isNotFound) return true;
+      if (error.code != 'POSTING_SUSPENDED') rethrow;
+      if (mounted) {
+        setState(() {
+          _status = null;
+          _error = error;
+        });
+      }
+      return false;
     }
   }
 
@@ -1039,6 +1128,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         _PostStatus.uploadFailed => l10n.communityPostStatusUploadFailed,
         _PostStatus.registrationRetryable =>
           l10n.communityPostStatusRegistrationRetryable,
+        _PostStatus.registrationClosed =>
+          l10n.communityPostStatusRegistrationClosed,
       };
 
   String _errorText(AppLocalizations l10n, Object error) {
@@ -1073,6 +1164,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _PostFailureKind.scheduleTooSoon => l10n.communityPostScheduleTooSoon(
         _minimumScheduleLead.inMinutes,
       ),
+      _PostFailureKind.postQuotaUsedUp => l10n.communityErrorPostQuotaExceeded,
     };
   }
 
@@ -1092,6 +1184,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final retainedVideoId = _youtubeVideoId;
+    final registrationClosed = _registrationClosed != null;
+    final barButtonStyle = FilledButton.styleFrom(
+      minimumSize: const Size.fromHeight(52),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+    );
     return PopScope(
       canPop: !_busy,
       onPopInvokedWithResult: (didPop, _) {
@@ -1130,30 +1227,39 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
                   child: SizedBox(
                     width: double.infinity,
-                    child: FilledButton.icon(
-                      key: const Key('communityPostSubmitButton'),
-                      onPressed: _busy || _restoringPending ? null : _submit,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                      ),
-                      icon: _busy
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Icon(
+                    child: registrationClosed
+                        ? FilledButton.icon(
+                            key: const Key('communityPostDiscardClosedButton'),
+                            onPressed: _busy ? null : _discardPendingUpload,
+                            style: barButtonStyle,
+                            icon: const Icon(Icons.close),
+                            label: Text(l10n.communityPostDiscardPending),
+                          )
+                        : FilledButton.icon(
+                            key: const Key('communityPostSubmitButton'),
+                            onPressed: _busy || _restoringPending
+                                ? null
+                                : _submit,
+                            style: barButtonStyle,
+                            icon: _busy
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    retainedVideoId == null
+                                        ? Icons.cloud_upload_outlined
+                                        : Icons.refresh,
+                                  ),
+                            label: Text(
                               retainedVideoId == null
-                                  ? Icons.cloud_upload_outlined
-                                  : Icons.refresh,
+                                  ? l10n.communityPostSubmitUpload
+                                  : l10n.communityPostSubmitRetry,
                             ),
-                      label: Text(
-                        retainedVideoId == null
-                            ? l10n.communityPostSubmitUpload
-                            : l10n.communityPostSubmitRetry,
-                      ),
-                    ),
+                          ),
                   ),
                 ),
               ),
@@ -1535,7 +1641,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                                     ),
                                     if (_uploadAccountEmail case final email?)
                                       l10n.communityPostUploadedAccount(email),
-                                    l10n.communityPostNoReupload,
+                                    if (!registrationClosed)
+                                      l10n.communityPostNoReupload,
                                   ].join('\n'),
                                   style: TextStyle(
                                     color: scheme.onSecondaryContainer,
@@ -1544,14 +1651,17 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _busy ? null : _discardPendingUpload,
-                              child: Text(l10n.communityPostDiscardPending),
+                          // Closed: the action bar's only button cancels.
+                          if (!registrationClosed) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: _busy ? null : _discardPendingUpload,
+                                child: Text(l10n.communityPostDiscardPending),
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),

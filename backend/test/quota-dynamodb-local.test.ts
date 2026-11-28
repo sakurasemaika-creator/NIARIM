@@ -30,7 +30,11 @@ vi.mock("../src/lib/dynamo", async (original) => {
 });
 
 import { ddb, Keys, todayYyyymmdd } from "../src/lib/dynamo";
-import { releasePostQuota, reservePostQuota } from "../src/lib/quota";
+import {
+  readPostQuota,
+  releasePostQuota,
+  reservePostQuota,
+} from "../src/lib/quota";
 import {
   REPORT_MAX_PER_WINDOW,
   reportWindowId,
@@ -96,6 +100,28 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       });
       await releasePostQuota(user);
       await expect(reservePostQuota(user, "free")).resolves.toBeUndefined();
+    });
+
+    it("reads the same counter the reservation writes, without writing", async () => {
+      const reader = "N" + "d".repeat(32);
+      expect(await readPostQuota(reader, "free")).toEqual({
+        limit: 1,
+        used: 0,
+        remaining: 1,
+      });
+      await reservePostQuota(reader, "free");
+      expect(await readPostQuota(reader, "free")).toEqual({
+        limit: 1,
+        used: 1,
+        remaining: 0,
+      });
+      expect(await readPostQuota(reader, "premium")).toEqual({
+        limit: 3,
+        used: 1,
+        remaining: 2,
+      });
+      await releasePostQuota(reader);
+      expect((await readPostQuota(reader, "free")).remaining).toBe(1);
     });
 
     it("counts reports with an expiry and limits a burst", async () => {

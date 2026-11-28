@@ -8485,6 +8485,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The video is saved on YouTube. You can retry just the Work Plaza registration.';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      'This video can’t be registered in the Work Plaza. It stays on YouTube as uploaded. Cancel the registration to choose a new video.';
+
+  @override
   String get communityPostErrorNoVideo => 'Choose a video to post';
 
   @override

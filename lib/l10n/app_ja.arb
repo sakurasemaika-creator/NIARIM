@@ -4247,6 +4247,7 @@
   "communityPostStatusRegistering": "YouTubeへのアップロードが完了しました。作品広場へ登録しています…",
   "communityPostStatusUploadFailed": "アップロードに失敗しました",
   "communityPostStatusRegistrationRetryable": "YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。",
+  "communityPostStatusRegistrationClosed": "この動画は作品広場に登録できません。YouTubeの動画はアップロードしたまま残っています。登録をやめると、新しい動画を選べます。",
   "communityPostErrorNoVideo": "投稿する動画を選択してください",
   "communityPostErrorNoTitle": "タイトルを入力してください",
   "communityPostErrorServerNotConfigured": "作品広場の接続先が設定されていないため、投稿できません",

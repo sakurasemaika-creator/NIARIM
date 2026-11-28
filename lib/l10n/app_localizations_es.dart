@@ -8620,6 +8620,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'El vídeo está guardado en YouTube. Puedes reintentar solo el registro en la Plaza de Obras.';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      'Este vídeo no se puede registrar en la Plaza de Obras. Sigue en YouTube tal como se subió. Cancela el registro para elegir un vídeo nuevo.';
+
+  @override
   String get communityPostErrorNoVideo => 'Elige un vídeo para publicar';
 
   @override

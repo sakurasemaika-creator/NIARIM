@@ -8127,6 +8127,10 @@ class AppLocalizationsJa extends AppLocalizations {
       'YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      'この動画は作品広場に登録できません。YouTubeの動画はアップロードしたまま残っています。登録をやめると、新しい動画を選べます。';
+
+  @override
   String get communityPostErrorNoVideo => '投稿する動画を選択してください';
 
   @override

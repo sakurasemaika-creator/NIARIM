@@ -2,7 +2,11 @@ import {
   ConditionalCheckFailedException,
   TransactionCanceledException,
 } from "@aws-sdk/client-dynamodb";
-import { TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  GetCommand,
+  TransactWriteCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import {
   ddb,
   tableName,
@@ -113,6 +117,55 @@ export async function reservePostQuota(
     }
     throw err;
   }
+}
+
+/** 今日の投稿枠の残り（`GET /me/post-quota`の応答）。 */
+export interface PostQuotaStatus {
+  /** この利用者の1日の上限（会員種別・特典で決まる）。 */
+  limit: number;
+  /** この利用者が今日（UTCの日付）すでに使った数。 */
+  used: number;
+  /** 今投稿できる数。利用者の残りとNIARIM全体の残りの小さい方（0以上）。 */
+  remaining: number;
+}
+
+/**
+ * 今日の投稿枠を読むだけ（書き込まない）。アプリはYouTubeへアップロードする
+ * 前にこれを見て、枠が無ければアップロードを始めない（アップロードした後で
+ * `POST /works`が409になり、動画だけがYouTubeに残るのを防ぐ）。
+ *
+ * カウンターのキー・日付・会員種別の決め方は`reservePostQuota`と同じ。
+ * 決めるのは今までどおり`reservePostQuota`の条件付き書き込みで、ここは目安
+ * （読んでからアップロードし終えるまでに、別の端末の投稿で枠が埋まることは
+ * ある）。読むのは利用者と全体のカウンターの2件だけ（インデックスは使わない）。
+ */
+export async function readPostQuota(
+  niarimUserId: string,
+  tier: MembershipTier,
+  now: Date = new Date(),
+): Promise<PostQuotaStatus> {
+  const date = todayYyyymmdd(now);
+  const [effectiveTier, used, globalUsed] = await Promise.all([
+    resolvePostMembershipTier(niarimUserId, tier, now),
+    readCounter(Keys.dailyCounter(niarimUserId, date)),
+    readCounter(Keys.dailyCounter(GLOBAL_COUNTER_USER_ID, date)),
+  ]);
+  const limit = DAILY_POST_LIMIT_PER_USER[effectiveTier];
+  const remaining = Math.max(
+    0,
+    Math.min(limit - used, DAILY_POST_LIMIT_GLOBAL - globalUsed),
+  );
+  return { limit, used, remaining };
+}
+
+async function readCounter(key: { pk: string; sk: string }): Promise<number> {
+  const result = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: key, ConsistentRead: true }),
+  );
+  const count = result.Item?.count;
+  return typeof count === "number" && Number.isSafeInteger(count) && count > 0
+    ? count
+    : 0;
 }
 
 /**

@@ -102,6 +102,7 @@ backend/
 | GET      | `/works/latest`                 | 8.3節・8.6節（`q`で検索）                                                                            | 不要                                             |
 | GET      | `/users/{id}/works`             | 8.4節                                                                                                | 任意（本人なら非公開作品も含む）                 |
 | POST     | `/works`                        | 6章・12章・17章                                                                                      | 必須                                             |
+| GET      | `/me/post-quota`                | 11章：今日あといくつ投稿できるか（読むだけ。アプリがYouTubeへ上げる前に見る）                        | 必須                                             |
 | PATCH    | `/works/{id}`                   | 13章                                                                                                 | 必須（投稿者本人）                               |
 | DELETE   | `/works/{id}`                   | 13章                                                                                                 | 必須（投稿者本人）                               |
 | PATCH    | `/works/{id}/tags`              | 8.7節                                                                                                | 必須（追加/削除は誰でも、ロックは投稿者本人）    |

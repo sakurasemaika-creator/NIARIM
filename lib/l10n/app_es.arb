@@ -3299,6 +3299,7 @@
   "communityPostStatusRegistering": "Subida a YouTube completada. Registrando en la Plaza de Obras…",
   "communityPostStatusUploadFailed": "No se pudo subir el vídeo",
   "communityPostStatusRegistrationRetryable": "El vídeo está guardado en YouTube. Puedes reintentar solo el registro en la Plaza de Obras.",
+  "communityPostStatusRegistrationClosed": "Este vídeo no se puede registrar en la Plaza de Obras. Sigue en YouTube tal como se subió. Cancela el registro para elegir un vídeo nuevo.",
   "communityPostErrorNoVideo": "Elige un vídeo para publicar",
   "communityPostErrorNoTitle": "Introduce un título",
   "communityPostErrorServerNotConfigured": "No se puede publicar porque el servidor de la Plaza de Obras no está configurado",

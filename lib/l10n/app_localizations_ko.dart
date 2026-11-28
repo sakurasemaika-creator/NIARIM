@@ -8165,6 +8165,10 @@ class AppLocalizationsKo extends AppLocalizations {
       'YouTube에 동영상이 저장되어 있습니다. 작품 광장 등록만 다시 시도할 수 있습니다.';
 
   @override
+  String get communityPostStatusRegistrationClosed =>
+      '이 동영상은 작품 광장에 등록할 수 없습니다. YouTube에는 업로드한 그대로 남아 있습니다. 등록을 취소하면 새 동영상을 선택할 수 있습니다.';
+
+  @override
   String get communityPostErrorNoVideo => '게시할 동영상을 선택해 주세요';
 
   @override

@@ -3329,6 +3329,7 @@
   "communityPostStatusRegistering": "Upload to YouTube complete. Registering in the Work Plaza…",
   "communityPostStatusUploadFailed": "Upload failed",
   "communityPostStatusRegistrationRetryable": "The video is saved on YouTube. You can retry just the Work Plaza registration.",
+  "communityPostStatusRegistrationClosed": "This video can’t be registered in the Work Plaza. It stays on YouTube as uploaded. Cancel the registration to choose a new video.",
   "communityPostErrorNoVideo": "Choose a video to post",
   "communityPostErrorNoTitle": "Enter a title",
   "communityPostErrorServerNotConfigured": "Posting isn’t available because the Work Plaza server isn’t configured",

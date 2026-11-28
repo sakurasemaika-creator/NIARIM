@@ -626,6 +626,19 @@ class CommunityApi {
     return ApiWork.fromJson(_work(response));
   }
 
+  /// How many more works the signed-in account may post today
+  /// (`GET /me/post-quota`). The app looks before uploading to YouTube, so an
+  /// upload never starts when no post is left; `POST /works` still decides.
+  /// A suspended account is refused with `POSTING_SUSPENDED`.
+  Future<int> remainingPostsToday() async {
+    final json = await _client.getJson('/me/post-quota', authenticated: true);
+    final remaining = json['remaining'];
+    if (remaining is! int) {
+      throw const FormatException('Invalid post quota response');
+    }
+    return remaining;
+  }
+
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,

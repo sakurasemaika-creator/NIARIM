@@ -3299,6 +3299,7 @@
   "communityPostStatusRegistering": "已上传到YouTube。正在登记到作品广场…",
   "communityPostStatusUploadFailed": "上传失败",
   "communityPostStatusRegistrationRetryable": "视频已保存在YouTube上。可以只重试作品广场登记。",
+  "communityPostStatusRegistrationClosed": "此视频无法在作品广场登记。已上传的视频仍保留在YouTube上。取消登记后即可选择新的视频。",
   "communityPostErrorNoVideo": "请选择要发布的视频",
   "communityPostErrorNoTitle": "请输入标题",
   "communityPostErrorServerNotConfigured": "由于未设置作品广场的服务器，无法发布",
