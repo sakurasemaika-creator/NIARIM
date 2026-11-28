@@ -89,9 +89,9 @@ async function incrementOrReject(
         TableName: tableName(),
         Key: Keys.reportCounter(reporterId, windowId),
         UpdateExpression:
-          "SET itemType = :type, reporterId = :rid, windowId = :wid, ttl = :ttl ADD #c :one",
+          "SET itemType = :type, reporterId = :rid, windowId = :wid, #ttl = :ttl ADD #c :one",
         ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
-        ExpressionAttributeNames: { "#c": "count" },
+        ExpressionAttributeNames: { "#c": "count", "#ttl": "ttl" },
         ExpressionAttributeValues: {
           ":one": 1,
           ":limit": limit,

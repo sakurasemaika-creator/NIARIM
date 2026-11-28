@@ -67,9 +67,9 @@ export async function reservePostQuota(
               TableName: tableName(),
               Key: userKey,
               UpdateExpression:
-                "SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one",
+                "SET niarimUserId = :uid, #d = :date, itemType = :type, #ttl = :ttl ADD #c :one",
               ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
-              ExpressionAttributeNames: { "#c": "count", "#d": "date" },
+              ExpressionAttributeNames: { "#c": "count", "#d": "date", "#ttl": "ttl" },
               ExpressionAttributeValues: {
                 ":one": 1,
                 ":limit": userLimit,
@@ -85,9 +85,9 @@ export async function reservePostQuota(
               TableName: tableName(),
               Key: globalKey,
               UpdateExpression:
-                "SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one",
+                "SET niarimUserId = :uid, #d = :date, itemType = :type, #ttl = :ttl ADD #c :one",
               ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
-              ExpressionAttributeNames: { "#c": "count", "#d": "date" },
+              ExpressionAttributeNames: { "#c": "count", "#d": "date", "#ttl": "ttl" },
               ExpressionAttributeValues: {
                 ":one": 1,
                 ":limit": DAILY_POST_LIMIT_GLOBAL,
