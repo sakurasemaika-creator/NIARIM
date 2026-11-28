@@ -65,8 +65,8 @@
    `debugPrint`を使う。以前はdev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に7件あったが、
    2026-10-30にdev_branch `4751cbe`を取り込んだ時点で無くなり、例外なしの0件）
-3. `flutter test`（ベースライン：2026-11-24、dev_branch `351ef581`で
-   **成功5978・スキップ23・失敗3**（955ファイル）。失敗の3件は書き込みを権限（chmod）で
+3. `flutter test`（ベースライン：2026-11-28、dev_branch `4608388b`で
+   **成功7012・スキップ45・失敗3**（1116ファイル、`-j 4`で約2時間半）。失敗の3件は書き込みを権限（chmod）で
    断るtest（`project_favorite_delete_guard_test`の2件・
    `storage_cache_isolation_test`の1件）で、rootで流すと権限が効かず落ちる
    （このリモート実行環境はroot。CIは一般ユーザーで流す）。
