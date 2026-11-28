@@ -14,6 +14,7 @@ import 'package:niarim/services/layer_clipboard_service.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/share_intent_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/utils/saved_list_reader.dart';
 import 'package:niarim/widgets/app_tutorial.dart';
@@ -153,6 +154,8 @@ void main() {
       File('${support.path}/folder_thumbnails/f.jpg'),
       File('${support.path}/post_thumbnails/p.jpg'),
       File('${cache.path}/thumb.bin'),
+      // A copy of a file opened from another app, left while it was read.
+      File('${cache.path}/${ShareIntentService.intakeFolderName}/1-0.niashare'),
     ];
     for (final file in written) {
       file

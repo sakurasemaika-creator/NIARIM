@@ -1401,8 +1401,17 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   .niatraとその中の作品）は`ArchiveLimits.receivedWork`：取り込むと作品を丸ごとメモリに持つので、展開後の
   上限をこの端末のメモリの4分の1（`/proc/meminfo`の`MemTotal`、256 MiB〜4 GiB、読めなければ256 MiB。
   `ArchiveSecurity.receivedWorkBudget`）にしてある。固定の上限より狭くはならず、断る文も同じ。爆弾は
-  それを超えて断られる（`large_work_storage_test`）。共有の受け取り口（OSの共有から開く）の128 MBの
-  上限（`maxShareIntentBytes`とMainActivity、画面の文にも128 MB）は別で、変えていない。
+  それを超えて断られる（`large_work_storage_test`）。**ほかのアプリの共有・ファイラーから開く.niashareも同じ
+  上限**（`maxShareIntentBytes()`＝`ArchiveLimits.receivedWork.compressedBytes`、2026-11-28。以前は128 MBで、
+  ファイルを丸ごとメモリに読んでKotlin・チャンネル・Dartで何重にも持っていた）：Android側
+  （`SharedFileIntake.kt`、MainActivityの`copyUri`）がcontent://のファイルをアプリのキャッシュの
+  `shared_intake/`へ256KBずつ写し、Dartはその写しから作品を読む（バイト列をチャンネルで渡さない）。
+  大きさが分かれば読む前に、分からなければ写しながら上限で断る。空き容量はファイルの2倍（写しと取り込んだ
+  作品）＋32MBが要り、足りなければ足りない量を知らせる（`homeSharedFileNoSpace`）。上限の文
+  （`homeSharedFileTooLarge`）はこの端末の上限を出す。写しは読み終えたら消し、落ちて残った写しは次の
+  起動で消す（`ShareIntentService.init`）。全データの削除はキャッシュごと消す（`share_intent_intake_test`・
+  `home_share_intent_feedback_test`）。.niatraは設定の引き継ぎのファイル選択から読む（共有のメニューからは
+  開かない）。
 - **作品の保存と自動保存は、変わった印の付いたタイルだけを圧縮し、ほかは前の保存から圧縮されたまま写す
   （実際に使ってみて発見、2026-11-27）**：以前の自動保存（描くのを止めて5秒後）は画面の処理と同じ所で
   「前回の自動保存を全部展開して比べる→全部のタイルを圧縮し直す」をしていて、描き込んだタイル200枚で約4秒

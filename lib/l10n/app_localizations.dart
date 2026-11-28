@@ -284,8 +284,14 @@ abstract class AppLocalizations {
   /// No description provided for @homeSharedFileTooLarge.
   ///
   /// In ja, this message translates to:
-  /// **'共有ファイルが128 MBを超えています。128 MB以下のファイルを開いてください。'**
-  String get homeSharedFileTooLarge;
+  /// **'共有ファイルが大きすぎるため開けません。この端末で開けるのは{size}以下のファイルです。'**
+  String homeSharedFileTooLarge(String size);
+
+  /// No description provided for @homeSharedFileNoSpace.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の空き容量が足りないため、共有ファイルを開けません。空き容量をあと{size}以上増やしてから、もう一度開いてください。'**
+  String homeSharedFileNoSpace(String size);
 
   /// No description provided for @homeSharedFileUnreadable.
   ///

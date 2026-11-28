@@ -29,7 +29,22 @@
   "homeMoveToTrashConfirm": "{count, plural, one{Move {count} item to the trash?} other{Move {count} items to the trash?}}",
   "commonMove": "Move",
   "homeShareFileDialogTitle": "Shared File",
-  "homeSharedFileTooLarge": "The shared file is larger than 128 MB. Open a file that is 128 MB or smaller.",
+  "homeSharedFileTooLarge": "The shared file is too large to open. This device can open files up to {size}.",
+  "@homeSharedFileTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSharedFileNoSpace": "There isn’t enough free space on this device to open the shared file. Free up at least {size} more, then open it again.",
+  "@homeSharedFileNoSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "homeSharedFileUnreadable": "Couldn’t open the shared file. Save the file again and try opening it.",
   "homeShareFileDialogContent": "Duplicate this shared file and save it as a regular project?",
   "homeMissingFontsSnackbar": "Missing fonts: {names}",

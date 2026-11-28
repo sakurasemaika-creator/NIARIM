@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/archive_security.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/share_intent_service.dart';
+import 'package:niarim/utils/file_size_label.dart';
 
 import 'helpers/home_clipboard_harness.dart';
 
@@ -12,6 +14,9 @@ void main() {
   testWidgets(
     'cold and warm share intents explain read failures and clean up',
     (tester) async {
+      // Files open up to what a received work may be on this device.
+      ArchiveSecurity.debugReceivedWorkBudget = 1024 * 1024 * 1024;
+      addTearDown(() => ArchiveSecurity.debugReceivedWorkBudget = null);
       const channel = MethodChannel('com.niarim.niarim/share_intent');
       const uri = 'content://test/transfer.niashare';
       final messenger =
@@ -22,10 +27,16 @@ void main() {
         switch (call.method) {
           case 'getInitialUri':
             return uri;
-          case 'readUri':
-            expect(call.arguments, {'uri': uri});
-            if (errorCode case final code?) throw PlatformException(code: code);
-            return sharedBytes;
+          case 'copyUri':
+            final args = call.arguments as Map;
+            expect(args['uri'], uri);
+            expect(args['maxBytes'], maxShareIntentBytes());
+            if (errorCode case final code?) {
+              throw PlatformException(code: code, details: 3 << 20);
+            }
+            // The platform side copies the file into the given path.
+            File(args['path'] as String).writeAsBytesSync(sharedBytes);
+            return sharedBytes.length;
           default:
             throw MissingPluginException();
         }
@@ -48,7 +59,25 @@ void main() {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
       }
 
-      await home.waitFor(() => home.snackText() == l10n.homeSharedFileTooLarge);
+      final tooLarge = l10n.homeSharedFileTooLarge(
+        fileSizeLabel(l10n, maxShareIntentBytes()),
+      );
+      await home.waitFor(() => home.snackText() == tooLarge);
+      expect(tooLarge, '共有ファイルが大きすぎるため開けません。この端末で開けるのは1.0GB以下のファイルです。');
+      expect(dialog, findsNothing);
+
+      clearNotice();
+      errorCode = 'NO_SPACE';
+      await receive(uri);
+      await home.waitFor(
+        () =>
+            home.snackText() ==
+            l10n.homeSharedFileNoSpace(fileSizeLabel(l10n, 3 << 20)),
+      );
+      expect(
+        home.snackText(),
+        '端末の空き容量が足りないため、共有ファイルを開けません。空き容量をあと3.0MB以上増やしてから、もう一度開いてください。',
+      );
       expect(dialog, findsNothing);
 
       clearNotice();
@@ -62,21 +91,22 @@ void main() {
       clearNotice();
       final local = File('${home.dir.path}/oversized.niashare');
       local.openSync(mode: FileMode.write)
-        ..truncateSync(maxShareIntentBytes + 1)
+        ..truncateSync(maxShareIntentBytes() + 1)
         ..closeSync();
       await receive(local.uri.toString());
-      await home.waitFor(() => home.snackText() == l10n.homeSharedFileTooLarge);
+      await home.waitFor(() => home.snackText() == tooLarge);
       expect(dialog, findsNothing);
       expect(local.existsSync(), isTrue);
 
       clearNotice();
       errorCode = null;
-      Iterable<Directory> staged() =>
-          home.dir.listSync().whereType<Directory>().where(
-            (dir) => dir.uri.pathSegments.any(
-              (segment) => segment.startsWith('shared-'),
-            ),
-          );
+      // Copies of opened files wait in the cache's intake folder.
+      final intake = Directory(
+        '${home.dir.path}/${ShareIntentService.intakeFolderName}',
+      );
+      Iterable<File> staged() => intake.existsSync()
+          ? intake.listSync().whereType<File>()
+          : const <File>[];
       await receive(uri);
       await home.waitFor(
         () => home.snackText() == l10n.homeSharedFileUnreadable,

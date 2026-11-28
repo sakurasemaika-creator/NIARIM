@@ -29,7 +29,22 @@
   "homeMoveToTrashConfirm": "{count, plural, one{Mettre {count} élément à la corbeille ?} other{Mettre {count} éléments à la corbeille ?}}",
   "commonMove": "Déplacer",
   "homeShareFileDialogTitle": "Fichier partagé",
-  "homeSharedFileTooLarge": "Le fichier partagé dépasse 128 Mo. Ouvrez un fichier de 128 Mo maximum.",
+  "homeSharedFileTooLarge": "Le fichier partagé est trop volumineux pour être ouvert. Cet appareil peut ouvrir des fichiers jusqu’à {size}.",
+  "@homeSharedFileTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSharedFileNoSpace": "L’espace libre de l’appareil est insuffisant pour ouvrir le fichier partagé. Libérez au moins {size} de plus, puis rouvrez-le.",
+  "@homeSharedFileNoSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "homeSharedFileUnreadable": "Impossible d’ouvrir le fichier partagé. Enregistrez-le à nouveau, puis réessayez.",
   "homeShareFileDialogContent": "Dupliquer ce fichier partagé et l’enregistrer comme projet normal ?",
   "homeMissingFontsSnackbar": "Polices manquantes : {names}",

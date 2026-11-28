@@ -29,7 +29,22 @@
   "homeMoveToTrashConfirm": "{count}개 항목을 휴지통으로 이동하시겠습니까?",
   "commonMove": "이동",
   "homeShareFileDialogTitle": "공유 파일",
-  "homeSharedFileTooLarge": "공유 파일이 128 MB를 초과합니다. 128 MB 이하인 파일을 열어 주세요.",
+  "homeSharedFileTooLarge": "공유 파일이 너무 커서 열 수 없습니다. 이 기기에서는 {size} 이하의 파일을 열 수 있습니다.",
+  "@homeSharedFileTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSharedFileNoSpace": "기기의 저장 공간이 부족해서 공유 파일을 열 수 없습니다. 저장 공간을 {size} 이상 더 확보한 후 다시 열어 주세요.",
+  "@homeSharedFileNoSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "homeSharedFileUnreadable": "공유 파일을 열 수 없습니다. 파일을 다시 저장한 뒤 열어 주세요.",
   "homeShareFileDialogContent": "이 공유 파일을 복제하여 일반 프로젝트로 저장하시겠습니까?",
   "homeMissingFontsSnackbar": "누락된 폰트가 있습니다: {names}",

@@ -10,7 +10,6 @@ import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -980,7 +979,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _handleSharedUri(String uri) async {
     if (!mounted) return;
-    Directory? incoming;
+    File? copy;
     try {
       final String localPath;
       final source = Uri.parse(uri);
@@ -988,45 +987,51 @@ class _HomeScreenState extends State<HomeScreen>
         final file = File.fromUri(source);
         final stat = await file.stat();
         if (stat.type != FileSystemEntityType.file || stat.size == 0) {
-          throw SharedFileReadFailure.unreadable;
+          throw const SharedFileReadException(SharedFileReadFailure.unreadable);
         }
-        if (stat.size > maxShareIntentBytes) {
-          throw SharedFileReadFailure.tooLarge;
+        final limit = maxShareIntentBytes();
+        if (stat.size > limit) {
+          throw SharedFileReadException(
+            SharedFileReadFailure.tooLarge,
+            bytes: limit,
+          );
         }
         localPath = file.path;
       } else {
-        final bytes = await context.read<ShareIntentService>().readUriBytes(
-          uri,
-        );
+        // Copied to the cache a chunk at a time: the file is never held in
+        // memory before the work is read from it.
+        copy = await context.read<ShareIntentService>().copyUriToCache(uri);
         if (!mounted) return;
-        incoming = await (await getTemporaryDirectory()).createTemp('shared-');
-        final file = File('${incoming.path}/incoming.niashare');
-        await file.writeAsBytes(bytes);
-        localPath = file.path;
+        localPath = copy.path;
       }
       final data = await NiaproSerializer.loadShare(localPath);
       if (mounted) await _confirmSharedFileImport(data);
     } catch (error, stack) {
-      if (error is! SharedFileReadFailure) {
+      if (error is! SharedFileReadException) {
         AppErrorReporter.record(error, stack);
       }
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        final message = error == SharedFileReadFailure.tooLarge
-            ? l10n.homeSharedFileTooLarge
-            : l10n.homeSharedFileUnreadable;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        final message = switch (error) {
+          SharedFileReadException(
+            failure: SharedFileReadFailure.tooLarge,
+            :final bytes,
+          ) =>
+            l10n.homeSharedFileTooLarge(
+              fileSizeLabel(l10n, bytes ?? maxShareIntentBytes()),
+            ),
+          SharedFileReadException(
+            failure: SharedFileReadFailure.noSpace,
+            :final bytes?,
+          ) =>
+            l10n.homeSharedFileNoSpace(fileSizeLabel(l10n, bytes)),
+          _ => l10n.homeSharedFileUnreadable,
+        };
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
-      if (incoming != null) {
-        try {
-          await incoming.delete(recursive: true);
-        } on FileSystemException catch (error, stack) {
-          AppErrorReporter.record(error, stack);
-        }
-      }
+      if (copy != null) await ShareIntentService.discardCopy(copy);
     }
   }
 
@@ -1223,9 +1228,9 @@ class _HomeScreenState extends State<HomeScreen>
                           child: LayoutBuilder(
                             builder: (context, constraints) {
                               final hint = _searchHint(l10n);
-                              final themeHint = Theme.of(
-                                context,
-                              ).inputDecorationTheme.hintStyle;
+                              final themeHint = Theme.of(context)
+                                  .inputDecorationTheme
+                                  .hintStyle;
                               // 塗った入力欄は、左右の余白にさらに4pxずつ
                               // 空ける（Materialの入力欄の決まり）。
                               final showsText = _searchHintFits(
@@ -1445,19 +1450,19 @@ class _HomeScreenState extends State<HomeScreen>
                                       context,
                                       TextStyle(
                                         color: _showFavoritesOnly
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.onPrimary
+                                            ? Theme.of(context)
+                                                  .colorScheme
+                                                  .onPrimary
                                             : null,
                                       ),
                                     ),
                                   ),
-                                  selectedColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                                  checkmarkColor: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
+                                  selectedColor: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                  checkmarkColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary,
                                   selected: _showFavoritesOnly,
                                   onSelected: (v) => _changeProjectScope(
                                     () => _showFavoritesOnly = v,
@@ -2231,9 +2236,8 @@ class _HomeScreenState extends State<HomeScreen>
             valueListenable: _projectsCanGoUp,
             builder: (context, canGoUp, _) =>
                 canGoUp &&
-                    _visibleProjectIds(
-                      context.watch<ProjectService>(),
-                    ).isNotEmpty
+                    _visibleProjectIds(context.watch<ProjectService>())
+                        .isNotEmpty
                 ? _buildHomeAction(
                     compact: compact,
                     key: const Key('homeScrollToTopFab'),
@@ -3904,9 +3908,13 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
 
   _HomeTraversalPolicy._(this.listArea, this.floatingActions, this._step)
     : super(
-        requestFocusCallback:
-            (node, {alignmentPolicy, alignment, duration, curve}) =>
-                _step.policy!._moveTo(node),
+        requestFocusCallback: (
+          node, {
+          alignmentPolicy,
+          alignment,
+          duration,
+          curve,
+        }) => _step.policy!._moveTo(node),
       ) {
     _step.policy = this;
   }
@@ -5504,16 +5512,18 @@ Future<void> _outgoingShareAction(
   } catch (error, stackTrace) {
     AppErrorReporter.record(error, stackTrace);
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 }
 
 /// 作成した共有ファイルの名前を変えたとき（前の場所・新しい場所・新しい名前）。
-typedef _OutgoingShareRenamed =
-    void Function(String oldPath, String newPath, String newName);
+typedef _OutgoingShareRenamed = void Function(
+  String oldPath,
+  String newPath,
+  String newName,
+);
 
 class _OutgoingSharesList extends StatelessWidget {
   const _OutgoingSharesList({
@@ -5557,9 +5567,8 @@ class _OutgoingSharesList extends StatelessWidget {
               header,
               ProjectsLoadFailureNotice(
                 key: const Key('outgoingSharesLoadFailed'),
-                message: AppLocalizations.of(
-                  context,
-                )!.homeOutgoingSharesLoadFailed,
+                message: AppLocalizations.of(context)!
+                    .homeOutgoingSharesLoadFailed,
                 onRetry: () async {
                   if (service.projectsLoadFailed) {
                     await service.retryLoadProjects();
@@ -6534,23 +6543,26 @@ class _FolderableList<T> extends StatelessWidget {
     Offset globalPosition,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final action =
-        await SecondaryClickMenu.showItemsAt<String>(context, globalPosition, [
-          if (onSetFolderThumbnail != null)
-            PopupMenuItem(
-              value: 'thumbnail',
-              child: Text(l10n.thumbnailChangeAction),
-            ),
-          PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-          const PopupMenuDivider(),
+    final action = await SecondaryClickMenu.showItemsAt<String>(
+      context,
+      globalPosition,
+      [
+        if (onSetFolderThumbnail != null)
           PopupMenuItem(
-            value: 'delete',
-            child: MenuActionLabel(
-              icon: Icons.delete_outline,
-              label: l10n.homeMoveToTrash,
-            ),
+            value: 'thumbnail',
+            child: Text(l10n.thumbnailChangeAction),
           ),
-        ]);
+        PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'delete',
+          child: MenuActionLabel(
+            icon: Icons.delete_outline,
+            label: l10n.homeMoveToTrash,
+          ),
+        ),
+      ],
+    );
     if (action == null || !context.mounted) return;
     switch (action) {
       case 'thumbnail':
@@ -6600,9 +6612,8 @@ class _FolderableList<T> extends StatelessWidget {
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.homeWorksLoadFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.homeWorksLoadFailed)));
       }
       return;
     }
@@ -6927,9 +6938,8 @@ class _TrashTabState extends State<_TrashTab> {
     final heading = _deletedLabel(record.deletedAt, l10n);
     // 中の作品の名前が複製の名前なら、その印（「(コピー 12)」）も途中で
     // 折り返さない。
-    final detailKeep = {
-      for (final name in projectNames) ...copyMarkParts(name),
-    }.toList();
+    final detailKeep = {for (final name in projectNames) ...copyMarkParts(name)}
+        .toList();
     return _trashCard(
       selectionId: 'trash_folder:$id',
       first: first,
@@ -7278,9 +7288,8 @@ class _TrashTabState extends State<_TrashTab> {
               subtitle,
               keep: [
                 if (subtitleDate != null)
-                  DateFormat.yMd(
-                    AppLocalizations.of(context)!.localeName,
-                  ).format(subtitleDate),
+                  DateFormat.yMd(AppLocalizations.of(context)!.localeName)
+                      .format(subtitleDate),
               ],
             )
           else if (subtitleDate == null)
@@ -7616,9 +7625,8 @@ class _TrashFilesLoading extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: color),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: color),
             ),
           ),
         ],

@@ -43,7 +43,22 @@
   },
   "commonMove": "移動",
   "homeShareFileDialogTitle": "共有ファイル",
-  "homeSharedFileTooLarge": "共有ファイルが128 MBを超えています。128 MB以下のファイルを開いてください。",
+  "homeSharedFileTooLarge": "共有ファイルが大きすぎるため開けません。この端末で開けるのは{size}以下のファイルです。",
+  "@homeSharedFileTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSharedFileNoSpace": "端末の空き容量が足りないため、共有ファイルを開けません。空き容量をあと{size}以上増やしてから、もう一度開いてください。",
+  "@homeSharedFileNoSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "homeSharedFileUnreadable": "共有ファイルを開けませんでした。ファイルを保存し直してから開いてください。",
   "homeShareFileDialogContent": "この共有ファイルを複製して通常プロジェクトとして保存しますか？",
   "homeMissingFontsSnackbar": "不足フォントがあります。{names}",

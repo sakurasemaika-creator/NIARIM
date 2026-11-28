@@ -18,7 +18,6 @@ import android.os.Looper
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.io.ByteArrayOutputStream
 import kotlin.concurrent.thread
 
 /**
@@ -47,7 +46,6 @@ class MainActivity : FlutterActivity() {
     // getInitialRouteで取りに来てもらう（共有ファイルURIと同じ方式）。
     private var pendingWidgetRoute: String? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val maxSharedFileBytes = 128 * 1024 * 1024
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,23 +62,47 @@ class MainActivity : FlutterActivity() {
                     result.success(pendingUri)
                     pendingUri = null
                 }
-                "readUri" -> {
+                "copyUri" -> {
                     val uriStr = call.argument<String>("uri")
-                    if (uriStr == null) {
-                        result.error("INVALID_URI", "URIが指定されていません", null)
+                    val path = call.argument<String>("path")
+                    val maxBytes = call.argument<Number>("maxBytes")?.toLong()
+                    if (uriStr == null || path == null || maxBytes == null) {
+                        result.error("INVALID_ARGS", "uri, path and maxBytes are required", null)
                         return@setMethodCallHandler
                     }
-                    thread(name = "shared-file-reader") {
+                    thread(name = "shared-file-intake") {
                         try {
-                            val bytes = readSharedFile(Uri.parse(uriStr))
-                            mainHandler.post { result.success(bytes) }
-                        } catch (_: SharedFileTooLargeException) {
+                            val copied =
+                                SharedFileIntake.copy(
+                                    applicationContext,
+                                    Uri.parse(uriStr),
+                                    File(path),
+                                    maxBytes,
+                                )
+                            mainHandler.post { result.success(copied) }
+                        } catch (_: SharedFileIntake.TooLargeException) {
                             mainHandler.post {
-                                result.error("FILE_TOO_LARGE", "共有ファイルがサイズ上限を超えています", null)
+                                result.error(
+                                    "FILE_TOO_LARGE",
+                                    "The shared file is over the limit",
+                                    null,
+                                )
+                            }
+                        } catch (error: SharedFileIntake.NoSpaceException) {
+                            mainHandler.post {
+                                result.error(
+                                    "NO_SPACE",
+                                    "Not enough free space",
+                                    error.missingBytes,
+                                )
                             }
                         } catch (_: Exception) {
                             mainHandler.post {
-                                result.error("READ_FAILED", "共有ファイルを読み込めません", null)
+                                result.error(
+                                    "READ_FAILED",
+                                    "The shared file could not be read",
+                                    null,
+                                )
                             }
                         }
                     }
@@ -520,28 +542,4 @@ class MainActivity : FlutterActivity() {
         }
         return null
     }
-
-    private fun readSharedFile(uri: Uri): ByteArray {
-        if (uri.scheme != "content" && uri.scheme != "file") {
-            throw IllegalArgumentException("unsupported URI scheme")
-        }
-        val stream =
-            contentResolver.openInputStream(uri)
-                ?: throw IllegalArgumentException("input stream unavailable")
-        return stream.use { input ->
-            val output = ByteArrayOutputStream()
-            val buffer = ByteArray(64 * 1024)
-            var total = 0
-            while (true) {
-                val read = input.read(buffer)
-                if (read < 0) break
-                total += read
-                if (total > maxSharedFileBytes) throw SharedFileTooLargeException()
-                output.write(buffer, 0, read)
-            }
-            output.toByteArray()
-        }
-    }
-
-    private class SharedFileTooLargeException : Exception()
 }

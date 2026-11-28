@@ -116,8 +116,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeShareFileDialogTitle => 'Archivo compartido';
 
   @override
-  String get homeSharedFileTooLarge =>
-      'El archivo compartido supera los 128 MB. Abre un archivo de 128 MB o menos.';
+  String homeSharedFileTooLarge(String size) {
+    return 'El archivo compartido es demasiado grande para abrirlo. Este dispositivo puede abrir archivos de hasta $size.';
+  }
+
+  @override
+  String homeSharedFileNoSpace(String size) {
+    return 'No hay suficiente espacio libre en el dispositivo para abrir el archivo compartido. Libera al menos $size más y vuelve a abrirlo.';
+  }
 
   @override
   String get homeSharedFileUnreadable =>

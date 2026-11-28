@@ -29,7 +29,22 @@
   "homeMoveToTrashConfirm": "要將{count}項移至垃圾桶嗎？",
   "commonMove": "移動",
   "homeShareFileDialogTitle": "共享檔案",
-  "homeSharedFileTooLarge": "共享檔案超過 128 MB。請開啟不超過 128 MB 的檔案。",
+  "homeSharedFileTooLarge": "共享檔案過大，無法開啟。此裝置可開啟不超過 {size} 的檔案。",
+  "@homeSharedFileTooLarge": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSharedFileNoSpace": "裝置的可用空間不足，無法開啟共享檔案。請再釋放至少 {size} 的空間後重新開啟。",
+  "@homeSharedFileNoSpace": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "homeSharedFileUnreadable": "無法開啟共享檔案。請重新儲存檔案後再開啟。",
   "homeShareFileDialogContent": "要複製這個共享檔案並另存為一般專案嗎？",
   "homeMissingFontsSnackbar": "缺少字型：{names}",
