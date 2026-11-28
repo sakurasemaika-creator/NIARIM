@@ -12,10 +12,18 @@ import '../utils/tolerant_preferences.dart';
 /// 自動保存（作業の再開・クラッシュやファイル破損からの復旧用）。
 /// 最大3件固定・古い順に自動削除。手動保存（セーブスロット・セーブツリー）とは完全に独立。
 /// 描画などで変更が発生したタイミング（Undo更新と連動）で自動保存する。
+///
+/// 作品ファイルは線を描くたびには書かない（キャンバス・タイムラインを離れる・
+/// アプリが裏へ回る・レイヤーやコマを足す等の時と手動の保存）。その間の線は
+/// この自動保存だけが持つので、描くのを止めて[_debounceAfterChange]後に書き、
+/// 休まずに描き続けていても[_longestUnsaved]を過ぎたら次の線を描き終えた所で書く
+/// （以前は休まず描くと[_interval]の3分ごとにしか書かず、その間に落ちると
+/// 3分ぶんの線が残らなかった）。
 class AutosaveService extends ChangeNotifier {
   static const int maxSlots = 3;
   static const Duration _interval = Duration(minutes: 3);
   static const Duration _debounceAfterChange = Duration(seconds: 5);
+  static const Duration _longestUnsaved = Duration(seconds: 30);
 
   final List<AutosaveSlot> _slots = [];
   int _nextSlotIndex = 0;
@@ -23,6 +31,10 @@ class AutosaveService extends ChangeNotifier {
   bool _disposed = false;
   Timer? _timer;
   Timer? _debounce;
+  // 書いていない変更が最初に出てから[_longestUnsaved]で切れる。切れた後は、
+  // 次の変更（線を描き終えた所。ペンが離れている）ですぐに書く。
+  Timer? _unsavedCeiling;
+  bool _saveDue = false;
   ProjectService? _projectService;
   UndoManager? _undoManager;
   String? _currentProjectId;
@@ -87,6 +99,7 @@ class AutosaveService extends ChangeNotifier {
     _timer = null;
     _debounce?.cancel();
     _debounce = null;
+    _clearUnsaved();
     _undoManager?.removeListener(_onProjectChanged);
     _undoManager = null;
     _currentProjectId = null;
@@ -95,10 +108,28 @@ class AutosaveService extends ChangeNotifier {
   /// Undo更新（描画・レイヤー操作等）と連動した自動保存（デバウンス）。
   void _onProjectChanged() {
     _debounce?.cancel();
+    if (_saveDue) {
+      _debounce = null;
+      unawaited(_autoSave());
+      return;
+    }
     _debounce = Timer(_debounceAfterChange, _autoSave);
+    _unsavedCeiling ??= Timer(_longestUnsaved, () => _saveDue = true);
   }
 
+  void _clearUnsaved() {
+    _unsavedCeiling?.cancel();
+    _unsavedCeiling = null;
+    _saveDue = false;
+  }
+
+  /// Tests: how many times an automatic save was started by the timers.
+  @visibleForTesting
+  int debugAutoSaveStarts = 0;
+
   Future<void> _autoSave() async {
+    _clearUnsaved();
+    debugAutoSaveStarts++;
     final id = _currentProjectId;
     final ps = _projectService;
     if (id == null || ps == null) return;
@@ -318,6 +349,7 @@ class AutosaveService extends ChangeNotifier {
     _disposed = true;
     _timer?.cancel();
     _debounce?.cancel();
+    _unsavedCeiling?.cancel();
     _undoManager?.removeListener(_onProjectChanged);
     super.dispose();
   }
