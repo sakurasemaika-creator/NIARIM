@@ -53,8 +53,10 @@ class ThemeSettingsScreen extends StatelessWidget {
         actions: [
           const HelpButton(topic: 'テーマ設定'),
           if (themeService.needsThemeRescue)
+            // 「？」の押せる所と復旧ボタンの縁取りの輪の間を空ける（間を
+            // 取らずに並べていたので、輪が「？」に重なって見えた）。
             Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
+              padding: const EdgeInsetsDirectional.only(start: 8, end: 8),
               child: ThemeRescueButton(
                 iconOnly:
                     MediaQuery.sizeOf(context).width < 520 ||
