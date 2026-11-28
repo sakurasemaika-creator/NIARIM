@@ -8419,7 +8419,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucun compte Google connecté';
 
   @override
-  String get communityMyWorksAddAccount => 'Ajouter un compte Google';
+  String get communityMyWorksAddAccount => 'Associer un compte Google';
 
   @override
   String get communityMyWorksSwitchAccount =>

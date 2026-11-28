@@ -3232,7 +3232,7 @@
   "communityMyWorksBulkHide": "Ocultar selección",
   "communityMyWorksBulkResult": "Cambiadas: {success} / Fallidas: {failed}",
   "communityMyWorksAccountNotConnected": "No hay ninguna cuenta de Google conectada",
-  "communityMyWorksAddAccount": "Añadir una cuenta de Google",
+  "communityMyWorksAddAccount": "Vincular cuenta Google",
   "communityMyWorksSwitchAccount": "Cambiar o añadir una cuenta de Google",
   "communityMyWorksLoading": "Cargando tus publicaciones…",
   "communityMyWorksLoadFailed": "No se pudieron cargar tus publicaciones. {reason}",

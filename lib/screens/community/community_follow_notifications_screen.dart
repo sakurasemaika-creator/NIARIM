@@ -14,6 +14,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../rewards/rewards_sign_in_button.dart';
 
 /// Shows the plaza activity history and mission achievements.
 class CommunityFollowNotificationsScreen extends StatefulWidget {
@@ -317,10 +318,9 @@ class _CommunityFollowNotificationsScreenState
         _accountId == null
             ? _noticeWithLocalHistory(
                 message: l10n.communityFollowNotificationsSignInRequired,
-                action: FilledButton(
-                  onPressed: () => context.push(communityMyWorksRoute),
-                  child: Text(l10n.communitySignInPromptConnect),
-                ),
+                // この画面のままログインする（以前は「自分の投稿」へ移るだけ
+                // だった）。ログインすると通知を読み込む。
+                action: const RewardsSignInButton(),
               )
             : api == null
             ? _noticeWithLocalHistory(message: t.get('activityError'))

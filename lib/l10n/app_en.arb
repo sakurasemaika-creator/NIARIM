@@ -3262,7 +3262,7 @@
   "communityMyWorksBulkHide": "Hide selected",
   "communityMyWorksBulkResult": "Changed: {success} / Failed: {failed}",
   "communityMyWorksAccountNotConnected": "No Google account connected",
-  "communityMyWorksAddAccount": "Add a Google account",
+  "communityMyWorksAddAccount": "Connect Google account",
   "communityMyWorksSwitchAccount": "Switch or add a Google account",
   "communityMyWorksLoading": "Loading your posts…",
   "communityMyWorksLoadFailed": "Couldn’t load your posts. {reason}",

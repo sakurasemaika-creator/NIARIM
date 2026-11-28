@@ -79,11 +79,18 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(l10n.communityFollowNotificationsEmpty), findsNothing);
+      // 「Googleアカウントを連携」はこの画面のままログインへ進む（「自分の
+      // 投稿」へは移らない）。この端末ではログインを使えないので、その説明。
       await tester.tap(find.text(l10n.communitySignInPromptConnect));
       await tester.pumpAndSettle();
-      expect(find.text('Account settings'), findsOneWidget);
-      router.pop();
+      expect(find.text('Account settings'), findsNothing);
+      expect(
+        find.byKey(const Key('communityGoogleSignInPrompt')),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(l10n.commonCancel));
       await tester.pumpAndSettle();
+      expect(find.byType(CommunityFollowNotificationsScreen), findsOneWidget);
       await tester.tap(find.byKey(const Key('plazaNotificationSettings')));
       await tester.pumpAndSettle();
       expect(find.byType(CommunityNotificationSettingsScreen), findsOneWidget);

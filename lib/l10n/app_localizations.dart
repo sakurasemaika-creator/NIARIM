@@ -14370,7 +14370,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMyWorksAddAccount.
   ///
   /// In ja, this message translates to:
-  /// **'Googleアカウントを追加'**
+  /// **'Googleアカウントを連携'**
   String get communityMyWorksAddAccount;
 
   /// No description provided for @communityMyWorksSwitchAccount.

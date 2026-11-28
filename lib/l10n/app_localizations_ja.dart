@@ -7928,7 +7928,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityMyWorksAccountNotConnected => 'Googleアカウント未接続';
 
   @override
-  String get communityMyWorksAddAccount => 'Googleアカウントを追加';
+  String get communityMyWorksAddAccount => 'Googleアカウントを連携';
 
   @override
   String get communityMyWorksSwitchAccount => 'Googleアカウントを切り替え・追加';

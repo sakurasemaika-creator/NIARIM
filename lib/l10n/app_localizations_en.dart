@@ -8281,7 +8281,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No Google account connected';
 
   @override
-  String get communityMyWorksAddAccount => 'Add a Google account';
+  String get communityMyWorksAddAccount => 'Connect Google account';
 
   @override
   String get communityMyWorksSwitchAccount => 'Switch or add a Google account';

@@ -3232,7 +3232,7 @@
   "communityMyWorksBulkHide": "批量隐藏",
   "communityMyWorksBulkResult": "完成：{success} / 失败：{failed}",
   "communityMyWorksAccountNotConnected": "未连接Google账号",
-  "communityMyWorksAddAccount": "添加Google账号",
+  "communityMyWorksAddAccount": "关联 Google 账号",
   "communityMyWorksSwitchAccount": "切换或添加Google账号",
   "communityMyWorksLoading": "正在加载投稿…",
   "communityMyWorksLoadFailed": "无法加载我的投稿。{reason}",

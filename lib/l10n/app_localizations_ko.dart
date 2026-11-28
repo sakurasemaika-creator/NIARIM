@@ -7966,7 +7966,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityMyWorksAccountNotConnected => '연결된 Google 계정 없음';
 
   @override
-  String get communityMyWorksAddAccount => 'Google 계정 추가';
+  String get communityMyWorksAddAccount => 'Google 계정 연결';
 
   @override
   String get communityMyWorksSwitchAccount => 'Google 계정 전환·추가';

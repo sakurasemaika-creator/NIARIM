@@ -3232,7 +3232,7 @@
   "communityMyWorksBulkHide": "선택 항목 일괄 비공개",
   "communityMyWorksBulkResult": "완료: {success} / 실패: {failed}",
   "communityMyWorksAccountNotConnected": "연결된 Google 계정 없음",
-  "communityMyWorksAddAccount": "Google 계정 추가",
+  "communityMyWorksAddAccount": "Google 계정 연결",
   "communityMyWorksSwitchAccount": "Google 계정 전환·추가",
   "communityMyWorksLoading": "게시물을 불러오는 중…",
   "communityMyWorksLoadFailed": "내 게시물을 불러오지 못했습니다. {reason}",

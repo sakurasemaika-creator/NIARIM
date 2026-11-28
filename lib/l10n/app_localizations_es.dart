@@ -8412,7 +8412,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No hay ninguna cuenta de Google conectada';
 
   @override
-  String get communityMyWorksAddAccount => 'Añadir una cuenta de Google';
+  String get communityMyWorksAddAccount => 'Vincular cuenta Google';
 
   @override
   String get communityMyWorksSwitchAccount =>

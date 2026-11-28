@@ -16,6 +16,7 @@ import '../../l10n/community_channel_refresh_labels.dart';
 import '../../widgets/grouped_sheet.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_error_text.dart';
+import 'google_account_connect.dart';
 import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
 import 'community_work_settings_screen.dart';
@@ -313,66 +314,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       ? l10n.communityGoogleAccountBusy
       : communityErrorText(l10n, error);
 
-  /// A NIARIM-styled explanation before invoking the native Google account
-  /// chooser. Browsing the plaza or opening My Works never triggers this.
-  Future<bool> _confirmGoogleSignIn() async {
-    final l10n = AppLocalizations.of(context)!;
-    final auth = context.read<GoogleAuthService>();
-    return await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            key: const Key('communityGoogleSignInPrompt'),
-            title: Text(l10n.communitySignInPromptTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.communitySignInPromptBody),
-                if (!auth.isConfigured) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n.communitySignInUnavailable,
-                    style: TextStyle(
-                      color: Theme.of(
-                        dialogContext,
-                      ).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            actions: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FilledButton.icon(
-                    key: const Key('communityGoogleSignInPromptConnect'),
-                    onPressed: auth.isConfigured
-                        ? () => Navigator.pop(dialogContext, true)
-                        : null,
-                    icon: const Icon(Icons.account_circle_outlined),
-                    label: Text(l10n.communitySignInPromptConnect),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext, false),
-                    child: Text(l10n.commonCancel),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
-
   Future<void> _switchOrAddGoogleAccount() async {
     final auth = context.read<GoogleAuthService>();
     final l10n = AppLocalizations.of(context)!;
     if (!auth.isConfigured) {
-      await _confirmGoogleSignIn();
+      await confirmGoogleSignIn(context);
       return;
     }
     if (auth.authOperationInProgress) {
@@ -443,7 +389,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final auth = context.read<GoogleAuthService>();
     final l10n = AppLocalizations.of(context)!;
     if (!auth.isSignedIn) {
-      if (!await _confirmGoogleSignIn() || !mounted) return;
+      if (!await confirmGoogleSignIn(context) || !mounted) return;
       if (!await ensureLegalConsent(context) || !mounted) return;
       if (auth.authOperationInProgress) {
         _showSnackBar(l10n.communityGoogleAccountBusy);

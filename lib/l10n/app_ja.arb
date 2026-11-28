@@ -4113,7 +4113,7 @@
     }
   },
   "communityMyWorksAccountNotConnected": "Googleアカウント未接続",
-  "communityMyWorksAddAccount": "Googleアカウントを追加",
+  "communityMyWorksAddAccount": "Googleアカウントを連携",
   "communityMyWorksSwitchAccount": "Googleアカウントを切り替え・追加",
   "communityMyWorksLoading": "投稿を読み込んでいます…",
   "communityMyWorksLoadFailed": "自分の投稿を読み込めませんでした。{reason}",

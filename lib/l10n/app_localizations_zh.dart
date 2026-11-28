@@ -7844,7 +7844,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityMyWorksAccountNotConnected => '未连接Google账号';
 
   @override
-  String get communityMyWorksAddAccount => '添加Google账号';
+  String get communityMyWorksAddAccount => '关联 Google 账号';
 
   @override
   String get communityMyWorksSwitchAccount => '切换或添加Google账号';
@@ -19148,7 +19148,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityMyWorksAccountNotConnected => '未連結Google帳號';
 
   @override
-  String get communityMyWorksAddAccount => '新增Google帳號';
+  String get communityMyWorksAddAccount => '連結 Google 帳號';
 
   @override
   String get communityMyWorksSwitchAccount => '切換或新增Google帳號';
