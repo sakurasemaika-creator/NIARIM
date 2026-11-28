@@ -1227,9 +1227,92 @@ class NiaproSerializer {
     ArchiveLimits limits = ArchiveLimits.received,
     bool shareIdenticalTiles = false,
     Map<String, Map<String, StoredTile>>? storedTiles,
-  }) {
-    final archive = ArchiveSecurity.decodeZip(bytes, limits: limits);
+  }) => _dataFrom(
+    ArchiveSecurity.decodeZip(bytes, limits: limits),
+    withTiles: withTiles,
+    tileCrcs: tileCrcs,
+    shareIdenticalTiles: shareIdenticalTiles,
+    storedTiles: storedTiles,
+  );
 
+  /// Lists the app's own work file at [filePath] as
+  /// `load(filePath, withTiles: false, limits: ArchiveLimits.ownWork)` does,
+  /// reading only its central directory and the entries a listing reads (the
+  /// project, the scenes and anything bundled), not the picture tiles: a
+  /// work's tiles are nearly all of its file, and expanding every one of
+  /// them to check its size made start-up wait on every work's whole
+  /// picture. The tiles are checked by [checkListedTiles] before they are
+  /// used ([NiaproData.tilesUnchecked] says which file and when it was
+  /// listed). A file not laid out the way the app writes it is read and
+  /// checked whole, as before (and its tiles count as checked).
+  static NiaproData listWorkFile(String filePath) {
+    final file = File(filePath);
+    final size = file.lengthSync();
+    final modified = file.lastModifiedSync();
+    final opened = file.openSync();
+    try {
+      final length = opened.lengthSync();
+      final archive = length == size
+          ? ArchiveSecurity.decodeZipFileEntries(
+              opened,
+              length,
+              expand: _readWhenListed,
+            )
+          : null;
+      if (archive == null) {
+        opened.setPositionSync(0);
+        return loadFromBytes(
+          opened.readSync(length),
+          withTiles: false,
+          limits: ArchiveLimits.ownWork,
+        ).withTilesLeftIn(filePath);
+      }
+      return _dataFrom(archive, withTiles: false).withTilesLeftIn(
+        filePath,
+        unchecked: UncheckedWorkFile(filePath, length, modified),
+      );
+    } finally {
+      opened.closeSync();
+    }
+  }
+
+  /// The entries [listWorkFile] reads: what [_dataFrom] reads without tiles.
+  static bool _readWhenListed(String name) =>
+      name == _manifestFile ||
+      (name.startsWith('Scene/') && name.endsWith('/$_framesFile')) ||
+      name.startsWith('$_materialsArchiveDir/') ||
+      name.startsWith('$_fontsArchiveDir/');
+
+  /// Checks the entries [listWorkFile] left unread in [listed]: the whole
+  /// file is read as when a work is opened ([ArchiveSecurity.decodeZip],
+  /// every entry expanded once to its declared size), so whether listing and
+  /// this check pass together is whether the full read at start-up would
+  /// have passed. Runs in a background isolate.
+  static ListedTilesCheck checkListedTiles(UncheckedWorkFile listed) {
+    final Uint8List bytes;
+    try {
+      final file = File(listed.path);
+      if (!listed.sameAs(file)) return ListedTilesCheck.changed;
+      bytes = file.readAsBytesSync();
+    } on FileSystemException {
+      return ListedTilesCheck.unreadable;
+    }
+    if (bytes.length != listed.size) return ListedTilesCheck.changed;
+    try {
+      ArchiveSecurity.decodeZip(bytes, limits: ArchiveLimits.ownWork);
+      return ListedTilesCheck.whole;
+    } catch (_) {
+      return ListedTilesCheck.damaged;
+    }
+  }
+
+  static NiaproData _dataFrom(
+    Archive archive, {
+    bool withTiles = true,
+    Map<String, int>? tileCrcs,
+    bool shareIdenticalTiles = false,
+    Map<String, Map<String, StoredTile>>? storedTiles,
+  }) {
     final manifestFile = archive.findFile(_manifestFile);
     if (manifestFile == null) {
       throw const FormatException('manifest.json not found');
@@ -1808,6 +1891,34 @@ class NiaproSerializer {
     return project;
   }
 
+  /// [restored] (a work as an automatic save holds it) with the changes made
+  /// to the work since it was listed as [listed] (it is [current] now) kept:
+  /// each field the manifest stores is [current]'s where it differs from
+  /// [listed], [restored]'s otherwise. [sizeBytes] and [updatedAt] are given.
+  static Project carryEditsSinceListing({
+    required Project listed,
+    required Project current,
+    required Project restored,
+    required int sizeBytes,
+    required DateTime updatedAt,
+  }) {
+    final at = DateTime.fromMillisecondsSinceEpoch(0);
+    final before = _serializeManifest(listed, updatedAt: at);
+    final now = _serializeManifest(current, updatedAt: at);
+    final merged = _serializeManifest(restored, updatedAt: at);
+    for (final key in {...before.keys, ...now.keys}) {
+      if (jsonEncode(now[key]) == jsonEncode(before[key])) continue;
+      if (now.containsKey(key)) {
+        merged[key] = now[key];
+      } else {
+        merged.remove(key);
+      }
+    }
+    return _projectFromManifest(
+      merged,
+    ).copyWith(sizeBytes: sizeBytes, updatedAt: updatedAt);
+  }
+
   static Project _projectFromManifest(Map<String, dynamic> j) => Project(
     id: j['id'] as String,
     name: j['name'] as String,
@@ -2162,6 +2273,11 @@ class NiaproData {
   /// or null when [tileData] holds the tiles.
   final String? tilesLeftIn;
 
+  /// The file listed by [NiaproSerializer.listWorkFile] whose picture tiles
+  /// are still to be checked ([NiaproSerializer.checkListedTiles]); null when
+  /// every entry was checked.
+  final UncheckedWorkFile? tilesUnchecked;
+
   bool get hasEditableFrames =>
       scenes.isNotEmpty && scenes.every((scene) => scene.frames.isNotEmpty);
 
@@ -2174,18 +2290,54 @@ class NiaproData {
     this.fontFiles = const {},
     this.fontsManifest,
     this.tilesLeftIn,
+    this.tilesUnchecked,
   });
 
-  NiaproData withTilesLeftIn(String filePath) => NiaproData(
-    project: project,
-    scenes: scenes,
-    tileData: tileData,
-    materialFiles: materialFiles,
-    materialsManifest: materialsManifest,
-    fontFiles: fontFiles,
-    fontsManifest: fontsManifest,
-    tilesLeftIn: filePath,
-  );
+  NiaproData withTilesLeftIn(String filePath, {UncheckedWorkFile? unchecked}) =>
+      NiaproData(
+        project: project,
+        scenes: scenes,
+        tileData: tileData,
+        materialFiles: materialFiles,
+        materialsManifest: materialsManifest,
+        fontFiles: fontFiles,
+        fontsManifest: fontsManifest,
+        tilesLeftIn: filePath,
+        tilesUnchecked: unchecked,
+      );
+}
+
+/// A work file listed before its picture tiles were checked
+/// ([NiaproSerializer.listWorkFile]): where it is, and its size and time of
+/// change when it was listed.
+class UncheckedWorkFile {
+  UncheckedWorkFile(this.path, this.size, DateTime modified)
+    : modifiedMicros = modified.microsecondsSinceEpoch;
+
+  final String path;
+  final int size;
+  final int modifiedMicros;
+
+  /// Whether [file] is as it was listed (nothing wrote it since). Throws
+  /// when it cannot be looked at.
+  bool sameAs(File file) =>
+      file.lengthSync() == size &&
+      file.lastModifiedSync().microsecondsSinceEpoch == modifiedMicros;
+}
+
+/// What [NiaproSerializer.checkListedTiles] found.
+enum ListedTilesCheck {
+  /// Every entry expands to the size it declares.
+  whole,
+
+  /// An entry does not: the file is damaged as it was listed.
+  damaged,
+
+  /// The file is not the one listed any more.
+  changed,
+
+  /// The file could not be read.
+  unreadable,
 }
 
 /// A saved playback speed; a missing, non-numeric or out-of-range value

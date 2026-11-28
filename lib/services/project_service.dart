@@ -5,6 +5,7 @@ import 'outgoing_share_library.dart';
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -320,11 +321,16 @@ class ProjectService extends ChangeNotifier {
   bool tilesRead(String projectId) => !_tilesLeftInFile.containsKey(projectId);
 
   /// The work's [TileManager], with the tiles read from the file the first
-  /// time (see [_tilesLeftInFile]).
+  /// time (see [_tilesLeftInFile]). Reading them checks every entry of the
+  /// file: a work listed before its tiles were checked ([_uncheckedTiles])
+  /// whose file turns out damaged as it was listed is restored from its
+  /// newest readable automatic save, as at start-up.
   TileManager? _tilesOf(String projectId) {
     final path = _tilesLeftInFile.remove(projectId);
     final tiles = _tileManagers[projectId];
     if (path != null && tiles != null) {
+      final unchecked = _uncheckedTiles.remove(projectId);
+      final listedAs = _listedAs.remove(projectId);
       try {
         // The tiles are the work file's: the next save of the work file
         // copies them as stored and writes only the ones changed meanwhile.
@@ -337,17 +343,257 @@ class ProjectService extends ChangeNotifier {
         );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
+        if (unchecked != null &&
+            error is! FileSystemException &&
+            NiaproSerializer.checkListedTiles(unchecked) ==
+                ListedTilesCheck.damaged &&
+            _restoreDamagedListedWork(projectId, unchecked, listedAs)) {
+          return _tileManagers[projectId];
+        }
         _unreadableTiles.add(projectId);
       }
     }
     return tiles;
   }
 
+  /// Reads the picture of [projectId] from its file now if it was not read
+  /// yet. The screens that open a work call it first, so that a work listed
+  /// before its tiles were checked is checked (and restored from its
+  /// automatic save when damaged) before anything on the screen reads it.
+  void readTilesNow(String projectId) => _tilesOf(projectId);
+
   /// Forgets the tiles kept for [projectId] (the work is gone or its tiles
   /// are replaced).
   void _forgetTiles(String projectId) {
     _tilesLeftInFile.remove(projectId);
     _unreadableTiles.remove(projectId);
+  }
+
+  // ─── 一覧に出した後のタイルの確かめ ──────────────────────────────────
+
+  /// Works listed from their project and scenes before the picture tiles in
+  /// their file were checked ([NiaproSerializer.listWorkFile]): expanding
+  /// every tile of every work to check its size made start-up wait on all of
+  /// them. Each is checked before its file's tiles are used ([_tilesOf], the
+  /// queued writes of [_queueProjectSave]) and, once the first screen is up,
+  /// in a background isolate ([checkListedTilesInBackground]).
+  final Map<String, UncheckedWorkFile> _uncheckedTiles = {};
+
+  /// The project of each of [_uncheckedTiles] as it was listed (to keep the
+  /// changes made since when the work is restored from its automatic save).
+  final Map<String, Project> _listedAs = {};
+
+  /// The checks of [_uncheckedTiles] running in a background isolate.
+  final Map<String, Future<void>> _tileChecks = {};
+
+  /// The rewrites of the work files restored from their automatic save after
+  /// they were listed ([_restoreDamagedListedWork]).
+  final Map<String, Future<void>> _recoveryRewrites = {};
+
+  /// Work files found damaged after they were listed and not restored (no
+  /// readable automatic save): left out of the list as at start-up, and read
+  /// whole again when the works are listed again.
+  final Map<String, UncheckedWorkFile> _damagedWhenChecked = {};
+
+  bool _checkInBackground = false;
+  bool _checksStopped = false;
+  Future<void>? _backgroundChecks;
+
+  /// Whether the picture tiles of [projectId] are still to be checked.
+  @visibleForTesting
+  bool tilesUnchecked(String projectId) =>
+      _uncheckedTiles.containsKey(projectId);
+
+  /// The background checks running or waiting (tests).
+  @visibleForTesting
+  Future<void> get backgroundChecksSettled async {
+    while (_backgroundChecks != null || _recoveryRewrites.isNotEmpty) {
+      await Future.wait([?_backgroundChecks, ..._recoveryRewrites.values]);
+    }
+  }
+
+  /// Checks, one work at a time in a background isolate, the tiles of the
+  /// works listed without checking them (and of the works listed later).
+  void checkListedTilesInBackground() {
+    _checkInBackground = true;
+    _resumeTileChecks();
+  }
+
+  void _resumeTileChecks() {
+    if (!_checkInBackground ||
+        _checksStopped ||
+        _folderDisposed ||
+        _backgroundChecks != null) {
+      return;
+    }
+    _backgroundChecks = _checkListedTiles().whenComplete(
+      () => _backgroundChecks = null,
+    );
+  }
+
+  Future<void> _checkListedTiles() async {
+    while (!_checksStopped && !_folderDisposed) {
+      final next = [
+        ..._projects,
+        ..._trash,
+      ].where((p) => _uncheckedTiles.containsKey(p.id)).firstOrNull;
+      if (next == null) return;
+      await _checkTiles(next.id);
+    }
+  }
+
+  void _noteUncheckedTiles(String projectId, NiaproData data) {
+    final unchecked = data.tilesUnchecked;
+    if (unchecked == null) return;
+    _uncheckedTiles[projectId] = unchecked;
+    _listedAs[projectId] = data.project;
+    _resumeTileChecks();
+  }
+
+  /// Checks the tiles of [projectId] when they are still to be checked, and
+  /// waits for a rewrite of a work file restored meanwhile.
+  Future<void> _settleTileCheck(String projectId) async {
+    await _checkTiles(projectId);
+    await _recoveryRewrites[projectId];
+  }
+
+  Future<void> _checkTiles(String projectId) {
+    final listed = _uncheckedTiles[projectId];
+    if (listed == null) return Future.value();
+    // A block body: returning the removed future from the callback would make
+    // the future wait for itself.
+    return _tileChecks[projectId] ??= _runTileCheck(projectId, listed)
+        .whenComplete(() {
+          _tileChecks.remove(projectId);
+        });
+  }
+
+  Future<void> _runTileCheck(String projectId, UncheckedWorkFile listed) async {
+    ListedTilesCheck found;
+    try {
+      found = await _checkInIsolate(listed);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      found = NiaproSerializer.checkListedTiles(listed);
+    }
+    // Opened meanwhile: the tiles were checked as they were read.
+    if (_folderDisposed || !identical(_uncheckedTiles[projectId], listed)) {
+      return;
+    }
+    _uncheckedTiles.remove(projectId);
+    final listedAs = _listedAs.remove(projectId);
+    if (found != ListedTilesCheck.damaged) return;
+    try {
+      if (!_restoreDamagedListedWork(projectId, listed, listedAs)) {
+        _unlistDamagedWork(projectId, listed);
+      }
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  static Future<ListedTilesCheck> _checkInIsolate(UncheckedWorkFile listed) =>
+      Isolate.run(() => NiaproSerializer.checkListedTiles(listed));
+
+  /// [projectId] was listed from the project and scenes of its file, and the
+  /// tiles in the file turn out damaged as it was listed: as when its file is
+  /// found damaged at start-up, the work becomes its newest readable
+  /// automatic save (the project as saved there, at the time it was saved),
+  /// the file is rebuilt from it, and the first screen that opens the work
+  /// says so ([takeAutosaveRecovery]). Changes made to the work since it was
+  /// listed ([listedAs]: a rename, a folder, a tag) are kept, as they would
+  /// have been made to the restored work. False when there is no such save.
+  bool _restoreDamagedListedWork(
+    String projectId,
+    UncheckedWorkFile listed,
+    Project? listedAs,
+  ) {
+    final backup = _autosaves?.latestReadableNow(
+      projectId,
+      File(listed.path).parent.path,
+    );
+    if (backup == null ||
+        backup.data.project.id != projectId ||
+        !backup.data.hasEditableFrames) {
+      return false;
+    }
+    Project restored(Project current) => listedAs == null
+        ? backup.data.project.copyWith(
+            sizeBytes: current.sizeBytes,
+            updatedAt: backup.savedAt,
+          )
+        : NiaproSerializer.carryEditsSinceListing(
+            listed: listedAs,
+            current: current,
+            restored: backup.data.project,
+            sizeBytes: current.sizeBytes,
+            updatedAt: current.updatedAt == listedAs.updatedAt
+                ? backup.savedAt
+                : current.updatedAt,
+          );
+    final inTrash = _trash.indexWhere((p) => p.id == projectId);
+    final inList = _projects.indexWhere((p) => p.id == projectId);
+    final Project project;
+    if (inTrash >= 0) {
+      project = _trash[inTrash] = restored(_trash[inTrash]);
+    } else if (inList >= 0) {
+      project = _projects[inList] = restored(_projects[inList]);
+    } else {
+      return false;
+    }
+    final data = NiaproData(
+      project: project,
+      scenes: backup.data.scenes,
+      tileData: backup.data.tileData,
+    );
+    if (inTrash < 0) {
+      final before = _tileManagers[projectId];
+      _applyLoadedProjectData(data);
+      if (!identical(before, _tileManagers[projectId])) before?.dispose();
+    }
+    _recoveredFromAutosave[projectId] = backup.savedAt;
+    late final Future<void> rewrite;
+    rewrite = _rewriteListedRecovery(data).whenComplete(() {
+      if (identical(_recoveryRewrites[projectId], rewrite)) {
+        _recoveryRewrites.remove(projectId);
+      }
+    });
+    _recoveryRewrites[projectId] = rewrite;
+    _notifyOutsideBuild();
+    return true;
+  }
+
+  Future<void> _rewriteListedRecovery(NiaproData data) async {
+    final projectId = data.project.id;
+    final size = await _rewriteRecoveredArchive(data, data.project.updatedAt);
+    if (size == null) return;
+    for (final list in [_projects, _trash]) {
+      final i = list.indexWhere((p) => p.id == projectId);
+      if (i >= 0) list[i] = list[i].copyWith(sizeBytes: size);
+    }
+  }
+
+  /// [projectId] turned out damaged after it was listed and cannot be
+  /// restored: as at start-up, it is not listed (its file is kept as it is)
+  /// and a work listed outside the trash is reported as not read.
+  void _unlistDamagedWork(String projectId, UncheckedWorkFile listed) {
+    _damagedWhenChecked[projectId] = listed;
+    final inList = _projects.indexWhere((p) => p.id == projectId);
+    if (inList >= 0) {
+      _projects.removeAt(inList);
+      _projectsLoadFailed = true;
+    }
+    _trash.removeWhere((p) => p.id == projectId);
+    _undoManager?.discardProject(projectId);
+    _removedLayers.remove(projectId);
+    _scenes.remove(projectId);
+    _layerFolderExpansion.remove(projectId);
+    _layerHomes.remove(projectId);
+    _layerIdCounters.remove(projectId);
+    _writtenContent.remove(projectId);
+    _tileManagers.remove(projectId)?.dispose();
+    _forgetTiles(projectId);
+    _notifyOutsideBuild();
   }
 
   TileManager tileManagerOf(String projectId) {
@@ -876,12 +1122,20 @@ class ProjectService extends ChangeNotifier {
         DateTime? recoveredAt;
         var damaged = false;
         try {
-          // The pictures stay in the file until the work is opened.
-          final loaded = await NiaproSerializer.load(
-            niaproFile.path,
-            withTiles: false,
-            limits: ArchiveLimits.ownWork,
-          );
+          // The pictures stay in the file until the work is opened, and are
+          // checked after the list is shown. A file found damaged that way
+          // before, and a work whose deletion did not finish, are read whole
+          // as before.
+          final damagedBefore = _damagedWhenChecked[projectId];
+          final loaded =
+              (damagedBefore != null && damagedBefore.sameAs(niaproFile)) ||
+                  cleanup.any((guard) => guard.project.id == projectId)
+              ? await NiaproSerializer.load(
+                  niaproFile.path,
+                  withTiles: false,
+                  limits: ArchiveLimits.ownWork,
+                )
+              : NiaproSerializer.listWorkFile(niaproFile.path);
           if (loaded.project.id != projectId || !loaded.hasEditableFrames) {
             throw const FormatException(
               'Project archive ID or scene data is invalid',
@@ -926,6 +1180,7 @@ class ProjectService extends ChangeNotifier {
         );
         if (_trashDeletedAt.containsKey(projectId)) {
           _trash.add(project);
+          _noteUncheckedTiles(projectId, data);
         } else {
           read.add((project, data));
         }
@@ -1248,6 +1503,7 @@ class ProjectService extends ChangeNotifier {
     for (final (project, data) in members) {
       if (joined && joining.containsKey(project.id)) {
         _trash.add(project);
+        _noteUncheckedTiles(project.id, data);
         continue;
       }
       // ゴミ箱のフォルダに入れないお気に入りの作品は、一番上へ出す
@@ -1347,6 +1603,7 @@ class ProjectService extends ChangeNotifier {
     _forgetTiles(projectId);
     final leftIn = data.tilesLeftIn;
     if (leftIn != null) _tilesLeftInFile[projectId] = leftIn;
+    _noteUncheckedTiles(projectId, data);
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
   }
 
@@ -4794,7 +5051,25 @@ class ProjectService extends ChangeNotifier {
   Future<void>? _folderOperations;
   bool _folderDisposed = false;
 
-  Future<T> _queueProjectSave<T>(String id, Future<T> Function() write) {
+  /// Runs [write] after the writes queued for [id] before it. A work listed
+  /// before its tiles were checked has them checked first (and is restored
+  /// from its automatic save when damaged, with its file rebuilt), so that no
+  /// write keeps or reads the tiles of a damaged file; [readsWorkFile] false
+  /// skips that (the work file is only deleted).
+  Future<T> _queueProjectSave<T>(
+    String id,
+    Future<T> Function() write, {
+    bool readsWorkFile = true,
+  }) {
+    if (readsWorkFile &&
+        (_uncheckedTiles.containsKey(id) ||
+            _recoveryRewrites.containsKey(id))) {
+      final unchecked = write;
+      write = () async {
+        await _settleTileCheck(id);
+        return unchecked();
+      };
+    }
     final previous = _projectSaves[id];
     final result = previous == null
         ? Future<T>.sync(write)
@@ -4811,9 +5086,20 @@ class ProjectService extends ChangeNotifier {
 
   /// 並んでいる作品の保存・フォルダの処理がすべて終わるまで待つ（全データを
   /// 削除する前。削除の後に書き終わると、消した作品・フォルダが戻る）。
+  /// Checking the tiles of listed works stops (a damaged work restored by a
+  /// check rewrites its file).
   Future<void> settleWrites() async {
-    while (_projectSaves.isNotEmpty || _folderOperations != null) {
-      await Future.wait([..._projectSaves.values, ?_folderOperations]);
+    _checksStopped = true;
+    while (_projectSaves.isNotEmpty ||
+        _folderOperations != null ||
+        _backgroundChecks != null ||
+        _recoveryRewrites.isNotEmpty) {
+      await Future.wait([
+        ..._projectSaves.values,
+        ?_folderOperations,
+        ?_backgroundChecks,
+        ..._recoveryRewrites.values,
+      ]);
     }
   }
 
@@ -4838,17 +5124,20 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
-  Future<void> _queueTrash(String id, Future<void> Function() operation) =>
-      _queueFolder(
-        () => _queueProjectSave(id, () async {
-          try {
-            await operation();
-          } catch (error, stackTrace) {
-            AppErrorReporter.record(error, stackTrace);
-            rethrow;
-          }
-        }),
-      );
+  Future<void> _queueTrash(
+    String id,
+    Future<void> Function() operation, {
+    bool readsWorkFile = true,
+  }) => _queueFolder(
+    () => _queueProjectSave(id, () async {
+      try {
+        await operation();
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+        rethrow;
+      }
+    }, readsWorkFile: readsWorkFile),
+  );
 
   void _notifyFolders() {
     if (!_folderDisposed) notifyListeners();
@@ -5151,7 +5440,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> permanentDelete(String id) =>
-      _queueTrash(id, () => _permanentDeleteNow(id));
+      _queueTrash(id, () => _permanentDeleteNow(id), readsWorkFile: false);
 
   /// [permanentDelete]の中身（フォルダの処理の中から呼ぶとき用。
   /// [_restoreProjectNow]と同じ）。
@@ -5193,6 +5482,9 @@ class ProjectService extends ChangeNotifier {
       _layerIdCounters.remove(id);
       _tileManagers.remove(id)?.dispose();
       _forgetTiles(id);
+      _uncheckedTiles.remove(id);
+      _listedAs.remove(id);
+      _damagedWhenChecked.remove(id);
       try {
         await _persistTrashState(_trashDeletedAt);
       } catch (error, stackTrace) {
@@ -6317,7 +6609,11 @@ class ProjectService extends ChangeNotifier {
         for (final id in record.projectIds) {
           if (!_trash.any((p) => p.id == id)) continue;
           try {
-            await _queueProjectSave(id, () => _permanentDeleteNow(id));
+            await _queueProjectSave(
+              id,
+              () => _permanentDeleteNow(id),
+              readsWorkFile: false,
+            );
           } catch (error, stackTrace) {
             AppErrorReporter.record(error, stackTrace);
           }

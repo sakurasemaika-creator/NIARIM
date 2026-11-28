@@ -150,6 +150,203 @@ class ArchiveSecurity {
     }
   }
 
+  /// Reads the ZIP in [file] ([length] bytes) as [decodeZip] reads it, but
+  /// only its end record, its central directory and the entries [expand]
+  /// takes (by their stored name): the archive returned holds those
+  /// entries alone. Every other entry is checked from the central directory
+  /// only (its name, flags, kind, declared size and way of storing); its
+  /// local header and data are not read, so whether it expands to the size
+  /// it declares is left to [decodeZip] over the whole file later.
+  ///
+  /// Throws as [decodeZip] does for what it checks (anything it refuses,
+  /// [decodeZip] refuses too). Returns null when the file is not laid out
+  /// the way this reader expects (no end record near the end, a directory
+  /// or an entry outside the file, ...): the caller then reads the whole
+  /// file with [decodeZip], which decides as before.
+  static Archive? decodeZipFileEntries(
+    RandomAccessFile file,
+    int length, {
+    required bool Function(String name) expand,
+    ArchiveLimits limits = ArchiveLimits.ownWork,
+  }) {
+    if (length > limits.compressedBytes) {
+      throw const FormatException('アーカイブのファイルサイズが上限を超えています');
+    }
+    final ZipDirectory directory;
+    try {
+      final read = _readDirectory(file, length, expand);
+      if (read == null) return null;
+      directory = read;
+    } catch (_) {
+      // Anything the reader cannot follow is decided over the whole file.
+      return null;
+    }
+    try {
+      _validateDirectory(
+        directory,
+        limits,
+        leftUnexpanded: (header) => header.file == null,
+      );
+    } on FormatException {
+      rethrow;
+    } catch (_) {
+      throw const FormatException('ZIPアーカイブとして不正です');
+    }
+    try {
+      return _archiveOf(directory);
+    } catch (_) {
+      throw const FormatException('ZIPアーカイブを展開できません');
+    }
+  }
+
+  /// The longest stretch from the end of a file searched for the end record
+  /// (the record and the longest comment it may carry, with room for a ZIP64
+  /// locator before it).
+  static const int _endSearch = 22 + 0xffff + 20;
+
+  /// [file]'s end record and central directory as [ZipDirectory.read]
+  /// reads them from the whole file, with the local headers of only the
+  /// entries [expand] takes (the others keep `file` null). Null when a part
+  /// it needs is not where this reader looks.
+  static ZipDirectory? _readDirectory(
+    RandomAccessFile file,
+    int length,
+    bool Function(String name) expand,
+  ) {
+    Uint8List? at(int offset, int count) {
+      if (offset < 0 || count < 0 || offset + count > length) return null;
+      file.setPositionSync(offset);
+      final bytes = file.readSync(count);
+      return bytes.length == count ? bytes : null;
+    }
+
+    int u16(Uint8List b, int i) => b[i] | b[i + 1] << 8;
+    int u32(Uint8List b, int i) => u16(b, i) | u16(b, i + 2) << 16;
+    int u64(Uint8List b, int i) => u32(b, i) | u32(b, i + 4) << 32;
+
+    // The end record: searched from the end down, as ZipDirectory does
+    // (its first candidate starts five bytes before the end). A record
+    // without a comment is in the last few bytes, so a short stretch is read
+    // first.
+    var tailStart = length;
+    var tail = Uint8List(0);
+    var end = -1;
+    var next = length - 5;
+    for (final stretch in const [4096, _endSearch]) {
+      final start = length > stretch ? length - stretch : 0;
+      if (start >= tailStart) break;
+      final read = at(start, length - start);
+      if (read == null) return null;
+      for (var ip = next; ip >= start; --ip) {
+        if (u32(read, ip - start) == ZipDirectory.eocdLocatorSignature) {
+          end = ip;
+          break;
+        }
+      }
+      tailStart = start;
+      tail = read;
+      next = start - 1;
+      if (end >= 0) break;
+    }
+    if (end < 0) return null;
+    final e = end - tailStart;
+    if (e + 22 > tail.length) return null;
+    final commentLength = u16(tail, e + 20);
+    if (e + 22 + commentLength > tail.length) return null;
+    final directory = ZipDirectory()
+      ..filePosition = end
+      ..numberOfThisDisk = u16(tail, e + 4)
+      ..diskWithTheStartOfTheCentralDirectory = u16(tail, e + 6)
+      ..totalCentralDirectoryEntriesOnThisDisk = u16(tail, e + 8)
+      ..totalCentralDirectoryEntries = u16(tail, e + 10)
+      ..centralDirectorySize = u32(tail, e + 12)
+      ..centralDirectoryOffset = u32(tail, e + 16);
+    if (directory.centralDirectoryOffset == 0xffffffff ||
+        directory.centralDirectorySize == 0xffffffff ||
+        directory.totalCentralDirectoryEntriesOnThisDisk == 0xffff ||
+        directory.numberOfThisDisk == 0xffff) {
+      // ZIP64: the sizes are in the ZIP64 end record its locator points to
+      // (kept as they are when either is not there, as ZipDirectory does).
+      final locator = end - ZipDirectory.zip64EocdLocatorSize;
+      final located = locator < 0
+          ? null
+          : at(locator, ZipDirectory.zip64EocdLocatorSize);
+      if (located != null &&
+          u32(located, 0) == ZipDirectory.zip64EocdLocatorSignature) {
+        final record = at(u64(located, 8), ZipDirectory.zip64EocdSize);
+        if (record == null) return null;
+        if (u32(record, 0) == ZipDirectory.zip64EocdSignature) {
+          directory
+            ..numberOfThisDisk = u32(record, 16)
+            ..diskWithTheStartOfTheCentralDirectory = u32(record, 20)
+            ..totalCentralDirectoryEntriesOnThisDisk = u64(record, 24)
+            ..totalCentralDirectoryEntries = u64(record, 32)
+            ..centralDirectorySize = u64(record, 40)
+            ..centralDirectoryOffset = u64(record, 48);
+        }
+      } else if (locator >= 0 && located == null) {
+        return null;
+      }
+    }
+
+    final central = at(
+      directory.centralDirectoryOffset,
+      directory.centralDirectorySize,
+    );
+    if (central == null) return null;
+    final entries = InputStream(central);
+    while (!entries.isEOS) {
+      if (entries.readUint32() != ZipFileHeader.SIGNATURE) break;
+      directory.fileHeaders.add(ZipFileHeader(entries));
+    }
+
+    for (final header in directory.fileHeaders) {
+      if (!expand(header.filename)) continue;
+      final offset = header.localHeaderOffset!;
+      final fixed = at(offset, 30);
+      if (fixed == null) return null;
+      final nameAndExtra = u16(fixed, 26) + u16(fixed, 28);
+      // The data, and the descriptor after it when the entry has one.
+      final descriptor = (u16(fixed, 6) & 0x08) != 0 ? 16 : 0;
+      final size = 30 + nameAndExtra + header.compressedSize!;
+      final local =
+          at(offset, size + descriptor) ??
+          (descriptor == 0 ? null : at(offset, size + 12));
+      if (local == null) return null;
+      header.file = ZipFile(InputStream(local), header);
+    }
+    return directory;
+  }
+
+  /// The archive [ZipDecoder.decodeBuffer] makes of [directory], of the
+  /// entries whose local header was read.
+  static Archive _archiveOf(ZipDirectory directory) {
+    final archive = Archive();
+    for (final header in directory.fileHeaders) {
+      final zf = header.file;
+      if (zf == null) continue;
+      final file = ArchiveFile(
+        zf.filename,
+        zf.uncompressedSize!,
+        zf,
+        zf.compressionMethod,
+      );
+      file.mode = header.externalFileAttributes! >> 16;
+      if (header.versionMadeBy >> 8 == 3) {
+        final kind = file.mode & 0xF000;
+        // Links were refused by the directory check.
+        file.isFile = kind == 0x8000 || kind == 0x0000;
+      } else {
+        file.isFile = !file.name.endsWith('/');
+      }
+      file.crc32 = zf.crc32;
+      file.compress = zf.compressionMethod != ZipFile.zipCompressionStore;
+      file.lastModTime = zf.lastModFileDate << 16 | zf.lastModFileTime;
+      archive.addFile(file);
+    }
+    return archive;
+  }
+
   static void validateFileSize(
     int bytes, {
     ArchiveLimits limits = ArchiveLimits.received,
@@ -191,7 +388,14 @@ class ArchiveSecurity {
     }
   }
 
-  static void _validateDirectory(ZipDirectory directory, ArchiveLimits limits) {
+  /// [leftUnexpanded] entries are checked from the central directory only
+  /// (see [decodeZipFileEntries]): their declared size counts towards the
+  /// whole, and their local header and data are not looked at.
+  static void _validateDirectory(
+    ZipDirectory directory,
+    ArchiveLimits limits, {
+    bool Function(ZipFileHeader header)? leftUnexpanded,
+  }) {
     if (directory.numberOfThisDisk != 0 ||
         directory.diskWithTheStartOfTheCentralDirectory != 0 ||
         directory.totalCentralDirectoryEntriesOnThisDisk !=
@@ -232,6 +436,17 @@ class ArchiveSecurity {
         throw const FormatException('ZIPエントリの展開後サイズが不正です');
       }
       _validateEntrySize(name, size, limits);
+      if (leftUnexpanded?.call(header) ?? false) {
+        if (header.compressionMethod != ZipFile.zipCompressionStore &&
+            header.compressionMethod != ZipFile.zipCompressionDeflate) {
+          throw const FormatException('未対応のZIP圧縮方式です');
+        }
+        expandedBytes += size;
+        if (expandedBytes > limits.expandedBytes) {
+          throw const FormatException('アーカイブの展開後サイズが上限を超えています');
+        }
+        continue;
+      }
       final file = header.file;
       if (file == null) throw const FormatException('ZIPエントリの実体がありません');
       final actualSize = switch (header.compressionMethod) {
@@ -293,8 +508,17 @@ class ArchiveSecurity {
         return declaredSize;
       }
     }
-    final sink = _LimitedOutputStream(limit);
-    Inflate.stream(rawContent, sink);
+    // An own work file's entries have no size limit, and a damaged stream
+    // can decode without end: past its declared size an entry is already
+    // wrong, so the count stops there.
+    final pastDeclared = limits.singleEntryBytes >= ArchiveLimits._unbounded;
+    final sink = _LimitedOutputStream(pastDeclared ? declaredSize + 1 : limit);
+    try {
+      Inflate.stream(rawContent, sink);
+    } on _PastLimit {
+      if (!pastDeclared) rethrow;
+      return declaredSize + 1;
+    }
     return sink.length;
   }
 
@@ -359,9 +583,7 @@ class _LimitedOutputStream implements OutputStreamBase {
   _LimitedOutputStream(this.limit);
 
   void _reserve(int count) {
-    if (count < 0 || length + count > limit) {
-      throw const FormatException('ZIPエントリの実展開サイズが上限を超えています');
-    }
+    if (count < 0 || length + count > limit) throw const _PastLimit();
     length += count;
   }
 
@@ -437,4 +659,9 @@ class _LimitedOutputStream implements OutputStreamBase {
     }
     return result;
   }
+}
+
+/// The expanded bytes went past the limit of a [_LimitedOutputStream].
+class _PastLimit extends FormatException {
+  const _PastLimit() : super('ZIPエントリの実展開サイズが上限を超えています');
 }

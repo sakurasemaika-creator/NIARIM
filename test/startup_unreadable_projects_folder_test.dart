@@ -5515,6 +5515,12 @@ class _GuardedFile implements File {
   @override
   Future<Uint8List> readAsBytes() async => readAsBytesSync();
 
+  @override
+  RandomAccessFile openSync({FileMode mode = FileMode.read}) {
+    if (_blocked) throw _denied(path, 'Cannot open file');
+    return _real.openSync(mode: mode);
+  }
+
   // 消す・名前を変えるは、端末と同じくフォルダの権限で決まるので、そのまま
   // 行う。
   @override

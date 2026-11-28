@@ -1381,7 +1381,7 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   デスクトップは0を渡し、筆圧で太さが変わるブラシが2割の太さになった）。
   `test/eraser_transparent_colour_test.dart`・`input_handler_pressure_test.dart`。
 - **作品の絵（タイル）は、その作品を初めて使うときに読む（DISC612、2026-11-24）**：
-  起動のとき（`_loadProjectsFromDisk`）は`NiaproSerializer.load(path, withTiles: false)`で
+  起動のとき（`_loadProjectsFromDisk`）は`NiaproSerializer.listWorkFile`（下の段落）で
   作品の情報とシーンだけを読み、絵はファイルに残す（`_tilesLeftInFile`）。以前は全部の
   作品の絵を画素のままメモリへ読んでいて、1920×1080の作品は1コマ1レイヤーで最大約8MB、
   長い作品が数本ある端末では起動の途中でメモリが尽きうった。`ProjectService`の中で
@@ -1391,6 +1391,36 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   移す前）は`save(keepStoredTiles: true)`でファイルの絵をそのまま残す。開いたときに絵を
   読めなかった作品（`tilesUnreadable`）は保存・自動保存をしない（空の絵でファイルや
   良い自動保存を上書きしない）。`test/project_tiles_on_open_test.dart`が見張る。
+- **起動の一覧づくりは作品ファイルの目次と作品・シーンだけを読み、絵（タイル）が申告どおりに展開できるかは一覧を
+  出した後に確かめる（2026-11-28）**：以前は一覧づくりで全部の作品の全部のタイルを展開して大きさを確かめていて
+  （`ArchiveSecurity.decodeZip`）、200作品・タイル1万6千枚（96.8MB）で`ProjectService.init()`が約2.5秒（JIT。
+  AOTで確かめだけ約1.8秒）起動を待たせた（今は約80ms）。今は`NiaproSerializer.listWorkFile`が`ArchiveSecurity.decodeZipFileEntries`で、終わりの記録・中央
+  ディレクトリと、一覧に要る項目（manifest・`Scene/*/frames.json`・Materials・Fonts）だけを読む（約60ms、読むのは
+  ファイルの約2%）。タイルの項目は名前・暗号化・リンク・申告の大きさ・圧縮の方式を目次で確かめるだけで、中身も
+  項目の前の見出しも読まない。読めない形（終わりの記録が末尾の64KBに無い・目次がファイルの外など）は今までどおり
+  ファイル全体を`decodeZip`で読む。タイルの確かめ（`NiaproSerializer.checkListedTiles`＝ファイル全体の
+  `decodeZip`）は、最初の画面を描いた後に裏のisolateで1作品ずつ（`checkListedTilesInBackground`、
+  `app_bootstrap.dart`）。作品のタイルを使う前にもその作品を確かめる：`_tilesOf`（タイルを読むことが確かめ）と
+  `_queueProjectSave`に並ぶ書き込み（名前の変更・お気に入り・フォルダ・ゴミ箱へ移す・戻す。消すだけの完全削除は
+  `readsWorkFile: false`）。開く画面（詳細・キャンバス・タイムライン）は`initState`の最初に`readTilesNow`を呼び、
+  画面が作品を読む前に確かめる。**作品のファイルを読む・写す処理を足すときは、`_tilesOf`か`_queueProjectSave`を
+  通すこと**（通さないと、確かめていないファイルの壊れたタイルをそのまま写す・読めずに失敗する）。絵だけが壊れて
+  いた作品は、一覧に出したときのままのファイル（大きさと更新日時が同じ、`UncheckedWorkFile.sameAs`）なら、起動時に
+  見つけたときと同じく最新の読める自動保存から戻し（`_restoreDamagedListedWork`：作品は自動保存の作品と時刻、
+  ファイルは作り直す、開いた画面が`takeAutosaveRecovery`でダイアログを出す）、一覧に出した後に変えた名前・フォルダ・
+  タグなどは残す（`carryEditsSinceListing`）。読める自動保存が無ければ、起動時と同じく一覧から外して
+  `projectsLoadFailed`（ファイルはそのまま。再試行ではそのファイルを全体で読む、`_damagedWhenChecked`）。一覧に
+  出した後にアプリの外でファイルが変わった作品は、開いたときに今までどおり読めない作品（`tilesUnreadable`）。
+  受け取ったファイル（.niashare・.niatra・カード）は今までどおり`decodeZip`で全部を確かめる。全データの削除
+  （`settleWrites`）は確かめを止め、走っている確かめと作り直しを待つ。`isolate`の`Future`を
+  `whenComplete(() => map.remove(key))`のように消す書き方をしないこと（消した値＝その`Future`自身を待って止まる）。
+  見張りは`test/startup_deferred_tile_check_test.dart`（ファイルを400通り壊して、一覧づくりが全体の読みより厳しく
+  ならないこと・全体の読みが断るものは確かめが見つけること、開く前・後・ゴミ箱から戻す・名前を変えた後・自動保存の
+  無いとき・爆弾の大きさ・ダイアログ）。
+  あわせて、自分の作品のファイルの項目（`ArchiveLimits.ownWork`は大きさの上限なし）は、端末のzlibで申告どおりに
+  展開できないとき、Dartの展開器でも申告の大きさ＋1バイトで数えるのをやめる（`_PastLimit`。壊れた流れが終わりなく
+  1バイトずつ展開し続け、起動・作品を開くのが止まった。上のtestの壊し方で見つけた）。受け取ったファイルの数え方・
+  断る文は変えていない。
 - **アプリが自分で書いた作品のファイルは`ArchiveLimits.ownWork`で読む（2026-11-27、B30）**：
   `ArchiveSecurity`の既定（`ArchiveLimits.received`：128 MiB・展開後256 MiB・20000項目）は外から受け取る
   .niashare・.niatra・カードのためのもの。作品・自動保存・手動の保存にこれを当てると、大きな作品（1080×1080で
@@ -1433,7 +1463,7 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   から使う（`shareIdenticalTiles`）。`importAll(asStoredInWorkFile: true)`・`importStoredTiles`は2つ以上の
   キーにあるタイルを共有（Copy-on-Write、`StoredTile._shared`。以前の`_sharedTiles`）にし、`getOrCreateTile`が
   書く前に写す。`ArchiveSecurity.decodeZip`の大きさの
-  確かめも、申告どおりに展開できた圧縮のバイト列と同じ項目は展開しない（起動の一覧づくりも速くなる）。
+  確かめも、申告どおりに展開できた圧縮のバイト列と同じ項目は展開しない（一覧に出した後の確かめも速くなる）。
   開いたときのタイルのメモリは139→26MiB、読む時間は690→140ms（JIT）。**`getTile`のバッファに書き込まない
   こと**：アサーションの入ったビルド（デバッグ・test）では共有しているタイルは読み取り専用のビューで返り、
   書き込むと`UnsupportedError`になる（リリースでは黙ってほかのコマの絵が変わる）。共有のバッファを返す
@@ -1471,7 +1501,7 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   持ったときと1バイトも変わらないことを、`test/engine/tile_compressed_budget_test.dart`が書いた画素が
   圧縮し直しても残る・描いているレイヤーは圧縮しない・共有のタイル・写しを見張る。
 - **ZIPの項目の大きさを確かめる展開は端末のzlibで行う（2026-11-27）**：`ArchiveSecurity.decodeZip`は、
-  作品を読むたび（起動の一覧づくり・作品を開くとき・自動保存の比べ）に全部の項目を展開して申告の大きさと
+  作品を読むたび（作品を開くとき・一覧に出した後の確かめ・自動保存の比べ）に全部の項目を展開して申告の大きさと
   比べる。以前はpackage:archiveのDartの展開器（1バイトずつ書く`_LimitedOutputStream`）で数えていて、
   200作品・タイル約4GB分で起動に73秒（AOT）、タイル480枚の作品を開くのに2.3秒かかった。今は端末の
   zlib（`RawZLibFilter`。中身を読む`ZipFile.content`も同じzlib）で数え、申告どおりの大きさに展開できた

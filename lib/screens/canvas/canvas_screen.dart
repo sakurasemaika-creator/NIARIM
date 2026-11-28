@@ -1449,7 +1449,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void initState() {
     super.initState();
-    final projects = context.read<ProjectService>();
+    final projects = context.read<ProjectService>()
+      // Before anything reads the work (see readTilesNow).
+      ..readTilesNow(widget.projectId);
     final sceneId = _currentSceneId;
     final total = projects.frameCount(widget.projectId, sceneId);
     if (total > 0 &&

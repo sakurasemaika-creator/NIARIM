@@ -86,6 +86,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Before anything reads the work (see readTilesNow).
+    context.read<ProjectService>().readTilesNow(widget.projectId);
     // 共有ファイルの作成・共有は、この画面を離れても、ホームの一覧から始めても
     // 続く。自分の印ではなく、作品ごとの進行中の状態を見て「共有」を描く。
     ExportShareService.running.addListener(_onShareRunningChanged);

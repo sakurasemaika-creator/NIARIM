@@ -451,9 +451,12 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   // 前回の起動で描いている途中に閉じた作品は、作品ファイルより新しい自動保存の
   // 内容にする（開くまでホームの絵と最終保存の日時が古いままだった）。読むのは
   // その作品の絵だけで、最初の画面を描いてから行う。
-  SchedulerBinding.instance.addPostFrameCallback(
-    (_) => unawaited(projectService.settleNewerAutosaves()),
-  );
+  // 一覧に出した作品の絵（タイル）は、最初の画面を描いてから裏のisolateで
+  // 1作品ずつ確かめる（使う前にもその作品を確かめる）。
+  SchedulerBinding.instance.addPostFrameCallback((_) {
+    unawaited(projectService.settleNewerAutosaves());
+    projectService.checkListedTilesInBackground();
+  });
 
   return [
     ChangeNotifierProvider.value(value: settingsService),

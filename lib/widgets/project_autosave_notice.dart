@@ -38,6 +38,9 @@ Future<void> settleOpenedWork(
 }) async {
   final projects = context.read<ProjectService>();
   final l10n = AppLocalizations.of(context)!;
+  // A work listed before its tiles were checked is checked (and restored
+  // when damaged) as its picture is read.
+  projects.readTilesNow(projectId);
   final recoveredAt = projects.takeAutosaveRecovery(projectId);
   if (recoveredAt != null) {
     final choice = await showDialog<_RecoveredChoice>(

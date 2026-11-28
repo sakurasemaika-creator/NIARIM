@@ -919,7 +919,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     // 制作時間カウント（タイムラインモードのみカウント）
-    _projectService = context.read<ProjectService>();
+    _projectService = context.read<ProjectService>()
+      // Before anything reads the work (see readTilesNow).
+      ..readTilesNow(widget.projectId);
     final scenes = _projectService.scenesOf(widget.projectId);
     final initialScene =
         scenes

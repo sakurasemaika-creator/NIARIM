@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/archive_security.dart' show ArchiveLimits;
 import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../engine/undo_manager.dart';
@@ -302,6 +304,31 @@ class AutosaveService extends ChangeNotifier {
     for (final slot in slotsForProject(projectId).toList()) {
       final data = await readSlot(slot);
       if (data != null) return (data: data, savedAt: slot.savedAt);
+    }
+    return null;
+  }
+
+  /// [latestReadable] read at once from the work's folder [projectFolder],
+  /// for a work never opened in this launch (no automatic save of it is being
+  /// written).
+  ({NiaproData data, DateTime savedAt})? latestReadableNow(
+    String projectId,
+    String projectFolder,
+  ) {
+    for (final slot in slotsForProject(projectId).toList()) {
+      try {
+        final data = NiaproSerializer.loadFromBytes(
+          File(
+            '$projectFolder/autosave/slot_${slot.slotIndex}.niapro',
+          ).readAsBytesSync(),
+          limits: ArchiveLimits.ownWork,
+        );
+        if (data.project.id == slot.projectId && data.hasEditableFrames) {
+          return (data: data, savedAt: slot.savedAt);
+        }
+      } catch (_) {
+        // A damaged snapshot is skipped, as [latestReadable] skips it.
+      }
     }
     return null;
   }
