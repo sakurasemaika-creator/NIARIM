@@ -214,6 +214,9 @@ class NiatraSerializer {
   static const Set<String> settingKeys = {
     'language',
     'default_fps',
+    // 作品の書き出し・メイキング動画の書き出しで最後に選んだ形式。
+    'export_format',
+    'making_export_format',
     'undo_limit',
     'trash_auto_delete',
     'is_left_handed',

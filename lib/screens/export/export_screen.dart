@@ -116,6 +116,12 @@ class _ExportScreenState extends State<ExportScreen> {
   @override
   void initState() {
     super.initState();
+    // 最後に選んだ形式で始める（以前は開くたびにMP4へ戻った）。
+    _format =
+        ExportFormat.values.asNameMap()[context
+            .read<SettingsService?>()
+            ?.exportFormat] ??
+        ExportFormat.mp4;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(context.read<PremiumService>().refreshBenefits());
     });
@@ -315,7 +321,10 @@ class _ExportScreenState extends State<ExportScreen> {
     final formatSection = <Widget>[
       RadioGroup<ExportFormat>(
         groupValue: _format,
-        onChanged: (v) => _changeSettings(() => _format = v!),
+        onChanged: (v) {
+          _changeSettings(() => _format = v!);
+          unawaited(context.read<SettingsService?>()?.setExportFormat(v!.name));
+        },
         child: GroupedSheet(
           title: l10n.exportFormatSection,
           children: [

@@ -209,6 +209,34 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── 書き出しの形式（最後に選んだもの） ───────────────────────────────
+  // 作品の書き出しとメイキング動画の書き出しは、それぞれ最後に選んだ形式で
+  // 始まる（以前は開くたびにMP4へ戻った）。形式の名前（ExportFormat・
+  // MakingExportFormatのname）で持ち、読めない値は無いものとして画面の既定
+  // （MP4）にする。画面が開いたときに読むだけなので、変えても知らせない。
+  String? _exportFormat;
+  String? _makingExportFormat;
+
+  /// 作品の書き出しで最後に選んだ形式の名前（選んだことが無ければnull）。
+  String? get exportFormat => _exportFormat;
+
+  /// メイキング動画の書き出しで最後に選んだ形式の名前。
+  String? get makingExportFormat => _makingExportFormat;
+
+  Future<void> setExportFormat(String name) async {
+    if (_exportFormat == name) return;
+    _exportFormat = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('export_format', name);
+  }
+
+  Future<void> setMakingExportFormat(String name) async {
+    if (_makingExportFormat == name) return;
+    _makingExportFormat = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('making_export_format', name);
+  }
+
   // ─── タイムラインモードのプレビュー欄の高さ ───────────────────────────
   // プレビュー下端のドラッグハンドルで変更できる、プレビュー欄が占める
   // 縦方向の割合（0.0〜1.0）。プロジェクトごとではなくアプリ全体で共通の
@@ -930,6 +958,8 @@ class SettingsService extends ChangeNotifier {
       }
     }
     _defaultFps = prefs.readInt('default_fps') ?? 12;
+    _exportFormat = prefs.readString('export_format');
+    _makingExportFormat = prefs.readString('making_export_format');
     _pushNotificationsEnabled =
         prefs.readBool('push_notifications_enabled') ?? true;
     _disabledPushCategories

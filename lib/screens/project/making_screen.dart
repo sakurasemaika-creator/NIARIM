@@ -69,6 +69,12 @@ class _MakingScreenState extends State<MakingScreen> {
   @override
   void initState() {
     super.initState();
+    // 最後に選んだ形式で始める（以前は開くたびにMP4へ戻った）。
+    _format =
+        MakingExportFormat.values.asNameMap()[context
+            .read<SettingsService?>()
+            ?.makingExportFormat] ??
+        MakingExportFormat.mp4;
     _load();
     // The end mark follows the verified benefits, like the work's export.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -620,6 +626,13 @@ class _MakingScreenState extends State<MakingScreen> {
                                         : (value) {
                                             if (value != null) {
                                               setState(() => _format = value);
+                                              unawaited(
+                                                context
+                                                    .read<SettingsService?>()
+                                                    ?.setMakingExportFormat(
+                                                      value.name,
+                                                    ),
+                                              );
                                             }
                                           },
                                   ),
