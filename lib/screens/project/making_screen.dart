@@ -60,6 +60,9 @@ class _MakingScreenState extends State<MakingScreen> {
   bool _exporting = false;
   int _index = 0;
   MakingExportFormat _format = MakingExportFormat.mp4;
+
+  /// 書き出す本編の長さ（秒）。nullは元の長さのまま。
+  int? _maxSeconds;
   Timer? _playTimer;
 
   @override
@@ -283,6 +286,7 @@ class _MakingScreenState extends State<MakingScreen> {
       context.read<SettingsService?>(),
     );
     final format = _format;
+    final maxSeconds = _maxSeconds;
     final projectName = _project(projects)?.name;
     final watermarkAreas = officialMark && format == MakingExportFormat.gif
         ? _watermarkAreas(projects)
@@ -313,6 +317,7 @@ class _MakingScreenState extends State<MakingScreen> {
         outputPath: outputPath,
         officialMark: officialMark,
         watermarkAreas: watermarkAreas,
+        maxSeconds: maxSeconds,
         onProgress: (done, total) {
           if (mounted) setState(() => _exportProgress = done / total);
         },
@@ -359,7 +364,10 @@ class _MakingScreenState extends State<MakingScreen> {
   String _outputSummary(AppLocalizations l10n, int count, bool officialMark) {
     final duration = clockDurationLabel(
       MaterialLocalizations.of(context),
-      MakingExport.bodySeconds(count, _format),
+      MakingExport.bodySeconds(
+        MakingExport.exportedCount(count, _format, _maxSeconds),
+        _format,
+      ),
     );
     if (!officialMark) return l10n.exportOutputWithoutEndCard(duration);
     return MakingExport.carriesOfficialEndCard(_format)
@@ -540,6 +548,55 @@ class _MakingScreenState extends State<MakingScreen> {
                           child: IconNotice.caution(
                             MakingStrings.storageLimit(context),
                             liveRegion: true,
+                          ),
+                        ),
+                      // 元の長さより短い長さだけを選べる（長くはしない）。
+                      if (MakingExport.shorterLengths(length, _format)
+                          case final lengths when lengths.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: MenuSurface(
+                            child: DropdownButtonFormField<int?>(
+                              key: const Key('makingExportLength'),
+                              initialValue: lengths.contains(_maxSeconds)
+                                  ? _maxSeconds
+                                  : null,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.makingExportLength,
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: [
+                                DropdownMenuItem<int?>(
+                                  value: null,
+                                  child: Text(
+                                    l10n.makingExportLengthOriginal(
+                                      clockDurationLabel(
+                                        MaterialLocalizations.of(context),
+                                        MakingExport.bodySeconds(
+                                          length,
+                                          _format,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                for (final seconds in lengths.reversed)
+                                  DropdownMenuItem<int?>(
+                                    value: seconds,
+                                    child: Text(
+                                      clockDurationLabel(
+                                        MaterialLocalizations.of(context),
+                                        seconds,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                              onChanged: _exporting
+                                  ? null
+                                  : (value) =>
+                                        setState(() => _maxSeconds = value),
+                            ),
                           ),
                         ),
                       Row(

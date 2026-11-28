@@ -11301,6 +11301,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '메이킹 기록 2GB 한도에 도달했습니다. 자동 기록은 중지되었으며 기존 기록은 유지됩니다.';
 
   @override
+  String get makingExportLength => '동영상 길이';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return '원래 길이($duration)';
+  }
+
+  @override
   String get makingFormatWebm => 'WebM';
 
   @override

@@ -4167,6 +4167,8 @@
   "makingEmptyRecordingOn": "记录已开启。在画布上绘画后，制作过程会记录在这里。",
   "makingLoadFailed": "无法加载制作记录",
   "makingStorageLimit": "制作记录已达到2GB上限。自动记录已停止，现有记录会保留。",
+  "makingExportLength": "视频时长",
+  "makingExportLengthOriginal": "原始时长（{duration}）",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "导出制作过程",
   "makingExportComplete": "制作过程视频已导出。",

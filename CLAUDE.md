@@ -1297,7 +1297,15 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   足す。作品詳細では記録の入切を編集の操作より下の「メイキング」の欄に置き、その下に「メイキング再生」
   （`/making/:id?play=1`、開いたらすぐ再生。記録を切っている間は薄く押せない）。メイキングの画面の書き出し
   ボタンは「メイキングを書き出す」。キャンバスの設定/編集メニューの「自動化と入力」にも同じ入切のスイッチ。
-  `test/making_recorder_test.dart`・`test/making_controls_test.dart`・`test/making_compaction_test.dart`が見張る。
+  **メイキングの長さは操作の数で決まる（1回の操作が1コマ、1秒8コマ）。書き出しのときだけ、それより短い長さを選べる**
+  （所有者の判断、2026-11-28「基本は今の仕様のままで、メイキング書き出し時にだけ現在よりも短い長さに限って動画の長さを
+  選べるようにしましょう。長くはできません」）：書き出しの画面の「動画の長さ」（`makingExportLength`）は「元の長さ」と、
+  `MakingExport.lengthPresets`（15秒・30秒・1分・3分・5分・10分）のうち元の長さより短いものだけ（`shorterLengths`。GIFは
+  もともと約50コマに間引くので出さない）。選ぶと`MakingFrameSelection.evenly`が最初と最後のコマを含めて均等にコマを選び、
+  1秒8コマのまま書き出す（1コマを長く見せて伸ばすことはしない）。動画の区切りはそのまま写せないので選んだコマを
+  エンコードし直し、区切りから選ぶコマは`MakingPlayer.writePickedFrames`がFFmpegの`select`で区切りごとにまとめて読む。
+  再生は今までどおり全部のコマ。エンドマーク・GIFの隅のロゴの決まりは変えない。
+  `test/making_recorder_test.dart`・`test/making_controls_test.dart`・`test/making_compaction_test.dart`・`test/making_export_end_card_test.dart`が見張る。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,

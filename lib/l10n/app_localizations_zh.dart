@@ -11104,6 +11104,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get makingStorageLimit => '制作记录已达到2GB上限。自动记录已停止，现有记录会保留。';
 
   @override
+  String get makingExportLength => '视频时长';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return '原始时长（$duration）';
+  }
+
+  @override
   String get makingFormatWebm => 'WebM';
 
   @override
@@ -22355,6 +22363,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get makingStorageLimit => '製作記錄已達到2GB上限。自動記錄已停止，現有記錄會保留。';
+
+  @override
+  String get makingExportLength => '影片長度';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return '原始長度（$duration）';
+  }
 
   @override
   String get makingFormatWebm => 'WebM';

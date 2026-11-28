@@ -4167,6 +4167,8 @@
   "makingEmptyRecordingOn": "記錄已開啟。在畫布上繪畫後，製作過程會記錄在這裡。",
   "makingLoadFailed": "無法載入製作記錄",
   "makingStorageLimit": "製作記錄已達到2GB上限。自動記錄已停止，現有記錄會保留。",
+  "makingExportLength": "影片長度",
+  "makingExportLengthOriginal": "原始長度（{duration}）",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "匯出製作過程",
   "makingExportComplete": "製作過程影片已匯出。",

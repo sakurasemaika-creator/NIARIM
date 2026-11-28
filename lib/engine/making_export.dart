@@ -71,6 +71,96 @@ abstract interface class MakingFrames {
   });
 }
 
+/// A source of making frames that can write a chosen set of them at once
+/// (the chosen frames of a video segment are read in one pass).
+abstract interface class MakingFramePicker {
+  /// Writes frames [indices] (increasing) as image files of exactly
+  /// [width]×[height] in [directory] and returns them in order.
+  Future<List<String>> writePickedFrames(
+    Directory directory,
+    List<int> indices, {
+    required int width,
+    required int height,
+    MakingPictureMode pictures,
+  });
+}
+
+/// Frames [indices] (increasing) of [source]: a shorter making video.
+class MakingFrameSelection implements MakingFrames {
+  MakingFrameSelection(this.source, this.indices);
+
+  /// [count] frames of [source] spread evenly over it, the first and the
+  /// last frame included (the finished picture ends the video).
+  factory MakingFrameSelection.evenly(MakingFrames source, int count) {
+    final total = source.length;
+    if (count < 1 || count >= total) {
+      return MakingFrameSelection(source, [for (var i = 0; i < total; i++) i]);
+    }
+    if (count == 1) return MakingFrameSelection(source, [total - 1]);
+    return MakingFrameSelection(source, [
+      for (var i = 0; i < count; i++) (i * (total - 1) / (count - 1)).round(),
+    ]);
+  }
+
+  final MakingFrames source;
+  final List<int> indices;
+
+  @override
+  int get length => indices.length;
+
+  @override
+  int get width => source.width;
+
+  @override
+  int get height => source.height;
+
+  /// The segments show every frame, not the chosen ones.
+  @override
+  List<MakingVideoSpan> get videoSpans => const [];
+
+  @override
+  Future<List<String>> writeFrames(
+    Directory directory,
+    int from,
+    int to, {
+    required int width,
+    required int height,
+    MakingPictureMode pictures = MakingPictureMode.sameSize,
+  }) async {
+    final picked = indices.sublist(from, to);
+    final source = this.source;
+    if (source is MakingFramePicker) {
+      return (source as MakingFramePicker).writePickedFrames(
+        directory,
+        picked,
+        width: width,
+        height: height,
+        pictures: pictures,
+      );
+    }
+    final paths = <String>[];
+    var i = 0;
+    while (i < picked.length) {
+      var j = i + 1;
+      while (j < picked.length && picked[j] == picked[j - 1] + 1) {
+        j++;
+      }
+      paths.addAll(
+        await source.writeFrames(
+          directory,
+          picked[i],
+          picked[j - 1] + 1,
+          width: width,
+          height: height,
+          pictures: pictures,
+        ),
+      );
+      i = j;
+    }
+    return paths;
+  }
+}
+
 /// メイキング動画（記録の1コマずつを順に並べた動画）の書き出し。
 abstract final class MakingExport {
   /// メイキング動画のfps。
@@ -96,6 +186,31 @@ abstract final class MakingExport {
   static bool carriesOfficialEndCard(MakingExportFormat format) =>
       format != MakingExportFormat.gif;
 
+  /// 書き出しで選べる本編の長さ（秒）。メイキングは1回の操作を1コマにして
+  /// [fps]で流すので、長さは操作の数で決まる。書き出しでは、それより短い
+  /// 長さだけを選べる（長くはしない）。
+  static const List<int> lengthPresets = [15, 30, 60, 180, 300, 600];
+
+  /// [count]枚の記録を[format]で書き出すとき選べる、元の長さより短い本編の
+  /// 長さ（秒、短い順）。GIFはもともと短く間引くので無い。
+  static List<int> shorterLengths(int count, MakingExportFormat format) {
+    if (format == MakingExportFormat.gif) return const [];
+    return [
+      for (final seconds in lengthPresets)
+        if (seconds * fps < count) seconds,
+    ];
+  }
+
+  /// 本編の長さを[maxSeconds]（[shorterLengths]の1つ、nullは元のまま）に
+  /// したとき書き出す記録の枚数。
+  static int exportedCount(
+    int count,
+    MakingExportFormat format,
+    int? maxSeconds,
+  ) => maxSeconds != null && shorterLengths(count, format).contains(maxSeconds)
+      ? maxSeconds * fps
+      : count;
+
   /// GIFで使う記録の間隔（[count]枚から何枚ごとに1枚使うか）。
   static int gifStep(int count) =>
       (count / _gifTargetFrames).ceil().clamp(1, math.max(1, count)).toInt();
@@ -116,7 +231,9 @@ abstract final class MakingExport {
   /// 足す。GIFではエンドマークの代わりに、どのコマにも隅へNIARIMのロゴを
   /// 入れる。その隅は[watermarkAreas]（利用者のウォーターマークの描かれた所。
   /// キャンバスに対する0〜1の割合）を避けて選ぶ。MP4では、動画になった記録は
-  /// エンコードし直さずにつなぐ。
+  /// エンコードし直さずにつなぐ。[maxSeconds]（[shorterLengths]の1つ）を
+  /// 渡すと、本編がその長さになるよう、記録から最初と最後を含めて均等に
+  /// コマを選ぶ（1秒のコマの数は変えない）。
   static Future<void> export({
     List<String>? snapshotPaths,
     MakingFrames? frames,
@@ -127,11 +244,16 @@ abstract final class MakingExport {
     ExportEngine? engine,
     void Function(int done, int total)? onProgress,
     MakingVideoTools? tools,
+    int? maxSeconds,
   }) async {
     if (frames == null && (snapshotPaths == null || snapshotPaths.isEmpty)) {
       throw ArgumentError.value(snapshotPaths, 'snapshotPaths');
     }
-    final source = frames ?? await MakingPictureFrames.of(snapshotPaths!);
+    var source = frames ?? await MakingPictureFrames.of(snapshotPaths!);
+    final count = exportedCount(source.length, format, maxSeconds);
+    if (count < source.length) {
+      source = MakingFrameSelection.evenly(source, count);
+    }
     await _export(
       source,
       format: format,

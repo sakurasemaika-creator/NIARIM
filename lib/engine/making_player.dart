@@ -390,7 +390,7 @@ String makingFramePath(Directory directory, int index) =>
 /// Plays a work's making: first the picture records of earlier versions,
 /// then the video segments of the steps turned into video, then the steps of
 /// the log, whose pictures are made here as they are shown.
-class MakingPlayer implements MakingFrames {
+class MakingPlayer implements MakingFrames, MakingFramePicker {
   MakingPlayer._(
     this.projectId,
     this._pictures,
@@ -739,6 +739,111 @@ class MakingPlayer implements MakingFrames {
       i++;
     }
     return paths;
+  }
+
+  @override
+  Future<List<String>> writePickedFrames(
+    Directory directory,
+    List<int> indices, {
+    required int width,
+    required int height,
+    MakingPictureMode pictures = MakingPictureMode.sameSize,
+  }) async {
+    final paths = <String>[];
+    var k = 0;
+    while (k < indices.length) {
+      final index = indices[k];
+      final at = index < _pictures.length ? null : _locate(index);
+      final segment = at?.segment;
+      if (segment == null) {
+        paths.addAll(
+          await writeFrames(
+            directory,
+            index,
+            index + 1,
+            width: width,
+            height: height,
+            pictures: pictures,
+          ),
+        );
+        k++;
+        continue;
+      }
+      // The chosen frames of this segment, in one pass.
+      final start = index - at!.frame;
+      final end = start + _log.segments[segment].frames;
+      final picked = <int>[];
+      while (k < indices.length && indices[k] < end) {
+        picked.add(indices[k] - start);
+        k++;
+      }
+      paths.addAll(
+        await _extractPicked(segment, picked, start, directory, width, height),
+      );
+    }
+    return paths;
+  }
+
+  /// Frames [picked] (increasing) of [segment], whose frame 0 is the
+  /// making's frame [start], as files named by their index in the making.
+  Future<List<String>> _extractPicked(
+    int segment,
+    List<int> picked,
+    int start,
+    Directory directory,
+    int width,
+    int height,
+  ) async {
+    final first = picked.first;
+    if (picked.last - first + 1 == picked.length) {
+      return _extract(
+        segment,
+        first,
+        picked.length,
+        start + first,
+        directory,
+        width,
+        height,
+      );
+    }
+    final timeline = await _timelineOf(segment);
+    final out = await Directory(
+      '${directory.path}/picked_${segment}_$first',
+    ).create(recursive: true);
+    try {
+      final ok = await _video.runFfmpeg(
+        MakingVideo.extractArguments(
+          path: _log.segments[segment].path,
+          seekTime: timeline.seekTimeFor(first),
+          count: picked.length,
+          width: width,
+          height: height,
+          pattern: '${out.path}/f_%06d.png',
+          startNumber: 0,
+          pick: [for (final frame in picked) frame - first],
+        ),
+      );
+      final paths = <String>[];
+      for (var i = 0; i < picked.length; i++) {
+        final written = File(makingFramePath(out, i));
+        if (!ok || !written.existsSync()) {
+          throw StateError(
+            'Could not read frames $picked of '
+            '${_log.segments[segment].path}.',
+          );
+        }
+        final path = makingFramePath(directory, start + picked[i]);
+        written.renameSync(path);
+        paths.add(path);
+      }
+      return paths;
+    } finally {
+      try {
+        await out.delete(recursive: true);
+      } on FileSystemException {
+        // Removed with the export's staging folder.
+      }
+    }
   }
 
   Future<List<String>> _extract(

@@ -74,6 +74,13 @@ List<int> _snapshotJpeg(int index) {
   return img.encodeJpg(image, quality: 95);
 }
 
+/// A snapshot that tells its index by its colour (red = index).
+List<int> _numberedJpeg(int index) {
+  final image = img.Image(width: _width, height: _height)
+    ..clear(img.ColorRgb8(index, 255 - index, 128));
+  return img.encodeJpg(image, quality: 95);
+}
+
 class _Premium extends PremiumService {
   @override
   bool get hasVerifiedPlayPremium => true;
@@ -355,5 +362,85 @@ void main() {
         );
       });
     }
+
+    testWidgets('a short making has no length to choose', (tester) async {
+      final premium = PremiumService();
+      addTearDown(premium.dispose);
+      await pumpScreen(tester, premium);
+      expect(find.byKey(const Key('makingExportLength')), findsNothing);
+    });
+
+    testWidgets('the making video can be made shorter (never longer): the '
+        'frames are spread evenly over the making, the first and the last '
+        'one included, and the end mark follows', (tester) async {
+      // 130 operations: 16 seconds at 8 frames a second.
+      final making = Directory(
+        '${documents.path}/niarim/projects/$_projectId/Making',
+      );
+      for (final file in making.listSync().whereType<File>()) {
+        file.deleteSync();
+      }
+      const count = 130;
+      for (var i = 0; i < count; i++) {
+        File(
+          '${making.path}/making_${(i + 1).toString().padLeft(6, '0')}.jpg',
+        ).writeAsBytesSync(_numberedJpeg(i));
+      }
+      final premium = PremiumService();
+      addTearDown(premium.dispose);
+      await pumpScreen(tester, premium);
+      final l10n = lookupAppLocalizations(const Locale('ja'));
+      final time = MaterialLocalizations.of(
+        tester.element(find.byType(MakingScreen)),
+      );
+      expect(
+        summary(tester),
+        l10n.exportOutputWithEndCard(clockDurationLabel(time, 16)),
+      );
+
+      // Only 15 seconds is shorter than 16: nothing longer is offered.
+      expect(MakingExport.shorterLengths(count, MakingExportFormat.mp4), [15]);
+      await tester.tap(
+        find.text(
+          l10n.makingExportLengthOriginal(clockDurationLabel(time, 16)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(clockDurationLabel(time, 30)), findsNothing);
+      await tester.tap(find.text(clockDurationLabel(time, 15)).last);
+      await tester.pumpAndSettle();
+      expect(
+        summary(tester),
+        l10n.exportOutputWithEndCard(clockDurationLabel(time, 15)),
+      );
+
+      // 120 pictures are written before the encoder is called.
+      await tester.tap(find.text(l10n.makingExportLabel));
+      for (
+        var i = 0;
+        i < 600 &&
+            find.text(l10n.makingExportComplete).evaluate().isEmpty &&
+            find.text(l10n.makingExportFailed).evaluate().isEmpty;
+        i++
+      ) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
+      expect(find.text(l10n.makingExportComplete), findsOneWidget);
+      final frames = encodedFrames.single;
+      const body = 15 * MakingExport.fps;
+      expect(frames, hasLength(body + _endCardFrames));
+      int recordOf(img.Image frame) =>
+          frame.getPixel(frame.width ~/ 2, frame.height ~/ 2).r.round();
+      for (final k in [0, 1, 60, body - 1]) {
+        expect(
+          (recordOf(frames[k]) - (k * (count - 1) / (body - 1)).round()).abs(),
+          lessThanOrEqualTo(3),
+          reason: 'frame $k',
+        );
+      }
+      expect(recordOf(frames.first), lessThanOrEqualTo(3));
+      expect(recordOf(frames[body - 1]), closeTo(count - 1, 3));
+      expect(frames.skip(body).every(_looksLikeEndCard), isTrue);
+    });
   });
 }

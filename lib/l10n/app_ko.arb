@@ -4167,6 +4167,8 @@
   "makingEmptyRecordingOn": "기록이 켜져 있습니다. 캔버스에서 그리면 여기에 제작 과정이 기록됩니다.",
   "makingLoadFailed": "제작 기록을 불러오지 못했습니다",
   "makingStorageLimit": "메이킹 기록 2GB 한도에 도달했습니다. 자동 기록은 중지되었으며 기존 기록은 유지됩니다.",
+  "makingExportLength": "동영상 길이",
+  "makingExportLengthOriginal": "원래 길이({duration})",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "메이킹 내보내기",
   "makingExportComplete": "메이킹 동영상을 내보냈습니다.",

@@ -175,7 +175,9 @@ abstract final class MakingVideo {
 
   /// FFmpeg arguments that write [count] frames of the video at [path], from
   /// the one [seekTime] selects, as PNG files of exactly [width]×[height]
-  /// named by [pattern] (`…%06d.png`) numbered from [startNumber].
+  /// named by [pattern] (`…%06d.png`) numbered from [startNumber]. With
+  /// [pick] (increasing, counted from the frame [seekTime] selects), only
+  /// those frames are written, numbered one after another.
   static List<String> extractArguments({
     required String path,
     required Duration seekTime,
@@ -184,6 +186,7 @@ abstract final class MakingVideo {
     required int height,
     required String pattern,
     required int startNumber,
+    List<int>? pick,
   }) => [
     '-hide_banner',
     '-nostdin',
@@ -199,11 +202,15 @@ abstract final class MakingVideo {
     '-sn',
     '-dn',
     '-vf',
-    'scale=$width:$height:flags=$videoFrameScaleFlags,format=rgb24',
+    [
+      if (pick != null)
+        "select='${[for (final n in pick) 'eq(n,$n)'].join('+')}'",
+      'scale=$width:$height:flags=$videoFrameScaleFlags,format=rgb24',
+    ].join(','),
     '-fps_mode',
     'passthrough',
     '-frames:v',
-    '$count',
+    '${pick?.length ?? count}',
     '-start_number',
     '$startNumber',
     '-y',

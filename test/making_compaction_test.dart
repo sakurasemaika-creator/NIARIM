@@ -337,6 +337,75 @@ void main() {
     }
   });
 
+  test('a shorter making video picks its frames evenly from the segments '
+      'and the log; a segment\'s picked frames are read in one pass', () async {
+    if (!haveTools) markTestSkipped('ffmpeg is not installed');
+    final (projects, history, recorder) = await started();
+    final (id, key) = await newWork(projects);
+    final dir = await MakingService.logDirectory(id);
+    await record(projects, history, recorder, id, key, 60);
+    expect(await recorder.compactor.compactNow(id, dir), isTrue);
+    await record(projects, history, recorder, id, key, 80, seed: 1000);
+    final before = await allFrames(id);
+    final log = MakingLogData.read(dir);
+    expect(log.segments, isNotEmpty);
+    final inSegments = log.segments.fold(0, (sum, s) => sum + s.frames);
+    expect(MakingExport.shorterLengths(before.length, MakingExportFormat.mp4), [
+      15,
+    ]);
+    tools.ffmpegRuns.clear();
+    tools.encoded.clear();
+
+    final player = await MakingPlayer.open(id);
+    addTearDown(player.dispose);
+    final output = '${temp.path}/making_short.mp4';
+    await MakingExport.export(
+      frames: player,
+      format: MakingExportFormat.mp4,
+      outputPath: output,
+      officialMark: false,
+      maxSeconds: 15,
+    );
+    const body = 15 * MakingExport.fps;
+    final timeline = await MakingVideo.probe(output, temp);
+    expect(timeline.frameCount, body);
+    final picked = [
+      for (var k = 0; k < body; k++)
+        (k * (before.length - 1) / (body - 1)).round(),
+    ];
+    final decoder = tools.decoder(temp);
+    for (final k in [
+      0,
+      picked.indexWhere((index) => index > 3) + 1,
+      picked.lastIndexWhere((index) => index < inSegments),
+      picked.indexWhere((index) => index >= inSegments),
+      body - 1,
+    ]) {
+      final frame = await decoder.decode(
+        path: output,
+        timeline: timeline,
+        frameIndex: k,
+        width: _size,
+        height: _size,
+      );
+      expect(
+        MakingVideo.looksLike(frame.rgba, before[picked[k]], _size, _size),
+        isTrue,
+        reason: 'frame $k (step ${picked[k]})',
+      );
+    }
+    // The segments are not copied whole (they show every step): every
+    // picked frame is encoded. The picked frames of a segment are read a few
+    // passes at a time, not one FFmpeg run per frame.
+    expect(tools.encoded.fold(0, (sum, frames) => sum + frames.length), body);
+    final reads = tools.ffmpegRuns.where(
+      (a) => a.any((argument) => argument.contains('select=')),
+    );
+    final pickedInSegments = picked.where((i) => i < inSegments).length;
+    expect(reads, isNotEmpty);
+    expect(reads.length, lessThan(pickedInSegments ~/ 4));
+  });
+
   test('WebM and GIF read the frames of the segments', () async {
     if (!haveTools) markTestSkipped('ffmpeg is not installed');
     final (projects, history, recorder) = await started();

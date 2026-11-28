@@ -11241,6 +11241,14 @@ class AppLocalizationsJa extends AppLocalizations {
       'メイキングの保存上限（2GB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。';
 
   @override
+  String get makingExportLength => '動画の長さ';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return '元の長さ（$duration）';
+  }
+
+  @override
   String get makingFormatWebm => 'WebM';
 
   @override

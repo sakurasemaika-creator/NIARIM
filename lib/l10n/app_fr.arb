@@ -4167,6 +4167,8 @@
   "makingEmptyRecordingOn": "La capture est activée. Quand vous dessinez sur le canevas, le processus est capturé ici.",
   "makingLoadFailed": "Impossible de charger l’historique de création",
   "makingStorageLimit": "La limite de 2 Go est atteinte. L’enregistrement automatique est arrêté et l’historique existant est conservé.",
+  "makingExportLength": "Durée de la vidéo",
+  "makingExportLengthOriginal": "Durée d’origine ({duration})",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Exporter le making-of",
   "makingExportComplete": "Vidéo du making-of exportée.",

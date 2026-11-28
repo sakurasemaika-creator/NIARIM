@@ -12094,6 +12094,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The 2 GB limit for making-of history has been reached. Recording has stopped; existing history is kept.';
 
   @override
+  String get makingExportLength => 'Video length';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return 'Original length ($duration)';
+  }
+
+  @override
   String get makingFormatWebm => 'WebM';
 
   @override

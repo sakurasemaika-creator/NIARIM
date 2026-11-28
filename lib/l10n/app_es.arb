@@ -4167,6 +4167,8 @@
   "makingEmptyRecordingOn": "La grabación está activada. Al dibujar en el lienzo, el proceso se graba aquí.",
   "makingLoadFailed": "No se pudo cargar el historial del proceso",
   "makingStorageLimit": "Se alcanzó el límite de 2 GB. Se detuvo el registro automático; el historial existente se conserva.",
+  "makingExportLength": "Duración del vídeo",
+  "makingExportLengthOriginal": "Duración original ({duration})",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Exportar el proceso",
   "makingExportComplete": "Vídeo del proceso exportado.",

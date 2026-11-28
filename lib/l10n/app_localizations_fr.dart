@@ -12281,6 +12281,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'La limite de 2 Go est atteinte. L’enregistrement automatique est arrêté et l’historique existant est conservé.';
 
   @override
+  String get makingExportLength => 'Durée de la vidéo';
+
+  @override
+  String makingExportLengthOriginal(String duration) {
+    return 'Durée d’origine ($duration)';
+  }
+
+  @override
   String get makingFormatWebm => 'WebM';
 
   @override

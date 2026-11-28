@@ -19791,6 +19791,18 @@ abstract class AppLocalizations {
   /// **'メイキングの保存上限（2GB）に達しました。これ以上の自動記録は停止しています。既存の記録は保持されています。'**
   String get makingStorageLimit;
 
+  /// メイキング：書き出す動画の長さを選ぶ欄の名前（元の長さより短い長さだけを選べる）
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の長さ'**
+  String get makingExportLength;
+
+  /// メイキング：書き出す動画の長さの選択肢。縮めずに元の長さのまま（durationは「分:秒」）
+  ///
+  /// In ja, this message translates to:
+  /// **'元の長さ（{duration}）'**
+  String makingExportLengthOriginal(String duration);
+
   /// メイキング・読み上げ：WebM
   ///
   /// In ja, this message translates to:

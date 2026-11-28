@@ -4204,6 +4204,8 @@
   "makingEmptyRecordingOn": "Recording is on. As you draw on the canvas, the making-of is recorded here.",
   "makingLoadFailed": "Could not load the making-of history",
   "makingStorageLimit": "The 2 GB limit for making-of history has been reached. Recording has stopped; existing history is kept.",
+  "makingExportLength": "Video length",
+  "makingExportLengthOriginal": "Original length ({duration})",
   "makingFormatWebm": "WebM",
   "makingExportLabel": "Export the making-of",
   "makingExportComplete": "Making-of video exported.",
