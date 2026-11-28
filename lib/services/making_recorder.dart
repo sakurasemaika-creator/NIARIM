@@ -247,12 +247,14 @@ class MakingRecorder {
       };
       for (final layerKey in step.unverified) {
         final present = tiles.layerTiles(layerKey);
-        for (final MapEntry(key: tileKey, value: pixels) in present.entries) {
+        for (final tileKey in present.keys) {
           final id = '$layerKey:$tileKey';
           if (!listed.add(id)) continue;
           final stored = tiles.storedCrc(layerKey, tileKey);
           if (stored != null && work.crcs[id] == stored) continue;
-          changes.add(MakingTileChange(layerKey, tileKey, pixels));
+          // Read only when it is recorded (a tile kept compressed is
+          // expanded for it).
+          changes.add(MakingTileChange(layerKey, tileKey, present[tileKey]));
         }
         final prefix = '$layerKey:';
         for (final id in work.crcs.keys) {

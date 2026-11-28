@@ -1,10 +1,13 @@
-import 'dart:collection' show HashSet, UnmodifiableMapView;
+import 'dart:async' show scheduleMicrotask;
+import 'dart:collection' show HashMap, HashSet, UnmodifiableMapBase;
+import 'dart:io' show File, RawZLibFilter, ZLibCodec;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart' show compute, visibleForTesting;
 
 import 'brightness_alpha_engine.dart';
+import 'fast_crc32.dart';
 import 'filter_engine.dart';
 import 'mesh_warp_engine.dart';
 
@@ -50,9 +53,365 @@ FrameLayerKeyParts? parseFrameLayerKey(String key) {
   return (sceneId: parts[0], frameIndex: frameIndex, layerId: parts[2]);
 }
 
+/// One tile's pixels as a [TileManager] holds them: expanded (256×256
+/// premultiplied RGBA) while they are in use, or only as a raw DEFLATE stream
+/// while the expanded tiles of every manager would not fit
+/// [TileManager.expandedTileBudget]. A compressed tile is expanded again the
+/// next time it is read or written.
+///
+/// Layer snapshots ([TileManager.structuralSnapshot]) hold these rather than
+/// the pixel buffers, so that keeping a layer for Undo does not keep its
+/// tiles expanded.
+final class StoredTile {
+  StoredTile._(Uint8List pixels) : _pixels = pixels;
+
+  /// A tile kept compressed only (its [_deflated] is set by the maker).
+  StoredTile._compressed() : _pixels = null;
+
+  Uint8List? _pixels;
+
+  /// The raw DEFLATE stream of the pixels as they are, or null when the
+  /// pixels changed since it was made.
+  Uint8List? _deflated;
+
+  /// [_deflated] was made by [TileManager.tileCodec] from the pixels, and
+  /// [_crc] is their CRC-32: a save writes the stream as it is.
+  bool _ownDeflate = false;
+  int _crc = 0;
+
+  /// Held under more than one key, or by a snapshot: written through a copy
+  /// (copy-on-write).
+  bool _shared = false;
+
+  /// When the pixels were last used (for compressing the least recently used
+  /// tiles first).
+  int _lastUse = 0;
+
+  void _dropDeflated() {
+    _deflated = null;
+    _ownDeflate = false;
+  }
+}
+
+/// The pixels of one layer's tiles, read through the tile manager: a
+/// compressed tile is expanded into a buffer of its own each time it is read
+/// (it is not kept expanded).
+final class _LayerPixelsView extends UnmodifiableMapBase<String, Uint8List> {
+  _LayerPixelsView(this._tiles);
+
+  final Map<String, StoredTile> _tiles;
+
+  @override
+  Uint8List? operator [](Object? key) {
+    final tile = _tiles[key];
+    return tile == null ? null : TileManager._peek(tile);
+  }
+
+  @override
+  Iterable<String> get keys => _tiles.keys;
+
+  @override
+  int get length => _tiles.length;
+
+  @override
+  bool get isEmpty => _tiles.isEmpty;
+
+  @override
+  bool get isNotEmpty => _tiles.isNotEmpty;
+
+  @override
+  bool containsKey(Object? key) => _tiles.containsKey(key);
+}
+
+/// Every layer's [_LayerPixelsView] (the layers as they were when the view
+/// was made).
+final class _AllPixelsView
+    extends UnmodifiableMapBase<String, Map<String, Uint8List>> {
+  _AllPixelsView(this._layers);
+
+  final Map<String, Map<String, StoredTile>> _layers;
+
+  @override
+  Map<String, Uint8List>? operator [](Object? key) {
+    final tiles = _layers[key];
+    return tiles == null ? null : _LayerPixelsView(tiles);
+  }
+
+  @override
+  Iterable<String> get keys => _layers.keys;
+
+  @override
+  int get length => _layers.length;
+
+  @override
+  bool get isEmpty => _layers.isEmpty;
+
+  @override
+  bool get isNotEmpty => _layers.isNotEmpty;
+
+  @override
+  bool containsKey(Object? key) => _layers.containsKey(key);
+}
+
 /// Sparse Tile 方式のキャンバスバッファ管理。
 /// 描画済みタイルのみメモリに保持し、未描画タイルは保持しない。
 class TileManager {
+  static const int _tileBytes = tileSize * tileSize * 4;
+
+  /// The raw DEFLATE that work files store tiles with (level 6, the
+  /// platform's zlib). A tile compressed with it to be kept in memory is
+  /// written to a file as it is: the same pixels give the same bytes.
+  static final ZLibCodec tileCodec = ZLibCodec(raw: true, level: 6);
+
+  /// How many tiles every manager together keeps expanded: an eighth of this
+  /// device's memory (`MemTotal` in `/proc/meminfo`), between 256 MiB and
+  /// 2 GiB of tiles (256 MiB when the memory cannot be read). Past it, the
+  /// least recently used tiles are kept compressed until they are used again.
+  static int expandedTileBudget() =>
+      debugExpandedTileBudget ??
+      (_deviceTileBudget ??= _tileBudgetFromMemory());
+
+  /// Replaces [expandedTileBudget] (tests: a small budget compresses tiles).
+  @visibleForTesting
+  static int? debugExpandedTileBudget;
+
+  static int? _deviceTileBudget;
+
+  static const int _fewestBudgetTiles = (256 << 20) ~/ _tileBytes;
+  static const int _mostBudgetTiles = (2048 << 20) ~/ _tileBytes;
+
+  static int _tileBudgetFromMemory() {
+    try {
+      for (final line in File('/proc/meminfo').readAsLinesSync()) {
+        final match = RegExp(r'^MemTotal:\s+(\d+)\s+kB').firstMatch(line);
+        if (match == null) continue;
+        final tiles = int.parse(match.group(1)!) * 1024 ~/ 8 ~/ _tileBytes;
+        if (tiles < _fewestBudgetTiles) return _fewestBudgetTiles;
+        if (tiles > _mostBudgetTiles) return _mostBudgetTiles;
+        return tiles;
+      }
+    } catch (_) {
+      // Not readable on this platform: the smallest budget.
+    }
+    return _fewestBudgetTiles;
+  }
+
+  // At least the tiles every manager holds expanded (tiles dropped from a
+  // manager are still counted until the next [_trim] counts them again).
+  static int _expandedTiles = 0;
+  static int _useClock = 0;
+  static bool _trimScheduled = false;
+  static final List<WeakReference<TileManager>> _managers = [];
+  static int _pruneManagersAt = 64;
+
+  static void _register(TileManager manager) {
+    if (_managers.length >= _pruneManagersAt) {
+      _managers.removeWhere((ref) => ref.target == null);
+      _pruneManagersAt = _managers.length * 2 < 64 ? 64 : _managers.length * 2;
+    }
+    _managers.add(WeakReference(manager));
+  }
+
+  /// A tile of fresh [pixels] (counted as expanded).
+  static StoredTile _newTile(Uint8List pixels) {
+    final tile = StoredTile._(pixels).._lastUse = ++_useClock;
+    _countExpanded();
+    return tile;
+  }
+
+  static void _countExpanded() {
+    if (++_expandedTiles > expandedTileBudget()) _scheduleTrim();
+  }
+
+  /// The pixels of [tile] to work on: a compressed tile is expanded and kept
+  /// expanded.
+  @pragma('vm:prefer-inline')
+  static Uint8List _pixelsOf(StoredTile tile) {
+    tile._lastUse = ++_useClock;
+    return tile._pixels ?? _expand(tile);
+  }
+
+  static Uint8List _expand(StoredTile tile) {
+    debugExpansions++;
+    final pixels = _inflate(tile._deflated!);
+    tile._pixels = pixels;
+    _countExpanded();
+    return pixels;
+  }
+
+  /// The pixels of [tile] to read once: a compressed tile is expanded into a
+  /// buffer that is not kept.
+  static Uint8List _peek(StoredTile tile) =>
+      tile._pixels ?? _inflate(tile._deflated!);
+
+  /// A copy of the pixels of [tile] (a compressed tile's expanded bytes are
+  /// already a copy).
+  static Uint8List _copyOf(StoredTile tile) {
+    final pixels = tile._pixels;
+    return pixels == null
+        ? _inflate(tile._deflated!)
+        : Uint8List.fromList(pixels);
+  }
+
+  /// The pixels a tile's raw DEFLATE stream [deflated] expands to, with the
+  /// platform's zlib.
+  static Uint8List _inflate(Uint8List deflated) {
+    final filter = RawZLibFilter.inflateFilter(raw: true);
+    final out = Uint8List(_tileBytes);
+    var at = 0;
+    filter.process(deflated, 0, deflated.length);
+    for (final end in const [false, true]) {
+      for (
+        var chunk = filter.processed(end: end);
+        chunk != null;
+        chunk = filter.processed(end: end)
+      ) {
+        out.setRange(at, at + chunk.length, chunk);
+        at += chunk.length;
+      }
+    }
+    if (at != _tileBytes) {
+      throw StateError('A compressed tile expanded to $at bytes');
+    }
+    return out;
+  }
+
+  /// How many tiles were expanded to be kept expanded again, and how many
+  /// were kept compressed only, by every manager (tests and measurements).
+  static int debugExpansions = 0;
+  static int debugCompressions = 0;
+
+  /// Keeps [tile] compressed only (it is expanded again when it is used).
+  static void _compress(StoredTile tile) {
+    debugCompressions++;
+    _anyDeflated = true;
+    final pixels = tile._pixels!;
+    if (tile._deflated == null) {
+      tile
+        .._deflated = _encoded(pixels)
+        .._crc = crc32Of(pixels)
+        .._ownDeflate = true;
+    }
+    tile._pixels = null;
+  }
+
+  static Uint8List _encoded(Uint8List pixels) {
+    final encoded = tileCodec.encode(pixels);
+    return encoded is Uint8List ? encoded : Uint8List.fromList(encoded);
+  }
+
+  static void _scheduleTrim() {
+    if (_trimScheduled) return;
+    _trimScheduled = true;
+    // After the code that expanded the tiles has finished: a caller may hold
+    // a tile's buffer while it reads or writes several tiles.
+    scheduleMicrotask(_trim);
+  }
+
+  /// The expanded tiles of every manager: the tiles of a layer being drawn
+  /// on (recording Undo; strokes hold their buffers between pointer events)
+  /// and the others.
+  static ({Set<StoredTile> kept, List<StoredTile> others}) _expandedNow() {
+    final live = <TileManager>[];
+    _managers.removeWhere((ref) {
+      final manager = ref.target;
+      if (manager == null) return true;
+      live.add(manager);
+      return false;
+    });
+    _pruneManagersAt = _managers.length * 2 < 64 ? 64 : _managers.length * 2;
+    final kept = HashSet<StoredTile>.identity();
+    for (final manager in live) {
+      final drawn = manager._recordingUndo ? manager._recordingLayerId : null;
+      final tiles = drawn == null ? null : manager._tiles[drawn];
+      if (tiles == null) continue;
+      for (final tile in tiles.values) {
+        if (tile._pixels != null) kept.add(tile);
+      }
+    }
+    final seen = HashSet<StoredTile>.identity();
+    final others = <StoredTile>[];
+    for (final manager in live) {
+      for (final tiles in manager._tiles.values) {
+        for (final tile in tiles.values) {
+          if (tile._pixels == null || kept.contains(tile) || !seen.add(tile)) {
+            continue;
+          }
+          others.add(tile);
+        }
+      }
+    }
+    return (kept: kept, others: others);
+  }
+
+  /// Counts the tiles every manager holds expanded again (dropped tiles are
+  /// no longer counted).
+  static int _recountExpanded() {
+    final now = _expandedNow();
+    return _expandedTiles = now.kept.length + now.others.length;
+  }
+
+  /// When more tiles are expanded than [expandedTileBudget], compresses the
+  /// least recently used ones until 9/10 of the budget are.
+  static void _trim() {
+    _trimScheduled = false;
+    final budget = expandedTileBudget();
+    final now = _expandedNow();
+    var expanded = now.kept.length + now.others.length;
+    _expandedTiles = expanded;
+    if (expanded <= budget) return;
+    final target = budget - budget ~/ 10;
+    final others = now.others..sort((a, b) => a._lastUse.compareTo(b._lastUse));
+    for (final tile in others) {
+      if (expanded <= target) break;
+      // Only a whole tile expands back to its pixels.
+      if (tile._pixels!.length != _tileBytes) continue;
+      _compress(tile);
+      expanded--;
+    }
+    _expandedTiles = expanded;
+  }
+
+  /// How many more tiles may be kept expanded now (a reader of a work file
+  /// keeps the rest compressed).
+  static int expandedTileRoom() {
+    final room = expandedTileBudget() - _recountExpanded();
+    return room < 0 ? 0 : room;
+  }
+
+  /// A tile read from a work file ([pixels], as read) for
+  /// [importStoredTiles]. [keepExpanded] false keeps only its compressed
+  /// stream: [deflated] when given (the file's raw DEFLATE stream of exactly
+  /// these pixels, which the tile keeps; it is not written to a file as it
+  /// is), otherwise the pixels compressed with [tileCodec]. [deflated] is
+  /// kept by an expanded tile too (compressing it later costs nothing).
+  static StoredTile readTile(
+    Uint8List pixels, {
+    Uint8List? deflated,
+    required bool keepExpanded,
+  }) {
+    if (keepExpanded) {
+      if (deflated != null) _anyDeflated = true;
+      return _newTile(pixels).._deflated = deflated;
+    }
+    final tile = StoredTile._(pixels).._lastUse = ++_useClock;
+    if (deflated != null) tile._deflated = deflated;
+    _compress(tile);
+    return tile;
+  }
+
+  /// The pixels of [tile] (from [readTile]) to read once.
+  static Uint8List readTilePixels(StoredTile tile) => _peek(tile);
+
+  /// Whether [tile] holds its pixels expanded (tests).
+  @visibleForTesting
+  static bool isExpanded(StoredTile tile) => tile._pixels != null;
+
+  /// Whether some tile may keep a compressed stream next to its pixels (then
+  /// writing through [getTile]'s buffer must also drop the stream). Never
+  /// set while every work fits the budget.
+  static bool _anyDeflated = false;
+
   static const int tileSize = 256;
 
   final int canvasWidth;
@@ -60,8 +419,9 @@ class TileManager {
   final int tilesX;
   final int tilesY;
 
-  // layerId → tileKey → ARGB8888 ピクセルバッファ (tileSize*tileSize*4 bytes)
-  final Map<String, Map<String, Uint8List>> _tiles = {};
+  // layerId → tileKey → タイル（展開したピクセルバッファ tileSize*tileSize*4
+  // bytes、または圧縮したもの。[StoredTile]）
+  final Map<String, Map<String, StoredTile>> _tiles = {};
   // Tiles changed since the work file was last written (the work file's
   // save rewrites these and copies the rest from the file as stored).
   final Set<String> _dirtyTiles = {};
@@ -87,7 +447,7 @@ class TileManager {
 
   /// Marks every tile of [layerId] as gone for the making recorder (the layer
   /// or its key is dropped without the tiles being changed one by one).
-  void _markMakingRemoved(String layerId, Map<String, Uint8List>? tiles) {
+  void _markMakingRemoved(String layerId, Map<String, StoredTile>? tiles) {
     if (tiles == null) return;
     for (final tileKey in tiles.keys) {
       final key = '$layerId:$tileKey';
@@ -111,8 +471,10 @@ class TileManager {
       _storedCrc['$layerId:$tileKey'];
 
   /// The tiles of [layerId] (read only; the buffers change as it is drawn on).
+  /// A tile kept compressed is expanded into a buffer of its own each time
+  /// it is read.
   Map<String, Uint8List> layerTiles(String layerId) =>
-      UnmodifiableMapView(_tiles[layerId] ?? const {});
+      _LayerPixelsView(_tiles[layerId] ?? const {});
 
   /// Changes each time every tile is replaced at once ([importAll]).
   int get importGeneration => _importGeneration;
@@ -271,9 +633,8 @@ class TileManager {
     _invalidateCacheAll();
   }
 
-  // Copy-on-Write：copyLayerで参照共有されたタイルバッファの集合。
+  // Copy-on-Write：copyLayer等で参照共有されたタイルは[StoredTile._shared]。
   // 実際に書き込みが発生するまで複製しない。
-  Expando<bool> _sharedTiles = Expando<bool>();
 
   // Undo記録：1回の描画操作（ストローク・バケツ・投げ縄・変形等）で実際に
   // 触れたタイルのみを差分記録する（スパースタイル方式に合わせ、
@@ -306,7 +667,9 @@ class TileManager {
            tileImageCacheMax ??
            _defaultTileImageCacheMax(
              (canvasWidth / tileSize).ceil() * (canvasHeight / tileSize).ceil(),
-           );
+           ) {
+    _register(this);
+  }
 
   static int _defaultTileImageCacheMax(int tiles) {
     final twoLayers = (tiles * 2).clamp(8, 128);
@@ -337,16 +700,20 @@ class TileManager {
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     final existing = layerMap[key];
     if (existing == null) {
-      final fresh = Uint8List(tileSize * tileSize * 4); // 透明（全ゼロ）
-      layerMap[key] = fresh;
+      final fresh = Uint8List(_tileBytes); // 透明（全ゼロ）
+      layerMap[key] = _newTile(fresh);
       return fresh;
     }
-    if (_sharedTiles[existing] == true) {
-      final materialized = Uint8List.fromList(existing);
-      layerMap[key] = materialized;
+    if (existing._shared) {
+      final materialized = _copyOf(existing);
+      layerMap[key] = _newTile(materialized);
       return materialized;
     }
-    return existing;
+    final pixels = _pixelsOf(existing);
+    // The pixels are about to change: the compressed stream no longer is
+    // theirs.
+    existing._dropDeflated();
+    return pixels;
   }
 
   /// 指定タイルのピクセルバッファを読み取り用に返す。
@@ -358,13 +725,15 @@ class TileManager {
   /// いるバッファは読み取り専用のビューで返るので、書き込むと例外になる。
   /// 共有していないバッファを直接書き換えたときは必ず[invalidateTile]を
   /// 呼ぶこと（呼ばないと、そのタイルのデコード済み画像・レイヤーの合成結果が
-  /// 古いまま再利用され、変更が画面に出ない）。
+  /// 古いまま再利用され、変更が画面に出ない。圧縮して持っていたタイルは、
+  /// 次に圧縮するときに変更が消える）。圧縮して持っているタイルは展開して
+  /// 持ち直す。
   Uint8List? getTile(String layerId, int tx, int ty) {
     final tile = _tiles[layerId]?[_tileKey(tx, ty)];
-    if (_guardsSharedTiles && tile != null && _sharedTiles[tile] == true) {
-      return tile.asUnmodifiableView();
-    }
-    return tile;
+    if (tile == null) return null;
+    final pixels = _pixelsOf(tile);
+    if (_guardsSharedTiles && tile._shared) return pixels.asUnmodifiableView();
+    return pixels;
   }
 
   static final bool _guardsSharedTiles = () {
@@ -380,8 +749,9 @@ class TileManager {
     if (x < 0 || y < 0 || x >= canvasWidth || y >= canvasHeight) return null;
     final tx = x ~/ tileSize;
     final ty = y ~/ tileSize;
-    final tile = _tiles[layerId]?[_tileKey(tx, ty)];
-    if (tile == null) return null;
+    final stored = _tiles[layerId]?[_tileKey(tx, ty)];
+    if (stored == null) return null;
+    final tile = _pixelsOf(stored);
     final localX = x % tileSize;
     final localY = y % tileSize;
     final index = (localY * tileSize + localX) * 4;
@@ -406,7 +776,11 @@ class TileManager {
   }
 
   void markDirty(String layerId, int tx, int ty) {
-    _markTileChanged('$layerId:${_tileKey(tx, ty)}');
+    final key = _tileKey(tx, ty);
+    _markTileChanged('$layerId:$key');
+    // Written through [getTile]'s buffer: a compressed stream kept for the
+    // tile is no longer its pixels.
+    if (_anyDeflated) _tiles[layerId]?[key]?._dropDeflated();
   }
 
   Set<String> consumeDirtyTiles() {
@@ -593,9 +967,22 @@ class TileManager {
         final parts = entry.key.split(',');
         final tx = int.parse(parts[0]);
         final ty = int.parse(parts[1]);
-        final pixels = _viewOf(layerId, entry.key, entry.value);
-        if (pixels == null) continue;
-        final img = await _tileImage(layerId, entry.key, pixels, revision);
+        final stored = entry.value;
+        final ui.Image img;
+        if (stored._pixels == null) {
+          final decoded = await _compressedTileImage(
+            layerId,
+            entry.key,
+            stored,
+            revision,
+          );
+          if (decoded == null) continue;
+          img = decoded;
+        } else {
+          final pixels = _viewOf(layerId, entry.key, _pixelsOf(stored));
+          if (pixels == null) continue;
+          img = await _tileImage(layerId, entry.key, pixels, revision);
+        }
         canvas.drawImage(
           img,
           ui.Offset(tx * tileSize.toDouble(), ty * tileSize.toDouble()),
@@ -628,6 +1015,33 @@ class TileManager {
       return pixels;
     }
     return _restrictedPixels(pixels, _undoBefore[tileKey], tileKey);
+  }
+
+  /// The image of a tile kept compressed for a composite (null draws
+  /// nothing): its decoded image when there is one (the tile is not
+  /// expanded for it), otherwise the tile expanded as [_viewOf] gives it.
+  Future<ui.Image?> _compressedTileImage(
+    String layerId,
+    String tileKey,
+    StoredTile tile,
+    int revision,
+  ) async {
+    final restricted =
+        _recordingUndo &&
+        layerId == _recordingLayerId &&
+        _undoBefore.containsKey(tileKey);
+    if (!restricted && revision == _rasterRevision) {
+      final cacheKey = _tileImageKey(layerId, tileKey);
+      final cached = _tileImageCache[cacheKey];
+      if (cached != null) {
+        tile._lastUse = ++_useClock;
+        _touchTileImage(cacheKey, cached); // LRU順を更新
+        return cached.clone();
+      }
+    }
+    final pixels = _viewOf(layerId, tileKey, _pixelsOf(tile));
+    if (pixels == null) return null;
+    return _tileImage(layerId, tileKey, pixels, revision);
   }
 
   Uint8List? _restrictedPixels(
@@ -756,9 +1170,9 @@ class TileManager {
   void copyLayer(String sourceLayerId, String targetLayerId) {
     final source = _tiles[sourceLayerId];
     if (source == null) return;
-    final target = <String, Uint8List>{};
+    final target = <String, StoredTile>{};
     for (final e in source.entries) {
-      _sharedTiles[e.value] = true;
+      e.value._shared = true;
       target[e.key] = e.value;
       _markTileChanged('$targetLayerId:${e.key}');
     }
@@ -888,11 +1302,13 @@ class TileManager {
     final mask = selection ?? (recording ? _recordingSelection : null);
     if (mask != null && mask.length != canvasWidth * canvasHeight) return;
     final oldLayerTiles = _tiles[layerId];
-    final newLayerTiles = <String, Uint8List>{};
+    final newLayerTiles = <String, StoredTile>{};
     for (int ty = 0; ty < tilesY; ty++) {
       for (int tx = 0; tx < tilesX; tx++) {
         final key = _tileKey(tx, ty);
-        final oldTile = oldLayerTiles?[key];
+        final oldStored = oldLayerTiles?[key];
+        // Read once: an unchanged tile keeps its stored form (expanded or not).
+        final oldTile = oldStored == null ? null : _peek(oldStored);
         final tile = Uint8List(tileSize * tileSize * 4);
         bool hasContent = false;
         final originY = ty * tileSize;
@@ -927,7 +1343,9 @@ class TileManager {
             ? oldTile == null || !_tileBytesEqual(oldTile, tile)
             : oldTile != null;
         if (changed && recording) _recordBeforeIfNeeded(layerId, key);
-        if (hasContent) newLayerTiles[key] = changed ? tile : oldTile!;
+        if (hasContent) {
+          newLayerTiles[key] = changed ? _newTile(tile) : oldStored!;
+        }
         if (changed) _markTileChanged('$layerId:$key');
       }
     }
@@ -1027,7 +1445,7 @@ class TileManager {
       final comma = entry.key.indexOf(',');
       final tx = int.parse(entry.key.substring(0, comma));
       final ty = int.parse(entry.key.substring(comma + 1));
-      final tile = entry.value;
+      final tile = _pixelsOf(entry.value);
       for (var y = 0; y < tileSize; y++) {
         final row = y * tileSize * 4;
         for (var x = 0; x < tileSize; x++) {
@@ -1057,8 +1475,8 @@ class TileManager {
     for (final dirtyKey in _dirtyTiles) {
       if (dirtyKey.startsWith('$layerId:')) {
         final tileKey = dirtyKey.substring(layerId.length + 1);
-        if (layerTiles.containsKey(tileKey)) {
-          result[tileKey] = layerTiles[tileKey]!;
+        if (layerTiles[tileKey] case final tile?) {
+          result[tileKey] = _peek(tile);
         }
       }
     }
@@ -1113,12 +1531,12 @@ class TileManager {
     for (final key in tileKeys) {
       if (!_undoBefore.containsKey(key)) continue;
       final before = _undoBefore[key];
-      final current = layerMap[key];
+      final current = layerMap[key]?._pixels;
       if (current != null) _paintedPixels.remove(current);
       if (before == null) {
         layerMap.remove(key);
       } else {
-        layerMap[key] = Uint8List.fromList(before);
+        layerMap[key] = _newTile(Uint8List.fromList(before));
       }
       _markTileChanged('$layerId:$key');
       restored = true;
@@ -1141,8 +1559,10 @@ class TileManager {
     if (!_recordingUndo || layerId != _recordingLayerId) return;
     final key = '$tx,$ty';
     if (!_undoBefore.containsKey(key)) return;
-    final current = _tiles[layerId]?[key];
-    if (current == null) return;
+    final stored = _tiles[layerId]?[key];
+    if (stored == null) return;
+    final current = _pixelsOf(stored);
+    stored._dropDeflated();
     final before = _undoBefore[key];
     final painted = _paintedPixels[current];
     final perRow = tileSize ~/ cellSize;
@@ -1199,8 +1619,9 @@ class TileManager {
     final layerId = _recordingLayerId;
     if (!_recordingUndo || layerId == null) return;
     for (final entry in _undoBefore.entries) {
-      final tile = _tiles[layerId]?[entry.key];
-      if (tile == null) continue;
+      final stored = _tiles[layerId]?[entry.key];
+      if (stored == null) continue;
+      final tile = _pixelsOf(stored);
       final before = entry.value;
       final painted = _paintedPixels[tile];
       final changed = <int>[];
@@ -1239,9 +1660,7 @@ class TileManager {
     if (!_recordingUndo || layerId != _recordingLayerId) return;
     if (_undoBefore.containsKey(tileKey)) return;
     final existing = _tiles[layerId]?[tileKey];
-    _undoBefore[tileKey] = existing == null
-        ? null
-        : Uint8List.fromList(existing);
+    _undoBefore[tileKey] = existing == null ? null : _copyOf(existing);
   }
 
   /// Undo記録を終了し、変更前後のタイルスナップショットを返す（変更が無ければ空）。
@@ -1264,7 +1683,7 @@ class TileManager {
     final after = <String, Uint8List?>{};
     for (final key in _undoBefore.keys) {
       final current = _tiles[layerId]?[key];
-      after[key] = current == null ? null : Uint8List.fromList(current);
+      after[key] = current == null ? null : _copyOf(current);
     }
     final before = Map<String, Uint8List?>.from(_undoBefore);
     _undoBefore.clear();
@@ -1276,15 +1695,16 @@ class TileManager {
     final layerMap = _tiles.putIfAbsent(layerId, () => {});
     final unchanged = <String>[];
     for (final entry in _undoBefore.entries) {
+      final current = layerMap[entry.key];
       final locked = _restrictedPixels(
-        layerMap[entry.key],
+        current == null ? null : _pixelsOf(current),
         entry.value,
         entry.key,
       );
       if (locked == null) {
         layerMap.remove(entry.key);
       } else {
-        layerMap[entry.key] = locked;
+        layerMap[entry.key] = _newTile(locked);
       }
       final before = entry.value;
       if (locked == null
@@ -1328,7 +1748,7 @@ class TileManager {
       layerMap.remove(tileKey);
       if (layerMap.isEmpty) _tiles.remove(layerId);
     } else {
-      layerMap[tileKey] = pixels;
+      layerMap[tileKey] = _newTile(pixels);
     }
     _markTileChanged('$layerId:$tileKey');
     _invalidateComposite(layerId);
@@ -1344,7 +1764,7 @@ class TileManager {
       if (entry.value == null) {
         layerMap.remove(entry.key);
       } else {
-        layerMap[entry.key] = Uint8List.fromList(entry.value!);
+        layerMap[entry.key] = _newTile(Uint8List.fromList(entry.value!));
       }
       _markTileChanged('$layerId:${entry.key}');
     }
@@ -1369,38 +1789,44 @@ class TileManager {
   Map<String, Uint8List>? shareLayerTiles(String layerId) {
     final tiles = _tiles[layerId];
     if (tiles == null) return null;
-    for (final tile in tiles.values) {
-      _sharedTiles[tile] = true;
-    }
-    return Map.unmodifiable(tiles);
+    return Map.unmodifiable({
+      for (final entry in tiles.entries)
+        entry.key: _peek(entry.value.._shared = true),
+    });
   }
 
   /// Puts tiles taken with [shareLayerTiles] under [layerId], replacing
   /// what it had.
   void putLayerTiles(String layerId, Map<String, Uint8List> tiles) =>
-      restoreStructuralLayers({layerId: tiles});
+      restoreStructuralLayers({
+        layerId: {
+          for (final entry in tiles.entries)
+            entry.key: _newTile(entry.value).._shared = true,
+        },
+      });
 
-  /// Records the layer maps for a structural edit without copying pixel bytes.
-  Map<String, Map<String, Uint8List>> structuralSnapshot() => {
+  /// Records the layer maps for a structural edit without copying pixel bytes
+  /// (a compressed tile stays compressed).
+  Map<String, Map<String, StoredTile>> structuralSnapshot() => {
     for (final entry in _tiles.entries) entry.key: Map.of(entry.value),
   };
 
-  void protectHistoryTiles(Map<String, Map<String, Uint8List>?> layers) {
+  void protectHistoryTiles(Map<String, Map<String, StoredTile>?> layers) {
     for (final tiles in layers.values) {
       if (tiles == null) continue;
       for (final tile in tiles.values) {
-        _sharedTiles[tile] = true;
+        tile._shared = true;
       }
     }
   }
 
-  void restoreStructuralLayers(Map<String, Map<String, Uint8List>?> layers) {
+  void restoreStructuralLayers(Map<String, Map<String, StoredTile>?> layers) {
     for (final entry in layers.entries) {
       removeLayer(entry.key);
       final tiles = entry.value;
       if (tiles == null) continue;
       for (final tile in tiles.values) {
-        _sharedTiles[tile] = true;
+        tile._shared = true;
       }
       _tiles[entry.key] = Map.of(tiles);
       for (final key in tiles.keys) {
@@ -1410,8 +1836,36 @@ class TileManager {
     }
   }
 
-  /// 全タイルデータをシリアライズ（保存用）
-  Map<String, Map<String, Uint8List>> exportAll() => Map.unmodifiable(_tiles);
+  /// 全タイルデータをシリアライズ（保存用）。圧縮して持っているタイルは、
+  /// 読むたびにその場で展開したバッファを返す（展開したまま持たない）。
+  Map<String, Map<String, Uint8List>> exportAll() =>
+      _AllPixelsView(Map.of(_tiles));
+
+  /// The keys of the layers that hold tiles, in the order of [exportAll].
+  Iterable<String> get layerKeys => _tiles.keys;
+
+  /// The tile keys ("tx,ty") of [layerId], in the order of [exportAll].
+  Iterable<String> tileKeysOf(String layerId) =>
+      _tiles[layerId]?.keys ?? const <String>[];
+
+  /// The tile [tileKey] of [layerId] as a file stores it: its pixels
+  /// compressed with [tileCodec] and their CRC-32. A tile kept compressed
+  /// with [tileCodec] gives its stream as it is (the same bytes compressing
+  /// its pixels gives); any other tile is compressed now.
+  ({Uint8List deflated, int crc, int size}) deflatedTile(
+    String layerId,
+    String tileKey,
+  ) {
+    final tile = _tiles[layerId]![tileKey]!;
+    final own = tile._ownDeflate ? tile._deflated : null;
+    if (own != null) return (deflated: own, crc: tile._crc, size: _tileBytes);
+    final pixels = _peek(tile);
+    return (
+      deflated: _encoded(pixels),
+      crc: crc32Of(pixels),
+      size: pixels.length,
+    );
+  }
 
   /// シリアライズデータから復元（読み込み用）
   ///
@@ -1425,6 +1879,74 @@ class TileManager {
   /// file's checksums of those tiles, kept for the making recorder.
   void importAll(
     Map<String, Map<String, Uint8List>> data, {
+    bool asStoredInWorkFile = false,
+    Map<String, int>? storedCrcs,
+  }) {
+    final Map<String, Map<String, StoredTile>> tiles;
+    if (asStoredInWorkFile) {
+      // A buffer the reader gave under more than one key (identical tiles of
+      // copied frames) is one tile, shared copy-on-write like the tiles of a
+      // copied layer.
+      final byBuffer = HashMap<Uint8List, StoredTile>.identity();
+      tiles = {
+        for (final layer in data.entries)
+          layer.key: {
+            for (final tile in layer.value.entries)
+              tile.key: byBuffer.putIfAbsent(
+                tile.value,
+                () => _newTile(tile.value),
+              ),
+          },
+      };
+    } else {
+      tiles = {
+        for (final layer in data.entries)
+          layer.key: {
+            for (final tile in layer.value.entries)
+              tile.key: _newTile(Uint8List.fromList(tile.value)),
+          },
+      };
+    }
+    _importTiles(
+      tiles,
+      asStoredInWorkFile: asStoredInWorkFile,
+      storedCrcs: storedCrcs,
+    );
+  }
+
+  /// [importAll] with `asStoredInWorkFile` for tiles read from the work file
+  /// with [readTile] (a tile kept compressed stays compressed). A tile given
+  /// under more than one key is shared copy-on-write.
+  void importStoredTiles(
+    Map<String, Map<String, StoredTile>> data, {
+    Map<String, int>? storedCrcs,
+  }) => _importTiles(data, asStoredInWorkFile: true, storedCrcs: storedCrcs);
+
+  /// [importAll] of [source]'s tiles ([source]`.exportAll()`, every tile
+  /// independent of [source]'s) without expanding the tiles [source] keeps
+  /// compressed: their streams, which are never written into, are shared.
+  void importAllFrom(TileManager source) {
+    StoredTile copy(StoredTile tile) {
+      final pixels = tile._pixels;
+      final copied = pixels == null
+          ? (StoredTile._compressed().._lastUse = ++_useClock)
+          : _newTile(Uint8List.fromList(pixels));
+      return copied
+        .._deflated = tile._deflated
+        .._ownDeflate = tile._ownDeflate
+        .._crc = tile._crc;
+    }
+
+    _importTiles({
+      for (final layer in source._tiles.entries)
+        layer.key: {
+          for (final tile in layer.value.entries) tile.key: copy(tile.value),
+        },
+    });
+  }
+
+  void _importTiles(
+    Map<String, Map<String, StoredTile>> data, {
     bool asStoredInWorkFile = false,
     Map<String, int>? storedCrcs,
   }) {
@@ -1443,22 +1965,12 @@ class TileManager {
     _tiles.clear();
     _dirtyTiles.clear();
     _autosaveDirtyTiles.clear();
-    _sharedTiles = Expando<bool>();
-    // A buffer the reader gave under more than one key (identical tiles of
-    // copied frames) is shared copy-on-write, like the tiles of a copied
-    // layer.
-    final kept = asStoredInWorkFile ? HashSet<Uint8List>.identity() : null;
+    // A tile given under more than one key is shared copy-on-write.
+    final kept = HashSet<StoredTile>.identity();
     for (final layerEntry in data.entries) {
-      _tiles[layerEntry.key] = asStoredInWorkFile
-          ? Map.of(layerEntry.value)
-          : {
-              for (final tileEntry in layerEntry.value.entries)
-                tileEntry.key: Uint8List.fromList(tileEntry.value),
-            };
-      if (kept != null) {
-        for (final tile in layerEntry.value.values) {
-          if (!kept.add(tile)) _sharedTiles[tile] = true;
-        }
+      _tiles[layerEntry.key] = Map.of(layerEntry.value);
+      for (final tile in layerEntry.value.values) {
+        if (!kept.add(tile)) tile._shared = true;
       }
       for (final tileKey in layerEntry.value.keys) {
         final key = '${layerEntry.key}:$tileKey';

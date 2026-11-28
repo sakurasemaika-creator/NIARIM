@@ -1419,7 +1419,7 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   保存（`_writeArchiveDiff`）は印（`TileManager`の`_dirtyTiles`）の無いタイルを前のファイルの項目のまま写し
   （`_storedAsIs`）、自動保存（`saveAutosaveFrom`）はこの起動で前に書いた自動保存（印は`_autosaveDirtyTiles`）か
   作品ファイル（印は`_dirtyTiles`）から同じように写す。作品を開いたとき（`_tilesOf`）は作品ファイルのタイルを
-  `importAll(asStoredInWorkFile: true)`で読み、印を付けない。**タイルの画素を書き換える処理は必ず
+  `importStoredTiles`（`importAll(asStoredInWorkFile: true)`と同じ扱い）で読み、印を付けない。**タイルの画素を書き換える処理は必ず
   `getOrCreateTile`・`invalidateTile`/`markDirty`・`replaceLayerPixels`等の印を付ける入口を通すこと**
   （`getTile`で受け取ったバッファを直に書き換えて印を付けないと、その変更は保存されない。共有している
   タイルでは別のコマの絵まで変わるので、書き換えは`getOrCreateTile`のバッファに行う。下の段落）。明示的に呼ぶ
@@ -1430,16 +1430,46 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   複製して一部を描き直す作品は同じタイルを何百枚も持つ（1080×1080・12コマでコマを複製して2割を描き直した
   作品はタイル556枚のうち453枚）。`_tilesOf`の`NiaproSerializer.loadTilesSync`は、CRC-32と保存された
   バイト列が前の項目と同じ項目は展開せずにそのバッファを使い、CRC-32だけが同じ項目は展開して画素を比べて
-  から使う（`shareIdenticalTiles`）。`importAll(asStoredInWorkFile: true)`は2つ以上のキーにあるバッファを
-  `_sharedTiles`（Copy-on-Write）にし、`getOrCreateTile`が書く前に写す。`ArchiveSecurity.decodeZip`の大きさの
+  から使う（`shareIdenticalTiles`）。`importAll(asStoredInWorkFile: true)`・`importStoredTiles`は2つ以上の
+  キーにあるタイルを共有（Copy-on-Write、`StoredTile._shared`。以前の`_sharedTiles`）にし、`getOrCreateTile`が
+  書く前に写す。`ArchiveSecurity.decodeZip`の大きさの
   確かめも、申告どおりに展開できた圧縮のバイト列と同じ項目は展開しない（起動の一覧づくりも速くなる）。
   開いたときのタイルのメモリは139→26MiB、読む時間は690→140ms（JIT）。**`getTile`のバッファに書き込まない
   こと**：アサーションの入ったビルド（デバッグ・test）では共有しているタイルは読み取り専用のビューで返り、
   書き込むと`UnsupportedError`になる（リリースでは黙ってほかのコマの絵が変わる）。共有のバッファを返す
-  読み込みは`loadTilesSync`だけ（自動保存・手動の保存からの復元・受け取った作品は今までどおり1枚ずつ）。
+  読み込みは`loadTilesSync`と`loadStoredTilesSync`（`_tilesOf`が使う、下の段落）だけ（自動保存・手動の保存
+  からの復元・受け取った作品は今までどおり1枚ずつ）。
   `test/work_open_shared_tiles_test.dart`が、描く・取り消す・コマの複製と削除・保存・自動保存・書き出し・
   .niashareの結果が1枚ずつ持ったとき（`NiaproSerializer.debugShareIdenticalTiles = false`）と1バイトも
   変わらないことを見張る。
+- **大きな作品は、しばらく使っていないタイルを圧縮したまま持ち、使うときに展開する（2026-11-28）**：
+  `TileManager`のタイルは`StoredTile`（展開した画素、または生のDEFLATEの圧縮だけ）で持つ。展開して持つ
+  枚数は全部の`TileManager`を合わせて`TileManager.expandedTileBudget()`（`/proc/meminfo`の`MemTotal`の8分の1、
+  256MiB〜2GiB分。4GBの端末で約1800枚、16GBで8192枚。testでは`debugExpandedTileBudget`）までで、越えると
+  マイクロタスクの`_trim`が、長く使っていないタイルから予算の9割まで圧縮して持つ（前に圧縮した・作品ファイルの
+  圧縮が残っているタイルは画素を捨てるだけ）。**取り消しを記録している（描いている）レイヤーのタイルは圧縮しない**
+  （線は点の間もタイルのバッファを持つ：`_PixelLog`・`_paintedPixels`）。同じ処理の中で読んだバッファを
+  捨てないよう、圧縮はその処理が終わった後（マイクロタスク）だけ。作品を開くとき（`_tilesOf`）は
+  `NiaproSerializer.loadStoredTilesSync`→`importStoredTiles`で、予算に入る分だけ展開して持ち、残りは作品
+  ファイルの項目の圧縮のバイト列を写して持つ（直す・同じ画素を見つけるための展開は今までどおり、1枚の
+  使い回しのバッファで）。**予算に収まる作品（ほとんどの作品）は何も圧縮しない**（読み込み・描く・合成は
+  今までと同じ道）。決まり：（1）タイルの画素は`_pixelsOf`（展開して持つ。描く・合成・`getTile`）か
+  `_peek`（その場で展開するだけ。`exportAll`・`layerTiles`・保存・比べ）で読む。`exportAll()`・`layerTiles()`の
+  値は、圧縮して持つタイルでは読むたびに別のバッファ（書き込まないこと）。（2）画素を書く入口
+  （`getOrCreateTile`・`markDirty`/`invalidateTile`・`restoreRecordedCells`）は残っている圧縮のバイト列を捨てる。
+  `getTile`のバッファに書いて印を付けないと、圧縮し直すときにその変更が消える。（3）保存は`layerKeys`・
+  `tileKeysOf`・`deflatedTile`で1枚ずつ書く（全部を展開しない。自分で圧縮したタイルは`TileManager.tileCodec`
+  ＝保存と同じ段階6の端末のzlibなので、そのバイト列をそのまま書く。作品ファイルから写したバイト列は別の
+  圧縮のことがあるので、書くときは展開して圧縮し直す）。（4）レイヤーの写し（`structuralSnapshot`・
+  `protectHistoryTiles`・`restoreStructuralLayers`）は`StoredTile`を持つので、取り消しの履歴に残るタイルも
+  圧縮される。（5）作品の複製は`importAllFrom`（圧縮のバイト列を分け合う。`importAll(exportAll())`にしない）。
+  （6）自動保存・手動の保存からの復元・受け取った作品（`importAll`）は今までどおり全部を展開して読み、
+  予算を越えた分をその後で圧縮する（まだ全部をメモリに読む）。大きな作品の、圧縮していたコマを初めて開く・
+  書き出すときはタイルを展開する分だけ遅い（1920×1080の1コマ40枚で約10〜20ms、JIT）。
+  `test/work_open_compressed_tiles_test.dart`が、予算3枚で開く・描く（ブラシの線も）・取り消す・コマの
+  複製と削除・自動保存・保存・書き出し・.niashare・メイキング・作品の複製・開き直しの結果が全部を展開して
+  持ったときと1バイトも変わらないことを、`test/engine/tile_compressed_budget_test.dart`が書いた画素が
+  圧縮し直しても残る・描いているレイヤーは圧縮しない・共有のタイル・写しを見張る。
 - **ZIPの項目の大きさを確かめる展開は端末のzlibで行う（2026-11-27）**：`ArchiveSecurity.decodeZip`は、
   作品を読むたび（起動の一覧づくり・作品を開くとき・自動保存の比べ）に全部の項目を展開して申告の大きさと
   比べる。以前はpackage:archiveのDartの展開器（1バイトずつ書く`_LimitedOutputStream`）で数えていて、

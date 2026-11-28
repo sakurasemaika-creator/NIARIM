@@ -328,10 +328,11 @@ class ProjectService extends ChangeNotifier {
       try {
         // The tiles are the work file's: the next save of the work file
         // copies them as stored and writes only the ones changed meanwhile.
+        // A large work keeps the tiles past the memory budget compressed
+        // (expanded again when they are used).
         final crcs = <String, int>{};
-        tiles.importAll(
-          NiaproSerializer.loadTilesSync(path, crcs: crcs),
-          asStoredInWorkFile: true,
+        tiles.importStoredTiles(
+          NiaproSerializer.loadStoredTilesSync(path, crcs: crcs),
           storedCrcs: crcs,
         );
       } catch (error, stackTrace) {
@@ -445,13 +446,13 @@ class ProjectService extends ChangeNotifier {
     String projectId,
     String description,
     _TimelineEditState before,
-    Map<String, Map<String, Uint8List>> beforeTiles,
+    Map<String, Map<String, StoredTile>> beforeTiles,
     TileManager? manager,
   ) {
     final after = _captureTimeline(projectId);
     final afterTiles = manager?.structuralSnapshot() ?? const {};
-    final oldLayers = <String, Map<String, Uint8List>?>{};
-    final newLayers = <String, Map<String, Uint8List>?>{};
+    final oldLayers = <String, Map<String, StoredTile>?>{};
+    final newLayers = <String, Map<String, StoredTile>?>{};
     for (final key in {...beforeTiles.keys, ...afterTiles.keys}) {
       if (mapEquals(beforeTiles[key], afterTiles[key])) continue;
       oldLayers[key] = beforeTiles[key];
@@ -538,7 +539,7 @@ class ProjectService extends ChangeNotifier {
   void _restoreTimeline(
     String projectId,
     _TimelineEditState state,
-    Map<String, Map<String, Uint8List>?> tiles,
+    Map<String, Map<String, StoredTile>?> tiles,
   ) {
     final index = _projects.indexWhere((p) => p.id == projectId);
     if (index < 0) return;
@@ -5331,7 +5332,9 @@ class ProjectService extends ChangeNotifier {
         compositeCacheMax: _tileCacheBudget,
       );
       if (sourceTm != null) {
-        newTm.importAll(sourceTm.exportAll());
+        // The same as importAll(sourceTm.exportAll()), without expanding the
+        // tiles the source keeps compressed.
+        newTm.importAllFrom(sourceTm);
       }
 
       // 素材（画像・動画・音声）とサムネイルのファイルを先に複製先へ写す

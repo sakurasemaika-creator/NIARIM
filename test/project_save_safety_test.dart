@@ -53,9 +53,10 @@ class _EditAfterSnapshot extends TileManager {
 
   bool editAfterSnapshot = false;
 
+  // The save takes the layers to write from [layerKeys].
   @override
-  Map<String, Map<String, Uint8List>> exportAll() {
-    final result = super.exportAll();
+  Iterable<String> get layerKeys {
+    final result = super.layerKeys;
     if (editAfterSnapshot) {
       editAfterSnapshot = false;
       scheduleMicrotask(() => _paint(this, _layer, _blue));

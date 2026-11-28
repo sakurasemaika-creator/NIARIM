@@ -29,7 +29,6 @@ import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
 import 'archive_security.dart';
-import 'fast_crc32.dart';
 import 'same_bytes.dart';
 
 /// .niapro ファイルの保存・読み込み。
@@ -519,15 +518,15 @@ class NiaproSerializer {
     return _writeArchiveAtomically(path, (encoder) {
       _addManifestAndScenes(encoder, project, scenes);
       final used = _usedTileLayers(scenes);
-      for (final layerEntry in tileManager.exportAll().entries) {
-        if (!used(layerEntry.key)) continue;
-        for (final tileEntry in layerEntry.value.entries) {
-          final name = _tilePath(layerEntry.key, tileEntry.key);
+      for (final layerKey in tileManager.layerKeys.toList()) {
+        if (!used(layerKey)) continue;
+        for (final tileKey in tileManager.tileKeysOf(layerKey)) {
+          final name = _tilePath(layerKey, tileKey);
           final copy = stored?[name];
           encoder.addArchiveFile(
-            copy != null && !changed(layerEntry.key, tileEntry.key)
+            copy != null && !changed(layerKey, tileKey)
                 ? _storedAsIs(copy)
-                : _tileEntry(name, tileEntry.value),
+                : _tileEntry(name, tileManager, layerKey, tileKey),
           );
         }
       }
@@ -732,15 +731,16 @@ class NiaproSerializer {
         );
       }
 
-      final allTiles = tileManager.exportAll();
       final used = _usedTileLayers(scenes);
-      for (final layerEntry in allTiles.entries) {
-        if (!used(layerEntry.key)) continue;
-        for (final tileEntry in layerEntry.value.entries) {
+      for (final layerKey in tileManager.layerKeys.toList()) {
+        if (!used(layerKey)) continue;
+        for (final tileKey in tileManager.tileKeysOf(layerKey)) {
           encoder.addArchiveFile(
             _tileEntry(
-              _tilePath(layerEntry.key, tileEntry.key),
-              tileEntry.value,
+              _tilePath(layerKey, tileKey),
+              tileManager,
+              layerKey,
+              tileKey,
             ),
           );
         }
@@ -869,20 +869,18 @@ class NiaproSerializer {
         }
         return;
       }
-      final allTiles = tileManager.exportAll();
       final used = _usedTileLayers(scenes);
-      for (final layerEntry in allTiles.entries) {
-        if (!used(layerEntry.key)) continue;
-        final layerId = layerEntry.key;
-        // 変更されたタイルキー（非破壊：グローバルなdirty集合は消費しない）
-        final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
-        for (final tileEntry in layerEntry.value.entries) {
-          final tileKey = tileEntry.key;
+      for (final layerId in tileManager.layerKeys.toList()) {
+        if (!used(layerId)) continue;
+        for (final tileKey in tileManager.tileKeysOf(layerId)) {
           final entryName = _tilePath(layerId, tileKey);
           final oldEntry = oldFilesByName[entryName];
-          if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
+          // 変更されたタイル（非破壊：グローバルなdirty集合は消費しない）
+          if (tileManager.isTileDirty(layerId, tileKey) || oldEntry == null) {
             // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
-            encoder.addArchiveFile(_tileEntry(entryName, tileEntry.value));
+            encoder.addArchiveFile(
+              _tileEntry(entryName, tileManager, layerId, tileKey),
+            );
           } else {
             // 未変更タイル：前回保存分を圧縮されたまま引き継ぐ（展開して
             // 圧縮し直すと、保存のたびに全タイルを圧縮し直すことになった）。
@@ -900,22 +898,26 @@ class NiaproSerializer {
       entry..lastModTime = _storedModTime(entry);
 
   /// A tile's zip entry, compressed already (raw DEFLATE at the level the
-  /// zip encoder uses, 6) by the platform's zlib, with its checksum: the
-  /// encoder writes a compressed entry as it is, and without the checksum it
-  /// would inflate the entry again to count it. The encoder's own Dart
-  /// deflate and CRC took about 7 ms a tile; any inflater reads either back
-  /// to the same pixels.
-  static ArchiveFile _tileEntry(String name, Uint8List pixels) {
-    final compressed = _tileDeflate.encode(pixels);
+  /// zip encoder uses, 6) by the platform's zlib ([TileManager.tileCodec]),
+  /// with its checksum: the encoder writes a compressed entry as it is, and
+  /// without the checksum it would inflate the entry again to count it. The
+  /// encoder's own Dart deflate and CRC took about 7 ms a tile; any inflater
+  /// reads either back to the same pixels. A tile the manager keeps
+  /// compressed with the same codec is written as it is kept.
+  static ArchiveFile _tileEntry(
+    String name,
+    TileManager tiles,
+    String layerKey,
+    String tileKey,
+  ) {
+    final tile = tiles.deflatedTile(layerKey, tileKey);
     return ArchiveFile(
       name,
-      pixels.length,
-      InputStream(compressed),
+      tile.size,
+      InputStream(tile.deflated),
       ArchiveFile.DEFLATE,
-    )..crc32 = crc32Of(pixels);
+    )..crc32 = tile.crc;
   }
-
-  static final ZLibCodec _tileDeflate = ZLibCodec(raw: true, level: 6);
 
   static void _addManifestAndScenes(
     ZipFileEncoder encoder,
@@ -1005,6 +1007,13 @@ class NiaproSerializer {
             content.lengthInBytes == content.buffer.lengthInBytes
         ? content
         : Uint8List.fromList(content);
+    _repairTilePixels(bytes, onRepaired);
+    return bytes;
+  }
+
+  /// Repairs, in place, the pixels of [bytes] (a tile as stored) that
+  /// [_readTilePixels] repairs.
+  static void _repairTilePixels(Uint8List bytes, void Function()? onRepaired) {
     // Older paint writers sometimes saved straight RGB in a premultiplied
     // tile. Only pixels that violate RGB <= alpha can be identified safely.
     // Already-valid values are ambiguous in old files and must stay exact.
@@ -1036,7 +1045,7 @@ class NiaproSerializer {
         }
         repair(p << 2);
       }
-      return bytes;
+      return;
     }
     for (var i = 0; i + 3 < bytes.length; i += 4) {
       final alpha = bytes[i + 3];
@@ -1045,11 +1054,49 @@ class NiaproSerializer {
       }
       repair(i);
     }
-    return bytes;
   }
 
-  static _ReadTile _readTile(ArchiveFile file, {bool onlyUse = false}) {
+  /// Expands [file] (a compressed tile entry) into [into] with the
+  /// platform's zlib, as [ArchiveFile.content] expands it, without keeping
+  /// the expanded bytes in the entry. False when it does not expand to
+  /// exactly [into]'s length.
+  static bool _inflateInto(ArchiveFile file, Uint8List into) {
+    if (file.compressionType != ArchiveFile.DEFLATE) return false;
+    final raw = file.rawContent?.toUint8List();
+    if (raw == null) return false;
+    try {
+      final filter = RawZLibFilter.inflateFilter(raw: true);
+      var at = 0;
+      filter.process(raw, 0, raw.length);
+      for (final end in const [false, true]) {
+        for (
+          var chunk = filter.processed(end: end);
+          chunk != null;
+          chunk = filter.processed(end: end)
+        ) {
+          if (at + chunk.length > into.length) return false;
+          into.setRange(at, at + chunk.length, chunk);
+          at += chunk.length;
+        }
+      }
+      return at == into.length;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// [scratch]: a buffer to expand [file] into (a tile about to be kept
+  /// compressed: its expanded bytes are only looked at once).
+  static _ReadTile _readTile(
+    ArchiveFile file, {
+    bool onlyUse = false,
+    Uint8List? scratch,
+  }) {
     var repaired = false;
+    if (scratch != null && _inflateInto(file, scratch)) {
+      _repairTilePixels(scratch, () => repaired = true);
+      return _ReadTile(file, scratch, repaired);
+    }
     final pixels = _readTilePixels(
       file,
       onRepaired: () => repaired = true,
@@ -1067,6 +1114,7 @@ class NiaproSerializer {
     int crc,
     Map<int, List<_ReadTile>> read, {
     bool onlyUse = false,
+    Uint8List? scratch,
   }) {
     final same = read[crc];
     if (same != null) {
@@ -1081,11 +1129,11 @@ class NiaproSerializer {
         }
       }
     }
-    final fresh = _readTile(file, onlyUse: onlyUse);
+    final fresh = _readTile(file, onlyUse: onlyUse, scratch: scratch);
     if (same != null) {
       for (final earlier in same) {
         if (sameBytes(earlier.pixels, fresh.pixels)) {
-          return _ReadTile(file, earlier.pixels, fresh.repaired);
+          return _ReadTile.sharing(file, earlier, fresh.repaired);
         }
       }
     }
@@ -1138,6 +1186,28 @@ class NiaproSerializer {
     ).tileData;
   }
 
+  /// [loadTilesSync] for [TileManager.importStoredTiles]: the same tiles,
+  /// as [StoredTile]s. While the tiles every manager keeps expanded fit
+  /// [TileManager.expandedTileBudget], a tile is kept expanded; past it, a
+  /// tile is kept as the entry's compressed stream (copied from the file)
+  /// and expanded when it is used. Each tile is still expanded once while it
+  /// is read (to repair older tiles and find identical ones, as
+  /// [loadTilesSync] does), one at a time.
+  static Map<String, Map<String, StoredTile>> loadStoredTilesSync(
+    String filePath, {
+    Map<String, int>? crcs,
+  }) {
+    final stored = <String, Map<String, StoredTile>>{};
+    loadFromBytes(
+      File(filePath).readAsBytesSync(),
+      tileCrcs: crcs,
+      limits: ArchiveLimits.ownWork,
+      shareIdenticalTiles: debugShareIdenticalTiles,
+      storedTiles: stored,
+    );
+    return stored;
+  }
+
   /// False reads every tile of [loadTilesSync] into a buffer of its own (the
   /// way every other load reads them), to compare the two in tests.
   @visibleForTesting
@@ -1156,6 +1226,7 @@ class NiaproSerializer {
     Map<String, int>? tileCrcs,
     ArchiveLimits limits = ArchiveLimits.received,
     bool shareIdenticalTiles = false,
+    Map<String, Map<String, StoredTile>>? storedTiles,
   }) {
     final archive = ArchiveSecurity.decodeZip(bytes, limits: limits);
 
@@ -1245,6 +1316,47 @@ class NiaproSerializer {
     var skippedTiles = 0;
     if (withTiles) {
       final readByCrc = <int, List<_ReadTile>>{};
+      // With [storedTiles]: how many more tiles may stay expanded, and whether
+      // the whole work fits (then the tiles keep no compressed stream, as
+      // before; otherwise an expanded tile keeps the file's stream too, so
+      // that compressing it later costs nothing).
+      var room = 0;
+      var fits = true;
+      Uint8List? scratch;
+      if (storedTiles != null) {
+        room = TileManager.expandedTileRoom();
+        var entries = 0;
+        for (final file in archive.files) {
+          if (file.name.startsWith('$_rootTilesDir/') ||
+              (file.name.startsWith('Scene/') &&
+                  file.name.contains('/$_tilesDir/'))) {
+            entries++;
+          }
+        }
+        fits = entries <= room;
+      }
+      StoredTile store(_ReadTile read) {
+        final file = read.file;
+        final keepExpanded = room > 0;
+        if (keepExpanded) room--;
+        final Uint8List? deflated;
+        if ((!keepExpanded || !fits) &&
+            !read.repaired &&
+            file.compressionType == ArchiveFile.DEFLATE) {
+          final raw = file.rawContent?.toUint8List();
+          deflated = raw == null ? null : Uint8List.fromList(raw);
+        } else {
+          deflated = null;
+        }
+        final tile = TileManager.readTile(
+          read.pixels,
+          deflated: deflated,
+          keepExpanded: keepExpanded,
+        );
+        read._pixels = null;
+        return tile;
+      }
+
       void addTile(
         String compositeKey,
         String tileKey,
@@ -1260,10 +1372,33 @@ class NiaproSerializer {
           return;
         }
         final crc = file.crc32;
+        // A tile that will be kept compressed is expanded into one buffer
+        // used again for each (to repair it and compare it), not into a
+        // buffer of its own.
+        final into = storedTiles != null && onlyUse && room <= 0
+            ? (scratch ??= Uint8List(
+                TileManager.tileSize * TileManager.tileSize * 4,
+              ))
+            : null;
         final read = shareIdenticalTiles && crc != null
-            ? _readSharedTile(file, crc, readByCrc, onlyUse: onlyUse)
-            : _readTile(file, onlyUse: onlyUse);
-        tileData.putIfAbsent(compositeKey, () => {})[tileKey] = read.pixels;
+            ? _readSharedTile(
+                file,
+                crc,
+                readByCrc,
+                onlyUse: onlyUse,
+                scratch: into,
+              )
+            : _readTile(file, onlyUse: onlyUse, scratch: into);
+        if (storedTiles != null) {
+          storedTiles.putIfAbsent(compositeKey, () => {})[tileKey] =
+              read.stored ??= store(read);
+          // The archive entry keeps the expanded bytes it gave: let them go
+          // (the tile holds them, or only its compressed stream). An entry
+          // of the older forms gives several tiles and is read again.
+          if (onlyUse) file.clear();
+        } else {
+          tileData.putIfAbsent(compositeKey, () => {})[tileKey] = read.pixels;
+        }
         if (tileCrcs != null && crc != null && !read.repaired) {
           tileCrcs['$compositeKey:$tileKey'] = crc;
         }
@@ -1989,11 +2124,25 @@ class AutosaveBase {
 /// A tile entry read from a work file: its pixels and whether reading them
 /// had to repair them.
 class _ReadTile {
-  const _ReadTile(this.file, this.pixels, this.repaired);
+  _ReadTile(this.file, Uint8List pixels, this.repaired) : _pixels = pixels;
+
+  /// [file] read as [earlier] was (the same pixels), with its own [repaired].
+  _ReadTile.sharing(this.file, _ReadTile earlier, this.repaired)
+    : _pixels = earlier._pixels,
+      stored = earlier.stored;
 
   final ArchiveFile file;
-  final Uint8List pixels;
   final bool repaired;
+
+  /// The pixels, or null once they are held by [stored] only.
+  Uint8List? _pixels;
+
+  /// The tile made of these pixels for [TileManager.importStoredTiles].
+  StoredTile? stored;
+
+  /// The pixels (expanded again from [stored] when it keeps them compressed;
+  /// not kept).
+  Uint8List get pixels => _pixels ?? TileManager.readTilePixels(stored!);
 }
 
 class NiaproData {
