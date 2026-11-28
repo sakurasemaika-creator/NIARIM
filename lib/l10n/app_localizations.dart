@@ -1725,6 +1725,36 @@ abstract class AppLocalizations {
   /// **'登録されたショートカットがありません'**
   String get shortcutEmpty;
 
+  /// ショートカット設定：既定のキーの割り当てへまとめて戻すボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'既定のショートカットに戻す'**
+  String get shortcutResetButton;
+
+  /// 既定のショートカットに戻す前の確認の題
+  ///
+  /// In ja, this message translates to:
+  /// **'既定のショートカットに戻しますか？'**
+  String get shortcutResetConfirmTitle;
+
+  /// 既定のショートカットに戻す前の確認の本文
+  ///
+  /// In ja, this message translates to:
+  /// **'追加したショートカットは消え、変更・削除したショートカットは最初の割り当てに戻ります。'**
+  String get shortcutResetConfirmBody;
+
+  /// 既定のショートカットに戻すことを確定するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'戻す'**
+  String get shortcutResetConfirmAction;
+
+  /// 既定のショートカットに戻した後の知らせ（「元に戻す」付き）
+  ///
+  /// In ja, this message translates to:
+  /// **'既定のショートカットに戻しました。'**
+  String get shortcutResetDone;
+
   /// No description provided for @shortcutCaptureTitle.
   ///
   /// In ja, this message translates to:

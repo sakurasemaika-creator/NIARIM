@@ -117,6 +117,49 @@ class ShortcutService extends ChangeNotifier {
     }
   }
 
+  /// The keys a new installation starts with, in the order it lists them.
+  static List<ShortcutBinding> get defaultBindings => [
+    ..._defaultUndoRedoBindings,
+    ..._defaultClipboardBindings,
+    _defaultCanvasFitBinding,
+    ..._defaultPlaybackBindings,
+  ];
+
+  /// Whether the keys are exactly the ones a new installation starts with.
+  bool get hasDefaultBindings {
+    final defaults = defaultBindings;
+    if (_bindings.length != defaults.length) return false;
+    for (var i = 0; i < defaults.length; i++) {
+      if (jsonEncode(_bindings[i].toJson()) !=
+          jsonEncode(defaults[i].toJson())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Puts back the keys a new installation starts with, in place of all of
+  /// the user's (added, changed and removed ones alike). Returns the keys
+  /// before, for [restoreBindings] (the notice's undo).
+  List<ShortcutBinding> resetToDefaults() {
+    final before = List<ShortcutBinding>.of(_bindings);
+    _bindings
+      ..clear()
+      ..addAll(defaultBindings);
+    notifyListeners();
+    _persist();
+    return before;
+  }
+
+  /// Puts back [bindings] as they were (the undo of [resetToDefaults]).
+  void restoreBindings(List<ShortcutBinding> bindings) {
+    _bindings
+      ..clear()
+      ..addAll(bindings);
+    notifyListeners();
+    _persist();
+  }
+
   static final _defaultCanvasFitBinding = ShortcutBinding(
     id: 'default_canvas_fit',
     label: 'Fit canvas',
@@ -231,12 +274,7 @@ class ShortcutService extends ChangeNotifier {
     TransferImportReport? report,
   }) async {
     final shipped = {
-      for (final binding in [
-        ..._defaultUndoRedoBindings,
-        ..._defaultClipboardBindings,
-        _defaultCanvasFitBinding,
-        ..._defaultPlaybackBindings,
-      ])
+      for (final binding in defaultBindings)
         binding.id: jsonEncode(binding.toJson()),
     };
     var changed = false;

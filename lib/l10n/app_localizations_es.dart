@@ -965,6 +965,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shortcutEmpty => 'No hay atajos registrados';
 
   @override
+  String get shortcutResetButton => 'Restaurar los atajos predeterminados';
+
+  @override
+  String get shortcutResetConfirmTitle =>
+      '¿Restaurar los atajos predeterminados?';
+
+  @override
+  String get shortcutResetConfirmBody =>
+      'Se quitarán los atajos que hayas añadido, y los que hayas cambiado o eliminado volverán a sus teclas originales.';
+
+  @override
+  String get shortcutResetConfirmAction => 'Restaurar';
+
+  @override
+  String get shortcutResetDone => 'Se restauraron los atajos predeterminados.';
+
+  @override
   String get shortcutCaptureTitle => 'Pulsa una tecla';
 
   @override

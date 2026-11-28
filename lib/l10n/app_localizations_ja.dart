@@ -914,6 +914,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shortcutEmpty => '登録されたショートカットがありません';
 
   @override
+  String get shortcutResetButton => '既定のショートカットに戻す';
+
+  @override
+  String get shortcutResetConfirmTitle => '既定のショートカットに戻しますか？';
+
+  @override
+  String get shortcutResetConfirmBody =>
+      '追加したショートカットは消え、変更・削除したショートカットは最初の割り当てに戻ります。';
+
+  @override
+  String get shortcutResetConfirmAction => '戻す';
+
+  @override
+  String get shortcutResetDone => '既定のショートカットに戻しました。';
+
+  @override
   String get shortcutCaptureTitle => 'キーを押してください';
 
   @override

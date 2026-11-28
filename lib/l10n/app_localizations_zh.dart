@@ -901,6 +901,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shortcutEmpty => '尚未注册任何快捷键';
 
   @override
+  String get shortcutResetButton => '恢复默认快捷键';
+
+  @override
+  String get shortcutResetConfirmTitle => '要恢复默认快捷键吗？';
+
+  @override
+  String get shortcutResetConfirmBody => '添加的快捷键将被删除，更改或删除过的快捷键将恢复为最初的分配。';
+
+  @override
+  String get shortcutResetConfirmAction => '恢复';
+
+  @override
+  String get shortcutResetDone => '已恢复默认快捷键。';
+
+  @override
   String get shortcutCaptureTitle => '请按下按键';
 
   @override
@@ -12171,6 +12186,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get shortcutEmpty => '尚未註冊任何快捷鍵';
+
+  @override
+  String get shortcutResetButton => '恢復預設快捷鍵';
+
+  @override
+  String get shortcutResetConfirmTitle => '要恢復預設快捷鍵嗎？';
+
+  @override
+  String get shortcutResetConfirmBody => '新增的快捷鍵將被刪除，變更或刪除過的快捷鍵將恢復為最初的分配。';
+
+  @override
+  String get shortcutResetConfirmAction => '恢復';
+
+  @override
+  String get shortcutResetDone => '已恢復預設快捷鍵。';
 
   @override
   String get shortcutCaptureTitle => '請按下按鍵';

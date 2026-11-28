@@ -8,6 +8,9 @@
 // 7言語×320/360/412px×文字1.0/2.0で、画面の下にジェスチャーの帯（安全な
 // 領域）がある端末も含め、一覧を最後までスクロールしたとき、最後の行の削除の
 // ボタンが浮かぶボタンと重ならず、押すとその行の削除の確認が開くことを見張る。
+// 一覧の最後の「既定のショートカットに戻す」（P2-13）も浮かぶボタンと重ならない
+// （狭い画面・大きな文字では、最後までスクロールすると最後の行は一覧の上へ
+// 隠れるので、最後の行は見える所まで戻してから確かめる）。
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -137,8 +140,25 @@ void main() {
                   .first;
               await scrollToEnd(tester, list);
 
+              final reset = find.byKey(
+                const ValueKey('shortcutResetToDefaults'),
+              );
+              final resetRect = tester.getRect(reset);
+              final fabRect = tester.getRect(find.byType(FloatingActionButton));
+              if (resetRect.overlaps(fabRect)) {
+                problems.add(
+                  '$at: the restore button $resetRect is under the add '
+                  'button $fabRect',
+                );
+              }
+              if (!tester.getRect(list).contains(resetRect.center)) {
+                problems.add('$at: the restore button is out of the list');
+              }
+
               final deletes = find.byIcon(Icons.delete_outline);
               final last = deletes.last;
+              await tester.ensureVisible(last);
+              await tester.pumpAndSettle();
               final lastRect = tester.getRect(last);
               final fab = tester.getRect(find.byType(FloatingActionButton));
               if (lastRect.overlaps(fab)) {
@@ -196,6 +216,8 @@ void main() {
           )
           .first;
       await scrollToEnd(tester, list);
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline).last);
+      await tester.pumpAndSettle();
       await tester.tap(
         find.byIcon(Icons.delete_outline).last,
         warnIfMissed: false,

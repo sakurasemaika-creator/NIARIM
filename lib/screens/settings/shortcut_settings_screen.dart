@@ -106,6 +106,66 @@ String shortcutBrushName(AppLocalizations l10n, Brush brush) =>
       builtIn: BrushService.isBuiltInId(brush.id),
     );
 
+/// 「既定のショートカットに戻す」：確かめてから、足した・変えた・消した
+/// キーをまとめて最初のキーへ戻す。戻した後の知らせの「元に戻す」で、
+/// 戻す前のキーへ戻せる（取り消せるので、確かめのボタンは警告色にしない）。
+/// すでに最初のキーのままなら押せない。
+class _ResetToDefaultsButton extends StatelessWidget {
+  const _ResetToDefaultsButton({required this.service});
+
+  final ShortcutService service;
+
+  Future<void> _reset(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        // 「…に / 戻しますか？」と語の境目で折る（「か？」だけを次の行へ
+        // 送らない）。
+        title: messageText(
+          l10n.shortcutResetConfirmTitle,
+          keepLastPhrase: true,
+        ),
+        content: messageText(l10n.shortcutResetConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const ValueKey('shortcutResetConfirm'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.shortcutResetConfirmAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final before = service.resetToDefaults();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: messageText(l10n.shortcutResetDone),
+        persist: false,
+        action: SnackBarAction(
+          label: l10n.homeUndoAction,
+          onPressed: () => service.restoreBindings(before),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return TextButton.icon(
+      key: const ValueKey('shortcutResetToDefaults'),
+      onPressed: service.hasDefaultBindings ? null : () => _reset(context),
+      icon: const Icon(Icons.restart_alt),
+      label: messageText(l10n.shortcutResetButton),
+    );
+  }
+}
+
 class ShortcutSettingsScreen extends StatelessWidget {
   const ShortcutSettingsScreen({super.key});
 
@@ -147,10 +207,29 @@ class ShortcutSettingsScreen extends StatelessWidget {
             Expanded(
               child: bindings.isEmpty
                   ? Center(
-                      child: Text(
-                        l10n.shortcutEmpty,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(
+                          32,
+                          0,
+                          32,
+                          _floatingButtonClearance,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            messageText(
+                              l10n.shortcutEmpty,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // 全部消したときも、最初のキーに戻せる。
+                            _ResetToDefaultsButton(service: service),
+                          ],
                         ),
                       ),
                     )
@@ -264,6 +343,15 @@ class ShortcutSettingsScreen extends StatelessWidget {
                                 },
                               ),
                           ],
+                        ),
+                        // 足した・変えた・消したキーを、最初のキーへまとめて
+                        // 戻す（「追加」の浮かぶボタンと重ならない左端）。
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: _ResetToDefaultsButton(service: service),
+                          ),
                         ),
                       ],
                     ),

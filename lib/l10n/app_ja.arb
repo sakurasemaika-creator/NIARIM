@@ -475,6 +475,26 @@
   "shortcutSettingsTitle": "ショートカット設定",
   "shortcutSettingsHint": "キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）やUndo/Redoなどの操作を割り当てられます。キャンバス・タイムラインの両方で使えます。",
   "shortcutEmpty": "登録されたショートカットがありません",
+  "shortcutResetButton": "既定のショートカットに戻す",
+  "@shortcutResetButton": {
+    "description": "ショートカット設定：既定のキーの割り当てへまとめて戻すボタン"
+  },
+  "shortcutResetConfirmTitle": "既定のショートカットに戻しますか？",
+  "@shortcutResetConfirmTitle": {
+    "description": "既定のショートカットに戻す前の確認の題"
+  },
+  "shortcutResetConfirmBody": "追加したショートカットは消え、変更・削除したショートカットは最初の割り当てに戻ります。",
+  "@shortcutResetConfirmBody": {
+    "description": "既定のショートカットに戻す前の確認の本文"
+  },
+  "shortcutResetConfirmAction": "戻す",
+  "@shortcutResetConfirmAction": {
+    "description": "既定のショートカットに戻すことを確定するボタン"
+  },
+  "shortcutResetDone": "既定のショートカットに戻しました。",
+  "@shortcutResetDone": {
+    "description": "既定のショートカットに戻した後の知らせ（「元に戻す」付き）"
+  },
   "shortcutCaptureTitle": "キーを押してください",
   "shortcutCaptureHint": "設定したいキーの組み合わせを押してください（Ctrl・Shift・Altなどの修飾キーも同時に押せます）。Escで取り消します。",
   "shortcutChooseActionTitle": "{combo} に何を割り当てますか？",

@@ -943,6 +943,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shortcutEmpty => 'No shortcuts registered';
 
   @override
+  String get shortcutResetButton => 'Restore default shortcuts';
+
+  @override
+  String get shortcutResetConfirmTitle => 'Restore the default shortcuts?';
+
+  @override
+  String get shortcutResetConfirmBody =>
+      'Shortcuts you added will be removed, and the ones you changed or deleted will go back to their original keys.';
+
+  @override
+  String get shortcutResetConfirmAction => 'Restore';
+
+  @override
+  String get shortcutResetDone => 'Default shortcuts restored.';
+
+  @override
   String get shortcutCaptureTitle => 'Press a key';
 
   @override

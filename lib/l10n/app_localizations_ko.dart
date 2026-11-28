@@ -917,6 +917,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shortcutEmpty => '등록된 단축키가 없습니다';
 
   @override
+  String get shortcutResetButton => '기본 단축키로 되돌리기';
+
+  @override
+  String get shortcutResetConfirmTitle => '기본 단축키로 되돌릴까요?';
+
+  @override
+  String get shortcutResetConfirmBody =>
+      '추가한 단축키는 지워지고, 변경하거나 삭제한 단축키는 처음 할당으로 돌아갑니다.';
+
+  @override
+  String get shortcutResetConfirmAction => '되돌리기';
+
+  @override
+  String get shortcutResetDone => '기본 단축키로 되돌렸습니다.';
+
+  @override
   String get shortcutCaptureTitle => '키를 눌러주세요';
 
   @override

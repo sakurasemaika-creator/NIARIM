@@ -965,6 +965,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shortcutEmpty => 'Aucun raccourci enregistré';
 
   @override
+  String get shortcutResetButton => 'Rétablir les raccourcis par défaut';
+
+  @override
+  String get shortcutResetConfirmTitle =>
+      'Rétablir les raccourcis par défaut ?';
+
+  @override
+  String get shortcutResetConfirmBody =>
+      'Les raccourcis que vous avez ajoutés seront supprimés, et ceux que vous avez modifiés ou supprimés retrouveront leurs touches d’origine.';
+
+  @override
+  String get shortcutResetConfirmAction => 'Rétablir';
+
+  @override
+  String get shortcutResetDone => 'Raccourcis par défaut rétablis.';
+
+  @override
   String get shortcutCaptureTitle => 'Appuyez sur une touche';
 
   @override
