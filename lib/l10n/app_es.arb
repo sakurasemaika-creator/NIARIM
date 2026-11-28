@@ -107,7 +107,7 @@
   "settingsDrawingAreaHint": "Se usa como valor inicial al crear un nuevo proyecto.",
   "settingsDrawingAreaWiden": "Ampliar el área de dibujo",
   "settingsDrawingAreaScale": "Escala",
-  "settingsScaleValue": "×{scale}",
+  "settingsScaleValue": "{scale}×",
   "commonCancel": "Cancelar",
   "commonCreate": "Crear",
   "commonChange": "Cambiar",

@@ -2351,7 +2351,11 @@ class _ThemeSampleScreen extends StatelessWidget {
         child: Text(l.newProjectScreenTitle),
       ),
       const SizedBox(height: 24),
-      const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
+      // 本物の新規プロジェクトと同じ呼び名（仏語は「i/s」）。
+      Text(
+        l.exportFpsLabel,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       const SizedBox(height: 8),
       Wrap(
         spacing: 8,

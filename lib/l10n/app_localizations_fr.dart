@@ -388,7 +388,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String settingsScaleValue(String scale) {
-    return '×$scale';
+    return '$scale×';
   }
 
   @override
