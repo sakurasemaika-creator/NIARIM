@@ -496,18 +496,25 @@ class _CommunityScreenState extends State<CommunityScreen>
         detail: !ranking && _showDetails,
         allowDetail: !ranking,
         size: _tileSize,
-        onChanged: (view) async {
-          final size = view.tileSize;
-          setState(() {
-            if (!ranking) _showDetails = view == CommunityWorkView.detail;
-            if (size != null) _chosenTileSize = size;
-          });
-          if (size != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(_tileSizeKey, size.name);
-          }
-        },
+        onChanged: (view) => _setWorkView(view, ranking: ranking),
       );
+
+  /// 作品の並べ方（詳細・タイルの大きさ）を変える。新着・フォロー中・検索・
+  /// ブックマークのタブで同じ並べ方を使い、大きさは覚える。
+  Future<void> _setWorkView(
+    CommunityWorkView view, {
+    bool ranking = false,
+  }) async {
+    final size = view.tileSize;
+    setState(() {
+      if (!ranking) _showDetails = view == CommunityWorkView.detail;
+      if (size != null) _chosenTileSize = size;
+    });
+    if (size != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tileSizeKey, size.name);
+    }
+  }
 
   Future<void> _loadRankingLayout() async {
     try {
@@ -1861,12 +1868,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                   .toDouble(),
         title: titleBelowActions ? null : titleBlock,
         actions: [
-          AnimatedBuilder(
-            animation: _tabController,
-            builder: (context, _) => _tabController.index == 4
-                ? _tileSizeButton(l10n)
-                : const SizedBox.shrink(),
-          ),
+          // ブックマークのタブの表示サイズは一覧の上のボタン（ほかのタブと
+          // 同じ所）だけにする（以前は上部バーにもあり、2つのボタンの印が
+          // 食い違っていた）。
           IconButton(
             icon: Badge(
               label: Text('${communityService.unreadMilestoneCount}'),
@@ -2415,6 +2419,8 @@ class _CommunityScreenState extends State<CommunityScreen>
               key: const PageStorageKey('community-bookmarks'),
               scrollController: _tabScrollControllers[4],
               viewSize: _tileSize,
+              detail: _showDetails,
+              onViewChanged: _setWorkView,
               onBrowseWorks: () => _tabController.animateTo(0),
             ),
           ],

@@ -23,11 +23,18 @@ class CommunityBookmarkedTab extends StatefulWidget {
     required this.onBrowseWorks,
     required this.scrollController,
     this.viewSize = CollectionViewSize.medium,
+    this.detail = false,
+    required this.onViewChanged,
   });
 
   final VoidCallback onBrowseWorks;
   final ScrollController scrollController;
+
+  /// 作品の並べ方（作品広場のほかのタブと同じもの。変えるのは
+  /// [onViewChanged]）。
   final CollectionViewSize viewSize;
+  final bool detail;
+  final ValueChanged<CommunityWorkView> onViewChanged;
 
   @override
   State<CommunityBookmarkedTab> createState() => _CommunityBookmarkedTabState();
@@ -36,8 +43,6 @@ class CommunityBookmarkedTab extends StatefulWidget {
 enum _BookmarkOrder { saved, posted, name }
 
 class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
-  CollectionViewSize? _size;
-  bool _detail = false;
   _BookmarkOrder _order = _BookmarkOrder.saved;
   bool _ascending = false;
   VideoTypeFilter _filter = VideoTypeFilter.all;
@@ -262,12 +267,11 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                           onChanged: (value) => setState(() => _filter = value),
                         ),
                         CommunityWorkViewButton(
-                          detail: _detail,
-                          size: _size ?? widget.viewSize,
-                          onChanged: (value) => setState(() {
-                            _detail = value == CommunityWorkView.detail;
-                            _size = value.tileSize ?? _size;
-                          }),
+                          key: const Key('communityBookmarksTileSizeButton'),
+                          tooltip: l10n.communityTileSize,
+                          detail: widget.detail,
+                          size: widget.viewSize,
+                          onChanged: widget.onViewChanged,
                         ),
                       ],
                     ),
@@ -278,8 +282,8 @@ class _CommunityBookmarkedTabState extends State<CommunityBookmarkedTab> {
                       child: Text(l10n.communityNoWorksMessage),
                     ),
                   CommunityWorkGrid(
-                    viewSize: _size ?? widget.viewSize,
-                    detail: _detail,
+                    viewSize: widget.viewSize,
+                    detail: widget.detail,
                     works: works,
                     bookmarkedIds: service.bookmarkedIds,
                     onTapWork: (work) =>
