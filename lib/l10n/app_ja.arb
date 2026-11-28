@@ -4000,6 +4000,10 @@
   "filterNoiseColor": "カラーノイズ",
   "filterNoiseSeed": "模様のシード値",
   "communityContentFilterTitle": "表示フィルター",
+  "communityNotificationSettingsTitle": "通知の設定",
+  "@communityNotificationSettingsTitle": {
+    "description": "通知の設定の画面名（上部バーの題）と、作品広場の通知の画面からその画面を開く歯車の吹き出し"
+  },
   "communityHideGenerativeAiImageVideo": "AIで生成した画像・動画を使用した作品を表示しない",
   "communityMutedWords": "非表示ワード登録",
   "communityMutedWordsHint": "作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。",

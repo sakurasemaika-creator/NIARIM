@@ -7729,6 +7729,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityContentFilterTitle => '표시 필터';
 
   @override
+  String get communityNotificationSettingsTitle => '알림 설정';
+
+  @override
   String get communityHideGenerativeAiImageVideo =>
       '생성형 AI 이미지·동영상이 포함된 작품 숨기기';
 

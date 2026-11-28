@@ -13929,6 +13929,12 @@ abstract class AppLocalizations {
   /// **'表示フィルター'**
   String get communityContentFilterTitle;
 
+  /// 通知の設定の画面名（上部バーの題）と、作品広場の通知の画面からその画面を開く歯車の吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'通知の設定'**
+  String get communityNotificationSettingsTitle;
+
   /// No description provided for @communityHideGenerativeAiImageVideo.
   ///
   /// In ja, this message translates to:

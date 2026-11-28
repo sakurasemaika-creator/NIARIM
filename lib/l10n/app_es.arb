@@ -3159,6 +3159,7 @@
   "filterNoiseColor": "Ruido de color",
   "filterNoiseSeed": "Semilla del patrón",
   "communityContentFilterTitle": "Filtros de visualización",
+  "communityNotificationSettingsTitle": "Ajustes de notificaciones",
   "communityHideGenerativeAiImageVideo": "Ocultar obras con imágenes o vídeo de IA generativa",
   "communityMutedWords": "Palabras ocultas del título",
   "communityMutedWordsHint": "Oculta las obras cuyos títulos contienen estas palabras (no se comprueban creadores ni etiquetas). Añade y edita cada palabra por separado.",

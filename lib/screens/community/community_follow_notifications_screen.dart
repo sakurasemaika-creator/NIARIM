@@ -307,7 +307,7 @@ class _CommunityFollowNotificationsScreenState
             ),
           IconButton(
             key: const Key('plazaNotificationSettings'),
-            tooltip: devicePushLabel(AppLocalizations.of(context)!),
+            tooltip: l10n.communityNotificationSettingsTitle,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push(communityNotificationSettingsRoute),
           ),

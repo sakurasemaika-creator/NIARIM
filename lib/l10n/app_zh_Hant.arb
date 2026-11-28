@@ -3159,6 +3159,7 @@
   "filterNoiseColor": "彩色雜訊",
   "filterNoiseSeed": "圖案種子",
   "communityContentFilterTitle": "顯示篩選",
+  "communityNotificationSettingsTitle": "通知設定",
   "communityHideGenerativeAiImageVideo": "隱藏包含生成式 AI 圖像或影片的作品",
   "communityMutedWords": "隱藏標題關鍵字",
   "communityMutedWordsHint": "隱藏標題中包含這些文字的作品（不檢查作者名稱和標籤）。請逐條新增或編輯。",

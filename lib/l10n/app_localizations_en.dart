@@ -8028,6 +8028,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityContentFilterTitle => 'Display filters';
 
   @override
+  String get communityNotificationSettingsTitle => 'Notification settings';
+
+  @override
   String get communityHideGenerativeAiImageVideo =>
       'Hide works containing generative-AI images or video';
 

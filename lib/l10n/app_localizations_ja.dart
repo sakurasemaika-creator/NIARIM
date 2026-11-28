@@ -7692,6 +7692,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityContentFilterTitle => '表示フィルター';
 
   @override
+  String get communityNotificationSettingsTitle => '通知の設定';
+
+  @override
   String get communityHideGenerativeAiImageVideo => 'AIで生成した画像・動画を使用した作品を表示しない';
 
   @override

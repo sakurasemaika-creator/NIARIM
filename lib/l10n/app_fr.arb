@@ -3159,6 +3159,7 @@
   "filterNoiseColor": "Bruit de couleur",
   "filterNoiseSeed": "Graine du motif",
   "communityContentFilterTitle": "Filtres d’affichage",
+  "communityNotificationSettingsTitle": "Réglages des notifications",
   "communityHideGenerativeAiImageVideo": "Masquer les œuvres contenant des images ou vidéos générées par IA",
   "communityMutedWords": "Mots masqués du titre",
   "communityMutedWordsHint": "Masque les œuvres dont le titre contient ces mots (sans vérifier les auteurs ni les tags). Ajoutez et modifiez chaque mot séparément.",

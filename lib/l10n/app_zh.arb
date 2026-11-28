@@ -3159,6 +3159,7 @@
   "filterNoiseColor": "彩色噪点",
   "filterNoiseSeed": "图案种子",
   "communityContentFilterTitle": "显示筛选",
+  "communityNotificationSettingsTitle": "通知设置",
   "communityHideGenerativeAiImageVideo": "隐藏包含生成式 AI 图像或视频的作品",
   "communityMutedWords": "隐藏标题关键词",
   "communityMutedWordsHint": "隐藏标题中包含这些文字的作品（不检查作者名称和标签）。请逐条添加或编辑。",

@@ -8159,6 +8159,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityContentFilterTitle => 'Filtros de visualización';
 
   @override
+  String get communityNotificationSettingsTitle => 'Ajustes de notificaciones';
+
+  @override
   String get communityHideGenerativeAiImageVideo =>
       'Ocultar obras con imágenes o vídeo de IA generativa';
 

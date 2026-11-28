@@ -3189,6 +3189,7 @@
   "filterNoiseColor": "Color noise",
   "filterNoiseSeed": "Pattern seed",
   "communityContentFilterTitle": "Display filters",
+  "communityNotificationSettingsTitle": "Notification settings",
   "communityHideGenerativeAiImageVideo": "Hide works containing generative-AI images or video",
   "communityMutedWords": "Hidden title words",
   "communityMutedWordsHint": "Hides works whose titles contain these words (not creator names or tags). Add and edit each word separately.",

@@ -3159,6 +3159,7 @@
   "filterNoiseColor": "컬러 노이즈",
   "filterNoiseSeed": "패턴 시드",
   "communityContentFilterTitle": "표시 필터",
+  "communityNotificationSettingsTitle": "알림 설정",
   "communityHideGenerativeAiImageVideo": "생성형 AI 이미지·동영상이 포함된 작품 숨기기",
   "communityMutedWords": "숨길 제목 키워드",
   "communityMutedWordsHint": "제목에 해당 단어가 포함된 작품을 숨깁니다(게시자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.",

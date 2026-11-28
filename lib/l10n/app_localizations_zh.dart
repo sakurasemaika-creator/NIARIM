@@ -7614,6 +7614,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityContentFilterTitle => '显示筛选';
 
   @override
+  String get communityNotificationSettingsTitle => '通知设置';
+
+  @override
   String get communityHideGenerativeAiImageVideo => '隐藏包含生成式 AI 图像或视频的作品';
 
   @override
@@ -18915,6 +18918,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityContentFilterTitle => '顯示篩選';
+
+  @override
+  String get communityNotificationSettingsTitle => '通知設定';
 
   @override
   String get communityHideGenerativeAiImageVideo => '隱藏包含生成式 AI 圖像或影片的作品';

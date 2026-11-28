@@ -16,7 +16,12 @@ class CommunityNotificationSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
     return Scaffold(
-      appBar: AppBar(title: FitOrHideTitle(devicePushLabel(l10n))),
+      // 画面名は短い名前にする（以前は1つ目のスイッチの名前「この端末の
+      // プッシュ通知」を使い、英語では戻るボタンの横の412pxに2px入らず、
+      // 西・仏語ではもっと広い画面まで隠れていた）。
+      appBar: AppBar(
+        title: FitOrHideTitle(l10n.communityNotificationSettingsTitle),
+      ),
       body: desktopCentered(
         context,
         ListView(
