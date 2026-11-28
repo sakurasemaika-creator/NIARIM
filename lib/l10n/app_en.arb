@@ -3760,6 +3760,7 @@
   "rewardUnlockWatchRewardedAd": "Watch a rewarded ad to earn Opals",
   "rewardUnlockRewardPending": "Pending verification. Opals appear after Google’s signed confirmation.",
   "rewardUnlockRewardUnavailable": "Could not show the ad. Please try again later.",
+  "rewardUnlockRewardClosedEarly": "The ad was closed before the end, so no Opals were earned.",
   "rewardUnlockRewardRefresh": "Refresh balance",
   "rewardUnlockCoinHistory": "Opal history",
   "rewardUnlockHistoryEmpty": "No Opal transactions yet",

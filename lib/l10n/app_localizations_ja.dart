@@ -9586,6 +9586,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '広告を表示できませんでした。しばらくしてから再試行してください。';
 
   @override
+  String get rewardUnlockRewardClosedEarly => '広告を途中で閉じたため、オパールは貯まりませんでした。';
+
+  @override
   String get rewardUnlockRewardRefresh => '残高を更新';
 
   @override

@@ -122,7 +122,9 @@ class AdvertisingService extends ChangeNotifier {
 
   /// Voluntary rewarded ad: the SDK callback never grants coins locally.
   /// Spendable coins are credited ONLY after Google signs the SSV event.
-  Future<bool> showRewardedCoinAd({
+  /// Tells apart an ad watched long enough for the reward, an ad closed
+  /// before that, and an ad that could not be loaded or shown.
+  Future<RewardedAdResult> showRewardedCoinAd({
     required String adUnitId,
     required String customData,
   }) async {
@@ -131,12 +133,12 @@ class AdvertisingService extends ChangeNotifier {
         !RegExp(
           r'^v[12][.]N[0-9a-f]{32}[.][0-9a-f-]{36}$',
         ).hasMatch(customData)) {
-      return false;
+      return RewardedAdResult.notShown;
     }
-    final completed = Completer<bool>();
+    final completed = Completer<RewardedAdResult>();
     var earned = false;
     final loadDeadline = Timer(const Duration(seconds: 20), () {
-      if (!completed.isCompleted) completed.complete(false);
+      if (!completed.isCompleted) completed.complete(RewardedAdResult.notShown);
     });
     final load = RewardedAd.load(
       adUnitId: adUnitId,
@@ -155,11 +157,19 @@ class AdvertisingService extends ChangeNotifier {
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdDismissedFullScreenContent: (ad) {
                 ad.dispose();
-                if (!completed.isCompleted) completed.complete(earned);
+                if (!completed.isCompleted) {
+                  completed.complete(
+                    earned
+                        ? RewardedAdResult.rewarded
+                        : RewardedAdResult.closedEarly,
+                  );
+                }
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
                 ad.dispose();
-                if (!completed.isCompleted) completed.complete(false);
+                if (!completed.isCompleted) {
+                  completed.complete(RewardedAdResult.notShown);
+                }
               },
             );
             await ad.show(
@@ -169,19 +179,25 @@ class AdvertisingService extends ChangeNotifier {
             );
           } catch (error) {
             ad.dispose();
-            if (!completed.isCompleted) completed.complete(false);
+            if (!completed.isCompleted) {
+              completed.complete(RewardedAdResult.notShown);
+            }
           }
         },
         onAdFailedToLoad: (error) {
           loadDeadline.cancel();
-          if (!completed.isCompleted) completed.complete(false);
+          if (!completed.isCompleted) {
+            completed.complete(RewardedAdResult.notShown);
+          }
         },
       ),
     );
     unawaited(
       load.catchError((Object _) {
         loadDeadline.cancel();
-        if (!completed.isCompleted) completed.complete(false);
+        if (!completed.isCompleted) {
+          completed.complete(RewardedAdResult.notShown);
+        }
       }),
     );
     return completed.future;
@@ -234,3 +250,16 @@ class AdvertisingService extends ChangeNotifier {
 }
 
 enum AdPosition { top, bottom }
+
+/// How a rewarded ad ended. Only Google's signed server-side event credits
+/// Opals; this says what to tell the viewer meanwhile.
+enum RewardedAdResult {
+  /// Watched long enough for the reward: Opals follow after Google confirms.
+  rewarded,
+
+  /// Closed before the reward: no Opals.
+  closedEarly,
+
+  /// Could not be loaded or shown.
+  notShown,
+}

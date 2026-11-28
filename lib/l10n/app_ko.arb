@@ -3730,6 +3730,7 @@
   "rewardUnlockWatchRewardedAd": "보상형 광고를 보고 오팔 적립",
   "rewardUnlockRewardPending": "검증 대기 중입니다. Google 확인 후 오팔이 반영됩니다.",
   "rewardUnlockRewardUnavailable": "광고를 표시할 수 없습니다. 나중에 다시 시도하세요.",
+  "rewardUnlockRewardClosedEarly": "광고를 끝까지 보지 않아 오팔이 적립되지 않았습니다.",
   "rewardUnlockRewardRefresh": "잔액 새로고침",
   "rewardUnlockCoinHistory": "오팔 거래 내역",
   "rewardUnlockHistoryEmpty": "아직 거래 내역이 없습니다",

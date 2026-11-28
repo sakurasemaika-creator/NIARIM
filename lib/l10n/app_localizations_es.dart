@@ -10237,6 +10237,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo mostrar el anuncio. Inténtalo más tarde.';
 
   @override
+  String get rewardUnlockRewardClosedEarly =>
+      'El anuncio se cerró antes de terminar, así que no se ganaron ópalos.';
+
+  @override
   String get rewardUnlockRewardRefresh => 'Actualizar saldo';
 
   @override

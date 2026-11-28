@@ -9635,6 +9635,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockRewardUnavailable => '광고를 표시할 수 없습니다. 나중에 다시 시도하세요.';
 
   @override
+  String get rewardUnlockRewardClosedEarly => '광고를 끝까지 보지 않아 오팔이 적립되지 않았습니다.';
+
+  @override
   String get rewardUnlockRewardRefresh => '잔액 새로고침';
 
   @override

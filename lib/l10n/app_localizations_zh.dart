@@ -9468,6 +9468,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockRewardUnavailable => '无法播放广告，请稍后重试。';
 
   @override
+  String get rewardUnlockRewardClosedEarly => '广告未看完就关闭了，因此未获得欧泊。';
+
+  @override
   String get rewardUnlockRewardRefresh => '刷新余额';
 
   @override
@@ -20762,6 +20765,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get rewardUnlockRewardUnavailable => '無法播放廣告，請稍後再試。';
+
+  @override
+  String get rewardUnlockRewardClosedEarly => '廣告未看完就關閉了，因此未獲得歐泊。';
 
   @override
   String get rewardUnlockRewardRefresh => '重新整理餘額';

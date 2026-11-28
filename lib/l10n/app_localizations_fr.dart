@@ -10255,6 +10255,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’afficher la publicité. Réessayez plus tard.';
 
   @override
+  String get rewardUnlockRewardClosedEarly =>
+      'La publicité a été fermée avant la fin : aucune opale n’a été gagnée.';
+
+  @override
   String get rewardUnlockRewardRefresh => 'Actualiser le solde';
 
   @override

@@ -10081,6 +10081,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not show the ad. Please try again later.';
 
   @override
+  String get rewardUnlockRewardClosedEarly =>
+      'The ad was closed before the end, so no Opals were earned.';
+
+  @override
   String get rewardUnlockRewardRefresh => 'Refresh balance';
 
   @override

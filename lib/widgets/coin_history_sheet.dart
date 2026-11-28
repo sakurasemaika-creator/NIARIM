@@ -158,6 +158,8 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
       'present' => l10n.rewardUnlockHistoryPresent,
       'coupon' => l10n.rewardUnlockHistoryCoupon,
       'rewarded-ad' => t['historyAd'],
+      'plaza-mission' => l10n.plazaMissionsTitle,
+      'recurring-mission' => l10n.recurringMissionsTitle,
       'creator-mission' || 'creator-grid' => t['historyMission'],
       'coin-redemption' => t['historyRedemption'],
       _ => t['historyOther'],

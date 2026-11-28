@@ -17169,6 +17169,12 @@ abstract class AppLocalizations {
   /// **'広告を表示できませんでした。しばらくしてから再試行してください。'**
   String get rewardUnlockRewardUnavailable;
 
+  /// No description provided for @rewardUnlockRewardClosedEarly.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を途中で閉じたため、オパールは貯まりませんでした。'**
+  String get rewardUnlockRewardClosedEarly;
+
   /// No description provided for @rewardUnlockRewardRefresh.
   ///
   /// In ja, this message translates to:

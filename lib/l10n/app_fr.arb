@@ -3730,6 +3730,7 @@
   "rewardUnlockWatchRewardedAd": "Voir une publicité pour gagner des opales",
   "rewardUnlockRewardPending": "Vérification en attente. Les opales seront ajoutées après confirmation.",
   "rewardUnlockRewardUnavailable": "Impossible d’afficher la publicité. Réessayez plus tard.",
+  "rewardUnlockRewardClosedEarly": "La publicité a été fermée avant la fin : aucune opale n’a été gagnée.",
   "rewardUnlockRewardRefresh": "Actualiser le solde",
   "rewardUnlockCoinHistory": "Historique des opales",
   "rewardUnlockHistoryEmpty": "Aucune transaction",

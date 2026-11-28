@@ -3730,6 +3730,7 @@
   "rewardUnlockWatchRewardedAd": "觀看獎勵廣告獲得歐泊",
   "rewardUnlockRewardPending": "等待驗證中。Google 確認後歐泊才會入帳。",
   "rewardUnlockRewardUnavailable": "無法播放廣告，請稍後再試。",
+  "rewardUnlockRewardClosedEarly": "廣告未看完就關閉了，因此未獲得歐泊。",
   "rewardUnlockRewardRefresh": "重新整理餘額",
   "rewardUnlockCoinHistory": "歐泊紀錄",
   "rewardUnlockHistoryEmpty": "尚無交易紀錄",

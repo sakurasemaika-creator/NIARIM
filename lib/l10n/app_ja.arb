@@ -5056,6 +5056,7 @@
   "rewardUnlockWatchRewardedAd": "リワード広告を見てオパールを貯める",
   "rewardUnlockRewardPending": "広告の確認待ちです。Googleの検証後にオパールが反映されます。",
   "rewardUnlockRewardUnavailable": "広告を表示できませんでした。しばらくしてから再試行してください。",
+  "rewardUnlockRewardClosedEarly": "広告を途中で閉じたため、オパールは貯まりませんでした。",
   "rewardUnlockRewardRefresh": "残高を更新",
   "rewardUnlockCoinHistory": "取引履歴",
   "rewardUnlockHistoryEmpty": "まだ取引履歴はありません",

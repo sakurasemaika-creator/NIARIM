@@ -63,16 +63,16 @@ class _RewardApi extends CommunityApi {
 class _RewardAds extends AdvertisingService {
   _RewardAds({required super.premiumService});
 
-  bool available = false;
+  RewardedAdResult result = RewardedAdResult.notShown;
 
   @override
   bool get canOfferRewardedAds => true;
 
   @override
-  Future<bool> showRewardedCoinAd({
+  Future<RewardedAdResult> showRewardedCoinAd({
     required String adUnitId,
     required String customData,
-  }) async => available;
+  }) async => result;
 }
 
 class _ExchangeApi extends CommunityApi {
@@ -215,14 +215,25 @@ void main() {
     expect(find.text(labels.coinAmount(0)), findsOneWidget);
     expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
 
-    ads.available = true;
+    // Closing the ad before the reward is not "could not show the ad".
+    // (Notices are shown one at a time: take the earlier one away first.)
+    ScaffoldMessenger.of(tester.element(watch)).removeCurrentSnackBar();
+    ads.result = RewardedAdResult.closedEarly;
     await tester.tap(watch);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(api.starts, 2);
-    expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
+    expect(find.text(labels.rewardUnlockRewardClosedEarly), findsOneWidget);
+    expect(find.text(labels.coinAmount(0)), findsOneWidget);
+
+    ads.result = RewardedAdResult.rewarded;
     await tester.tap(watch);
     await tester.pump();
     expect(api.starts, 3);
+    expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
+    await tester.tap(watch);
+    await tester.pump();
+    expect(api.starts, 4);
     expect(find.text(labels.rewardUnlockRewardRefresh), findsOneWidget);
 
     for (final seconds in [1, 2, 4, 6]) {

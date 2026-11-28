@@ -38,6 +38,7 @@ class RewardUnlockLabels {
     'watchRewardedAd' => _l10n.rewardUnlockWatchRewardedAd,
     'rewardPending' => _l10n.rewardUnlockRewardPending,
     'rewardUnavailable' => _l10n.rewardUnlockRewardUnavailable,
+    'rewardClosedEarly' => _l10n.rewardUnlockRewardClosedEarly,
     'rewardRefresh' => _l10n.rewardUnlockRewardRefresh,
     'coinHistory' => _l10n.rewardUnlockCoinHistory,
     'historyEmpty' => _l10n.rewardUnlockHistoryEmpty,

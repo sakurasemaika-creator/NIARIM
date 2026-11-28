@@ -261,10 +261,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           invitation['offerVersion'] != offerVersion) {
         throw StateError('Missing server-issued rewarded ad session');
       }
-      final completed = await ads.showRewardedCoinAd(
+      final result = await ads.showRewardedCoinAd(
         adUnitId: adUnit,
         customData: customData,
       );
+      final completed = result == RewardedAdResult.rewarded;
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != accountId) {
         return;
@@ -272,9 +273,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       final t = RewardUnlockLabels.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: messageText(
-            completed ? t['rewardPending'] : t['rewardUnavailable'],
-          ),
+          content: messageText(switch (result) {
+            RewardedAdResult.rewarded => t['rewardPending'],
+            RewardedAdResult.closedEarly => t['rewardClosedEarly'],
+            RewardedAdResult.notShown => t['rewardUnavailable'],
+          }),
         ),
       );
       if (completed) {

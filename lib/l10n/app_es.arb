@@ -3730,6 +3730,7 @@
   "rewardUnlockWatchRewardedAd": "Ver un anuncio para ganar ópalos",
   "rewardUnlockRewardPending": "Verificación pendiente. Los ópalos se añadirán después de la confirmación.",
   "rewardUnlockRewardUnavailable": "No se pudo mostrar el anuncio. Inténtalo más tarde.",
+  "rewardUnlockRewardClosedEarly": "El anuncio se cerró antes de terminar, así que no se ganaron ópalos.",
   "rewardUnlockRewardRefresh": "Actualizar saldo",
   "rewardUnlockCoinHistory": "Historial de ópalos",
   "rewardUnlockHistoryEmpty": "Aún no hay movimientos",
