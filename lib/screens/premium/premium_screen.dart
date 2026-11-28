@@ -83,7 +83,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Text(
+                                child: messageText(
                                   l10n.premiumActiveLabel,
                                   style: localizedHeadingStyle(
                                     context,
@@ -99,7 +99,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           ),
                           if (premium.purchaseDate != null) ...[
                             const SizedBox(height: 8),
-                            Text(
+                            messageText(
                               l10n.premiumRegisteredDateLabel(
                                 _formatDate(l10n, premium.purchaseDate!),
                               ),
@@ -111,7 +111,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           ],
                           if (premium.nextRenewalDate != null) ...[
                             const SizedBox(height: 2),
-                            Text(
+                            messageText(
                               l10n.premiumNextRenewalDateLabel(
                                 _formatDate(l10n, premium.nextRenewalDate!),
                               ),
@@ -151,7 +151,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ),
                 const SizedBox(height: 24),
               ],
-              Text(
+              messageText(
                 l10n.premiumVsTitle,
                 style: localizedHeadingStyle(
                   context,
@@ -165,7 +165,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               const SizedBox(height: 16),
               _comparisonTable(context, l10n),
               const SizedBox(height: 8),
-              Text(
+              messageText(
                 l10n.premiumDurationExportNote,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -175,7 +175,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   focusNode: _planHeading,
                   child: Semantics(
                     header: true,
-                    child: Text(
+                    child: messageText(
                       l10n.premiumPlanSectionTitle,
                       style: localizedHeadingStyle(
                         context,
@@ -190,7 +190,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (yearlyPrice == null || monthlyPrice == null) ...[
-                  Text(
+                  // 韓国語の語は、1行に入れば途中で折らない（「다시 시 / 도해」と
+                  // 折れた）。この画面の文はどれも同じ。
+                  messageText(
                     l10n.premiumStoreUnavailable,
                     style: TextStyle(
                       fontSize: 12,
@@ -219,7 +221,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Expanded(child: Text(l10n.premiumCheckoutPending)),
+                          Expanded(
+                            child: messageText(l10n.premiumCheckoutPending),
+                          ),
                         ],
                       ),
                     ),
@@ -271,9 +275,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               message = l10n.premiumRestoreFailed;
                             }
                             if (context.mounted) {
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(SnackBar(content: Text(message)));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: messageText(message)),
+                              );
                             }
                           }
                         : null,
@@ -331,7 +335,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
           // 折ると「もっと自 / 由な制作を」と語の途中で切れた）。
           child: KeepTogetherText(
             l10n.premiumHeroTitle,
-            keep: _clauses(l10n.premiumHeroTitle),
+            // 韓国語は語の間でだけ行を変える（「더 자유 / 롭게」と折れた）。
+            keep: [
+              ..._clauses(l10n.premiumHeroTitle),
+              ...koreanWordParts(l10n.premiumHeroTitle),
+            ],
             style: localizedHeadingStyle(
               context,
               TextStyle(
@@ -368,7 +376,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   children: [
                     Icon(icon, size: 22, color: scheme.onSurfaceVariant),
                     Expanded(
-                      child: Text(
+                      child: messageText(
                         label.replaceAll('\n', ' '),
                         style: TextStyle(
                           fontSize: 14,
@@ -411,7 +419,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
         size: 20,
       );
     }
-    return Text(
+    // 韓国語の値（「삭제 가능」）も語の途中で折らない。
+    return messageText(
       value,
       textAlign: TextAlign.center,
       style: TextStyle(fontSize: 14, color: foreground),
@@ -685,10 +694,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       alignment: Alignment.centerLeft,
-                      // 長音符・小さいかな・閉じ括弧で行を始めない。
+                      // 長音符・小さいかな・閉じ括弧で行を始めない。韓国語の
+                      // 語は途中で折らない（[_comparisonTableFits]が、語の
+                      // 入らない幅では項目ごとの一覧にする）。
                       child: KeepTogetherText(
                         item.$1,
-                        keep: lineStartKeepParts(item.$1),
+                        keep: [
+                          ...lineStartKeepParts(item.$1),
+                          ...koreanWordParts(item.$1),
+                        ],
                         semanticsLabel: rowLabel(item),
                         style: TextStyle(
                           fontSize: 14,
@@ -816,6 +830,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
       }
       for (final item in items) {
         if (unbreakable(item.$1, body) > feature) return false;
+        // 韓国語の語（Flutterはハングルのどの字の間でも折るので、語の幅を
+        // 1つずつ測る）。
+        for (final word in koreanWordParts(item.$1)) {
+          if (widest(word, body) > feature) return false;
+        }
       }
       return true;
     } finally {
@@ -861,7 +880,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   if (!ok && context.mounted && premium.purchaseError != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
+                        content: messageText(
                           _purchaseErrorText(l10n, premium.purchaseError!),
                         ),
                       ),
@@ -915,7 +934,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             ],
                           ),
                         ),
-                      Text(
+                      messageText(
                         title,
                         style: localizedHeadingStyle(
                           context,
