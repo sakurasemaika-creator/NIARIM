@@ -6772,6 +6772,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityEmptyState => '作品がありません';
 
   @override
+  String get communityFilterNoResults => '絞り込みに合う作品がありません';
+
+  @override
+  String get communityClearFilters => '絞り込みを解除';
+
+  @override
   String communitySearchNoResults(String query) {
     return '「$query」に一致する作品が見つかりませんでした';
   }

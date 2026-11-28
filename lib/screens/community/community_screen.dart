@@ -412,6 +412,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (mounted) _pulsePlazaTime();
     });
     _loadSavedSearches();
+    _restoreDisplayFilters();
     _loadTileSize();
     _loadRankingLayout();
     _tabController = TabController(length: 5, vsync: this)
@@ -447,6 +448,17 @@ class _CommunityScreenState extends State<CommunityScreen>
           exact: _tagExactMatch,
         );
       }
+    });
+  }
+
+  /// 覚えていた表示フィルターで開く。起動の直後でまだ読み込んでいなければ、
+  /// 読み込めた時点で（利用者がその間に変えていなければ）当てる。
+  void _restoreDisplayFilters() {
+    final service = context.read<CommunityService>();
+    _applyDisplayFilters(service.displayFilters);
+    service.contentFiltersReady.then((_) {
+      if (!mounted || _displayFiltersChanged) return;
+      setState(() => _applyDisplayFilters(service.displayFilters));
     });
   }
 
@@ -656,12 +668,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (yes == true && mounted) await _deleteSavedSearch(index);
   }
 
-  Map<String, dynamic> _currentSearchSnapshot(String name) => {
-    'name': name,
-    'query': _searchController.text.trim(),
-    'tagMode': _tagSearchMode,
-    'exactTag': _tagExactMatch,
-    'videoType': _videoTypeFilter.index,
+  /// 表示フィルターの今の値（保存した検索条件と、覚えておく表示フィルターに
+  /// 同じ形で書く）。
+  Map<String, Object?> _displayFilterSnapshot() => {
     'dateFilter': _postDateFilter.index,
     'dateStart': _customPostDateRange?.start.toIso8601String(),
     'dateEnd': _customPostDateRange?.end.toIso8601String(),
@@ -673,11 +682,80 @@ class _CommunityScreenState extends State<CommunityScreen>
     'minimumBookmarks': _minimumBookmarks,
   };
 
+  Map<String, dynamic> _currentSearchSnapshot(String name) => {
+    'name': name,
+    'query': _searchController.text.trim(),
+    'tagMode': _tagSearchMode,
+    'exactTag': _tagExactMatch,
+    'videoType': _videoTypeFilter.index,
+    ..._displayFilterSnapshot(),
+  };
+
+  /// [_displayFilterSnapshot]の形の値を表示フィルターへ戻す（無い項目・
+  /// 読めない値は「指定なし」）。setStateは呼び出し側で。
+  void _applyDisplayFilters(Map<String, Object?> saved) {
+    int choice(String key, int max) {
+      final value = saved[key];
+      return (value is num ? value.toInt() : 0).clamp(0, max).toInt();
+    }
+
+    final startText = saved['dateStart'];
+    final endText = saved['dateEnd'];
+    final start = startText is String ? DateTime.tryParse(startText) : null;
+    final end = endText is String ? DateTime.tryParse(endText) : null;
+    _postDateFilter = _PostDateFilter
+        .values[choice('dateFilter', _PostDateFilter.values.length - 1)];
+    _customPostDateRange = start == null || end == null || end.isBefore(start)
+        ? null
+        : DateTimeRange(start: start, end: end);
+    _durationMode = _DurationFilterMode
+        .values[choice('durationMode', _DurationFilterMode.values.length - 1)];
+    final upTo = saved['upToMinutes'];
+    _upToMinutes = (upTo is num ? upTo.toDouble() : 5).clamp(1, 60).toDouble();
+    _minimumMinutes = choice('minimumMinutes', 9999);
+    _maximumMinutes = saved.containsKey('maximumMinutes')
+        ? choice('maximumMinutes', 9999)
+        : 10;
+    _minimumViews = choice('minimumViews', 999999999);
+    _minimumBookmarks = choice('minimumBookmarks', 999999999);
+    if (!_communityThresholdChoices.contains(_minimumViews)) {
+      _minimumViews = 0;
+    }
+    if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
+      _minimumBookmarks = 0;
+    }
+  }
+
+  /// 利用者が表示フィルターを変えたか（覚えていた絞り込みが読み込み後に
+  /// 届いても、変えた後なら上書きしない）。
+  bool _displayFiltersChanged = false;
+
+  /// 今の表示フィルターを覚える（作品広場を出て戻っても・起動し直しても
+  /// 同じ絞り込みで開く）。何も絞り込んでいなければ覚えを消す。
+  void _rememberDisplayFilters() {
+    _displayFiltersChanged = true;
+    unawaited(
+      context.read<CommunityService>().setDisplayFilters(
+        _narrowsByFilters ? _displayFilterSnapshot() : const {},
+      ),
+    );
+  }
+
+  /// 絞り込み（表示フィルターと動画の種類）をすべて外す。
+  void _clearFilters() {
+    setState(() {
+      _applyDisplayFilters(const {});
+      _videoTypeFilter = VideoTypeFilter.all;
+      for (var tab = 0; tab < _visiblePageCounts.length; tab++) {
+        _visiblePageCounts[tab] = CommunityService.pageSize;
+      }
+    });
+    _rememberDisplayFilters();
+  }
+
   void _restoreSavedSearch(Map<String, dynamic> saved) {
     int choice(String key, int max) =>
         ((saved[key] as num?)?.toInt() ?? 0).clamp(0, max).toInt();
-    final start = DateTime.tryParse(saved['dateStart'] as String? ?? '');
-    final end = DateTime.tryParse(saved['dateEnd'] as String? ?? '');
     setState(() {
       _draftQuery = saved['query'] as String? ?? '';
       _searchController.text = _draftQuery;
@@ -685,30 +763,9 @@ class _CommunityScreenState extends State<CommunityScreen>
       _tagExactMatch = saved['exactTag'] == true;
       _videoTypeFilter = VideoTypeFilter
           .values[choice('videoType', VideoTypeFilter.values.length - 1)];
-      _postDateFilter = _PostDateFilter
-          .values[choice('dateFilter', _PostDateFilter.values.length - 1)];
-      _customPostDateRange = start == null || end == null || end.isBefore(start)
-          ? null
-          : DateTimeRange(start: start, end: end);
-      _durationMode =
-          _DurationFilterMode.values[choice(
-            'durationMode',
-            _DurationFilterMode.values.length - 1,
-          )];
-      _upToMinutes = ((saved['upToMinutes'] as num?)?.toDouble() ?? 5)
-          .clamp(1, 60)
-          .toDouble();
-      _minimumMinutes = choice('minimumMinutes', 9999);
-      _maximumMinutes = choice('maximumMinutes', 9999);
-      _minimumViews = choice('minimumViews', 999999999);
-      _minimumBookmarks = choice('minimumBookmarks', 999999999);
-      if (!_communityThresholdChoices.contains(_minimumViews)) {
-        _minimumViews = 0;
-      }
-      if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
-        _minimumBookmarks = 0;
-      }
+      _applyDisplayFilters(saved);
     });
+    _rememberDisplayFilters();
     _tabController.animateTo(3);
     _resetPage(3);
     final service = context.read<CommunityService>();
@@ -1188,6 +1245,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _minimumViews = result.minimumViews;
         _minimumBookmarks = result.minimumBookmarks;
       });
+      _rememberDisplayFilters();
     }
   }
 
@@ -2526,29 +2584,51 @@ class _CommunityScreenState extends State<CommunityScreen>
     return tail.characters.length <= 12 ? [tail] : const [];
   }
 
+  /// 一覧が空のときの表示。絞り込み（表示フィルター・動画の種類）で隠れて
+  /// いるときは、そう伝えてその場で外せるボタンを出す（以前は「作品が
+  /// ありません」だけで、絞り込んでいることも外し方も分からなかった）。
   Widget _buildSearchEmptyState(AppLocalizations l10n) {
     final query = _searchQuery.trim();
+    final filtered =
+        _narrowsByFilters || _videoTypeFilter != VideoTypeFilter.all;
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 40,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            EmptyStateIcon(
+              icon: query.isEmpty && filtered
+                  ? Icons.filter_alt_off_outlined
+                  : Icons.search_off,
             ),
             const SizedBox(height: 12),
-            Text(
-              query.isEmpty
-                  ? l10n.communityEmptyState
-                  : l10n.communitySearchNoResults(query),
+            messageText(
+              query.isNotEmpty
+                  ? l10n.communitySearchNoResults(query)
+                  : filtered
+                  ? l10n.communityFilterNoResults
+                  : l10n.communityEmptyState,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              keepLastPhrase: true,
+              style: TextStyle(color: scheme.onSurfaceVariant),
             ),
+            if (filtered) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                key: const Key('communityClearFilters'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AccentTextTheme.of(context),
+                ),
+                onPressed: _clearFilters,
+                icon: const Icon(Icons.filter_alt_off_outlined),
+                label: messageText(
+                  l10n.communityClearFilters,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ],
         ),
       ),

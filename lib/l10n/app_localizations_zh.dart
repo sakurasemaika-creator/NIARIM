@@ -6703,6 +6703,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityEmptyState => '暂无作品';
 
   @override
+  String get communityFilterNoResults => '没有符合筛选条件的作品';
+
+  @override
+  String get communityClearFilters => '清除筛选';
+
+  @override
   String communitySearchNoResults(String query) {
     return '未找到与“$query”匹配的作品';
   }
@@ -17998,6 +18004,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityEmptyState => '目前沒有作品';
+
+  @override
+  String get communityFilterNoResults => '沒有符合篩選條件的作品';
+
+  @override
+  String get communityClearFilters => '清除篩選';
 
   @override
   String communitySearchNoResults(String query) {

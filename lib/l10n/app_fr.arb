@@ -2756,6 +2756,8 @@
   "communityTabFavoriteAuthors": "Abonnements",
   "communitySearchHint": "Rechercher par titre ou nom d’utilisateur",
   "communityEmptyState": "Aucune œuvre à afficher",
+  "communityFilterNoResults": "Aucune œuvre ne correspond aux filtres",
+  "communityClearFilters": "Effacer les filtres",
   "communitySearchNoResults": "Aucune œuvre ne correspond à « {query} »",
   "@communitySearchNoResults": {
     "placeholders": {

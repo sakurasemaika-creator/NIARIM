@@ -269,6 +269,8 @@ class NiatraSerializer {
     'home.sharedFavoritesOnly.v1',
     'home.trashSortMode.v1',
     'community.hideGenerativeAiImageVideo',
+    // 作品広場の表示フィルター（投稿日・長さ・ブックマーク数。JSONの1つの値）。
+    'community.displayFilters.v1',
     'community.rankingLayout.v1',
     'community.tileMinWidth.v1',
     'community.tileSize.v2',

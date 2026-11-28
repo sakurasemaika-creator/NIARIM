@@ -7200,6 +7200,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityEmptyState => 'Aucune œuvre à afficher';
 
   @override
+  String get communityFilterNoResults =>
+      'Aucune œuvre ne correspond aux filtres';
+
+  @override
+  String get communityClearFilters => 'Effacer les filtres';
+
+  @override
   String communitySearchNoResults(String query) {
     return 'Aucune œuvre ne correspond à « $query »';
   }

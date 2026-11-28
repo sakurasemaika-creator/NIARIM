@@ -2756,6 +2756,8 @@
   "communityTabFavoriteAuthors": "팔로잉",
   "communitySearchHint": "작품 제목·게시자 이름으로 검색",
   "communityEmptyState": "표시할 작품이 없습니다",
+  "communityFilterNoResults": "필터에 맞는 작품이 없습니다",
+  "communityClearFilters": "필터 해제",
   "communitySearchNoResults": "“{query}”에 해당하는 작품을 찾을 수 없습니다",
   "@communitySearchNoResults": {
     "placeholders": {

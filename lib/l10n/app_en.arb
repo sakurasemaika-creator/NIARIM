@@ -2779,6 +2779,8 @@
   "communityTabFavoriteAuthors": "Following",
   "communitySearchHint": "Search by title or username",
   "communityEmptyState": "No works to show",
+  "communityFilterNoResults": "No works match your filters",
+  "communityClearFilters": "Clear filters",
   "communitySearchNoResults": "No works matched “{query}”",
   "@communitySearchNoResults": {
     "placeholders": {

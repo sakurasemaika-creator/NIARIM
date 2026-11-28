@@ -3555,6 +3555,14 @@
   "communityTabFavoriteAuthors": "フォロー中",
   "communitySearchHint": "作品タイトル・投稿者名で検索",
   "communityEmptyState": "作品がありません",
+  "communityFilterNoResults": "絞り込みに合う作品がありません",
+  "@communityFilterNoResults": {
+    "description": "作品広場：表示フィルター・動画の種類の絞り込みで一覧の作品がすべて隠れたときの空の表示"
+  },
+  "communityClearFilters": "絞り込みを解除",
+  "@communityClearFilters": {
+    "description": "作品広場：空の表示のボタン。表示フィルターと動画の種類の絞り込みをすべて外す"
+  },
   "communitySearchNoResults": "「{query}」に一致する作品が見つかりませんでした",
   "@communitySearchNoResults": {
     "placeholders": {

@@ -7198,6 +7198,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityEmptyState => 'No hay obras para mostrar';
 
   @override
+  String get communityFilterNoResults =>
+      'Ninguna obra coincide con los filtros';
+
+  @override
+  String get communityClearFilters => 'Quitar los filtros';
+
+  @override
   String communitySearchNoResults(String query) {
     return 'No se encontraron obras que coincidan con «$query»';
   }

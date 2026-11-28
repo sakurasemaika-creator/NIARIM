@@ -7079,6 +7079,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityEmptyState => 'No works to show';
 
   @override
+  String get communityFilterNoResults => 'No works match your filters';
+
+  @override
+  String get communityClearFilters => 'Clear filters';
+
+  @override
   String communitySearchNoResults(String query) {
     return 'No works matched “$query”';
   }

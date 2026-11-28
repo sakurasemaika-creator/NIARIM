@@ -6808,6 +6808,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityEmptyState => '표시할 작품이 없습니다';
 
   @override
+  String get communityFilterNoResults => '필터에 맞는 작품이 없습니다';
+
+  @override
+  String get communityClearFilters => '필터 해제';
+
+  @override
   String communitySearchNoResults(String query) {
     return '“$query”에 해당하는 작품을 찾을 수 없습니다';
   }

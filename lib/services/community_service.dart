@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -455,7 +456,9 @@ class CommunityService extends ChangeNotifier {
   static const _mutedAuthorsKey = 'community.mutedAuthors';
   static const _mutedWorksKey = 'community.mutedWorks.v1';
   static const _alwaysVisibleWorksKey = 'community.alwaysVisibleWorks.v1';
+  static const _displayFiltersKey = 'community.displayFilters.v1';
   bool _hideGenerativeAiImageVideo = false;
+  Map<String, Object?> _displayFilters = const {};
   final Set<String> _mutedWords = {};
   final Set<String> _mutedTags = {};
   final Set<String> _mutedAuthorIds = {};
@@ -465,6 +468,25 @@ class CommunityService extends ChangeNotifier {
   final Set<String> _temporaryVisibleWorkIds = {};
 
   bool get hideGenerativeAiImageVideo => _hideGenerativeAiImageVideo;
+
+  /// 作品広場の表示フィルター（投稿日・動画の長さ・ブックマーク数など）を
+  /// 作品広場の画面が書いた形のまま覚えたもの。ダイアログの「保存」で残し、
+  /// 作品広場を出て戻っても・起動し直しても同じ絞り込みで開く（以前は画面の
+  /// 中だけに持ち、出入りで消えていた）。中身を読むのは作品広場の画面。
+  Map<String, Object?> get displayFilters => _displayFilters;
+
+  Future<void> setDisplayFilters(Map<String, Object?> filters) async {
+    await contentFiltersReady;
+    if (_disposed) return;
+    _displayFilters = Map.unmodifiable(filters);
+    final prefs = await SharedPreferences.getInstance();
+    if (filters.isEmpty) {
+      await prefs.remove(_displayFiltersKey);
+    } else {
+      await prefs.setString(_displayFiltersKey, jsonEncode(filters));
+    }
+  }
+
   Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
   Set<String> get mutedAuthorIds => Set.unmodifiable(_mutedAuthorIds);
@@ -591,10 +613,25 @@ class CommunityService extends ChangeNotifier {
       _alwaysVisibleWorkIds
         ..clear()
         ..addAll(prefs.readStringList(_alwaysVisibleWorksKey) ?? const []);
+      _displayFilters = _decodeDisplayFilters(
+        prefs.readString(_displayFiltersKey),
+      );
     } catch (error) {
       debugPrint('Community content filters could not be restored: $error');
     }
     if (!_disposed) notifyListeners();
+  }
+
+  /// 読めない保存（壊れたJSON・型違い）は絞り込まない（何も消さない）。
+  static Map<String, Object?> _decodeDisplayFilters(String? raw) {
+    if (raw == null || raw.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) return Map.unmodifiable(decoded);
+    } on FormatException catch (error) {
+      debugPrint('Community display filters could not be read: $error');
+    }
+    return const {};
   }
 
   /// Refresh in-memory rules after importing a portable device backup.

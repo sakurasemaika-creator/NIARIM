@@ -12225,6 +12225,18 @@ abstract class AppLocalizations {
   /// **'作品がありません'**
   String get communityEmptyState;
 
+  /// 作品広場：表示フィルター・動画の種類の絞り込みで一覧の作品がすべて隠れたときの空の表示
+  ///
+  /// In ja, this message translates to:
+  /// **'絞り込みに合う作品がありません'**
+  String get communityFilterNoResults;
+
+  /// 作品広場：空の表示のボタン。表示フィルターと動画の種類の絞り込みをすべて外す
+  ///
+  /// In ja, this message translates to:
+  /// **'絞り込みを解除'**
+  String get communityClearFilters;
+
   /// No description provided for @communitySearchNoResults.
   ///
   /// In ja, this message translates to:

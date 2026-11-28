@@ -2756,6 +2756,8 @@
   "communityTabFavoriteAuthors": "Siguiendo",
   "communitySearchHint": "Buscar por título o nombre de usuario",
   "communityEmptyState": "No hay obras para mostrar",
+  "communityFilterNoResults": "Ninguna obra coincide con los filtros",
+  "communityClearFilters": "Quitar los filtros",
   "communitySearchNoResults": "No se encontraron obras que coincidan con «{query}»",
   "@communitySearchNoResults": {
     "placeholders": {
